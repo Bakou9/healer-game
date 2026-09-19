@@ -179,3 +179,10 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - Date : 2026-09-19 · Statut : Ferme
 - Décision : l'utilisateur a autorisé l'installation du SDK .NET 8, d'Unity Hub et de l'Éditeur Unity 6 LTS avec module Android (via winget et le Hub, sources officielles). La connexion au compte Unity et l'activation de la licence restent à faire par l'utilisateur ; l'agent ne saisit jamais d'identifiant.
 - Tickets : E14-T02
+
+### D-032 — Compte Unity créé et essai démarré par l'utilisateur
+- Date : 2026-09-19 · Statut : À préciser
+- Constat : l'utilisateur a créé son compte Unity et s'est inscrit à un essai (type d'essai non précisé). Un essai peut se transformer en abonnement payant à son terme.
+- À préciser par l'utilisateur (sans jamais donner de mot de passe ni de coordonnées bancaires à l'agent) : quel essai (Unity Pro, outils IA, autre) ; date de fin ; renouvellement automatique ou non ; carte bancaire demandée ou non ; coût après l'essai.
+- Règle : l'utilisateur note la date de fin dans son calendrier et annule avant l'échéance s'il ne veut pas payer ; l'agent rappelle cette date à chaque étape qui dépend de l'essai (MCP officiel).
+- Tickets : E14-T02, E14-T03
