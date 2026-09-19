@@ -221,3 +221,8 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - Date : 2026-09-19 · Statut : Ferme
 - Décision : les statistiques de combat (`CombatStats`) vivent dans le cœur et sont calculées uniquement à partir des événements (testées : égalité avec la somme des événements) ; le télégraphe expose sa durée totale (`TotalMs`) pour les jauges ; les sons sont générés par code (`SoundKit`) faute de fichiers audio, avec la touche M pour couper le son.
 - Tickets : E01-T13, E04-T07, E04-T09, E04-T11
+
+## D-039 — Écran de démarrage, pause au changement de fenêtre, méthode de build Android
+- **Décision** : le combat ne démarre plus tout seul : un écran « Jouer » explique les gestes (cible puis sort, bouclier avant l'attaque, purge, mana). Le combat se met en pause si la fenêtre perd le focus (sauf quand le bot joue en mode capture). `Builder.BuildAndroid` (IL2CPP arm64, portrait) et lecture de StreamingAssets par UnityWebRequest sur Android sont prêts.
+- **Pourquoi** : un joueur qui lance le jeu ne doit pas perdre un combat avant d'avoir compris ; changer de fenêtre ne doit pas être puni.
+- **Reste à faire** : le build Android exige le module Android d'Unity (installation = à valider avec l'utilisateur, cf. QUESTIONS_EN_ATTENTE).

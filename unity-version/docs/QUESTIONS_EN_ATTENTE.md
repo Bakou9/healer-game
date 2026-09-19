@@ -13,3 +13,5 @@ avec ma recommandation. À passer en revue ensemble au retour, puis à consigner
 6. **Sons et musique** : j'ajoute des effets sonores générés par code (bips, tintements). Voulez-vous de vrais sons/musique (fichiers à fournir ou à choisir) ?
 7. **Ressenti** : premier vrai test de jeu à faire ensemble (fun, lisibilité, difficulté) — le plus utile pour la suite.
 8. **Android** : le module est installé ; on tente un APK de test sur un vrai téléphone ? (nécessite le téléphone en mode développeur)
+
+- **Android** : `BuildAndroid` est écrit mais non exécuté. Installer le module Android (SDK/NDK/JDK, plusieurs Go) via Unity Hub pour produire un APK de test téléphone ? À valider avec vous.

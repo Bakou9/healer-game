@@ -28,6 +28,17 @@ namespace Healer.Client
 
         public bool Paused { get; private set; }
 
+        /// <summary>Faux tant que le joueur n'a pas touché « Jouer » : la simulation ne tourne pas.</summary>
+        public bool Started { get; private set; }
+
+        public void StartFight() => Started = true;
+
+        /// <summary>Met le jeu en pause quand la fenêtre perd le focus (on ne perd pas un combat en changeant de fenêtre).</summary>
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            if (!hasFocus && Started && !Autoplay && _battle != null && _battle.GetResult() == BattleResults.Ongoing) Paused = true;
+        }
+
         /// <summary>Accélère le temps (captures automatiques uniquement) ; 1 en jeu normal.</summary>
         public float TimeScale { get; set; } = 1f;
 
@@ -73,6 +84,7 @@ namespace Healer.Client
         public void Restart()
         {
             StartBattle((uint)(Environment.TickCount & 0x7fffffff));
+            Started = true;
             Restarted?.Invoke();
         }
 
@@ -80,7 +92,7 @@ namespace Healer.Client
 
         private void Update()
         {
-            if (_battle == null || Paused || _battle.GetResult() != BattleResults.Ongoing) return;
+            if (_battle == null || !Started || Paused || _battle.GetResult() != BattleResults.Ongoing) return;
             double dtMs = Time.deltaTime * 1000.0 * TimeScale;
             _stepper.Advance(dtMs, step =>
             {
@@ -102,6 +114,7 @@ namespace Healer.Client
 
         public void TapAlly(string unitId)
         {
+            if (!Started) return;
             var ally = _battle.GetAllies().FirstOrDefault(a => a.Id == unitId);
             if (ally != null) _selection.Tap(unitId, ally.Alive);
             Debug.Log($"[Healer] geste : carte {unitId} → cible = {_selection.Selected ?? "aucune"}");
@@ -109,7 +122,7 @@ namespace Healer.Client
 
         public void TapSkill(SkillDef skill)
         {
-            if (Paused || _battle.GetResult() != BattleResults.Ongoing) return;
+            if (!Started || Paused || _battle.GetResult() != BattleResults.Ongoing) return;
             var resolution = _selection.Resolve(skill.Target == "all", _battle.CanUseSkillNow(HealerId, skill.Id));
             Debug.Log($"[Healer] geste : sort {skill.Id} → {resolution.Kind} (cible {resolution.TargetId ?? "-"})");
             switch (resolution.Kind)

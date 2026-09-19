@@ -40,6 +40,7 @@ namespace Healer.Client
             if (shots != null)
             {
                 float speed = float.TryParse(Arg("-healer-speed"), out var s) ? s : 6f;
+                controller.StartFight();
                 controller.Autoplay = true;
                 controller.TimeScale = speed;
                 controller.TapAlly("tank");

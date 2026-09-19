@@ -144,6 +144,40 @@ namespace Healer.EditorTools
             CreateScene();
         }
 
+        /// <summary>APK de test pour téléphone Android (IL2CPP arm64, portrait). Sortie : Builds/Android/HealerGame.apk.</summary>
+        public static void BuildAndroid()
+        {
+            try
+            {
+                BuildAll();
+                PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.healer.game");
+                PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
+                PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+                PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.Android, ManagedStrippingLevel.Disabled);
+                PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+                PlayerSettings.bundleVersion = "0.1.0";
+                EditorUserBuildSettings.buildAppBundle = false;
+                string dir = Path.Combine(ProjectRoot, "Builds", "Android");
+                Directory.CreateDirectory(dir);
+                var options = new BuildPlayerOptions
+                {
+                    scenes = new[] { ScenePath },
+                    locationPathName = Path.Combine(dir, "HealerGame.apk"),
+                    target = BuildTarget.Android,
+                    targetGroup = BuildTargetGroup.Android,
+                    options = BuildOptions.None,
+                };
+                BuildReport report = BuildPipeline.BuildPlayer(options);
+                Debug.Log($"[Healer] build Android : {report.summary.result}, {report.summary.totalSize / (1024 * 1024)} Mo, {report.summary.totalTime.TotalSeconds:0} s, erreurs {report.summary.totalErrors}");
+                if (report.summary.result != BuildResult.Succeeded) throw new Exception("Le build Android a échoué : " + report.summary.result);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[Healer] ÉCHEC Android : " + e);
+                EditorApplication.Exit(1);
+            }
+        }
+
         public static void BuildWindows()
         {
             try

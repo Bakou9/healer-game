@@ -48,6 +48,7 @@ namespace Healer.Client
             DrawStrip();
             DrawSkills();
             DrawEnd();
+            DrawStart();
             GUI.matrix = previous;
         }
 
@@ -213,6 +214,37 @@ namespace Healer.Client
             var badge = new Rect(r.xMax - 26, r.y - 12, 34, 34);
             Fill(badge, Selected, 17);
             Text(badge, number, Layout.Font.Title, Palette.Hex("1C1A36"), TextAnchor.MiddleCenter, true);
+        }
+
+        // ---- Écran de démarrage ------------------------------------------------------------------
+
+        private void DrawStart()
+        {
+            if (_ctl.Started) return;
+            Fill(new Rect(-2000, -2000, 5000, 5000), new Color(0.03f, 0.04f, 0.09f, 0.86f), 0);
+            float w = (float)Layout.GameW;
+            Text(new Rect(0, 130, w, 56), "Healer Game", 44, Color.white, TextAnchor.MiddleCenter, true);
+            Text(new Rect(0, 190, w, 30), "Soignez votre équipe face au " + _ctl.Battle.GetBossName(), Layout.Font.Body, Muted, TextAnchor.MiddleCenter);
+            var panel = new Rect(36, 250, w - 72, 260);
+            Fill(panel, new Color(Panel.r, Panel.g, Panel.b, 0.96f), 14);
+            Outline(panel, PanelStroke, 2, 14);
+            string[] tips =
+            {
+                "1  Touchez un allié pour le cibler",
+                "2  Touchez un sort pour le lancer sur lui",
+                "Soin de zone : sans cible, pour toute l'équipe",
+                "Bouclier : à poser AVANT l'attaque annoncée",
+                "Purge : retire le poison (phase 2)",
+                "Le mana est limité : ne le gaspillez pas",
+            };
+            for (int i = 0; i < tips.Length; i++)
+                Text(new Rect(panel.x + 22, panel.y + 14 + i * 38, panel.width - 44, 34), tips[i], Layout.Font.Body, i < 2 ? Selected : Color.white, TextAnchor.MiddleLeft, i < 2);
+            var btn = new Rect(w / 2 - 120, 560, 240, 60);
+            Fill(btn, Palette.Hex("2F7D57"), 14);
+            Outline(btn, Palette.Heal, 3, 14);
+            Text(btn, "Jouer", 26, Color.white, TextAnchor.MiddleCenter, true);
+            Text(new Rect(0, 640, w, 24), "M : couper le son", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
+            if (Hit(btn)) _ctl.StartFight();
         }
 
         // ---- Fin de combat -----------------------------------------------------------------------

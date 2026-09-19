@@ -1,6 +1,7 @@
 using System.IO;
 using Healer.Combat;
 using UnityEngine;
+using UnityEngine.Networking;
 
 namespace Healer.Client
 {
@@ -14,7 +15,19 @@ namespace Healer.Client
         public static GameContent Load()
         {
             string dir = Path.Combine(Application.streamingAssetsPath, "content");
+#if UNITY_ANDROID && !UNITY_EDITOR
+            // Sur Android, StreamingAssets est dans l'APK (jar:file://) : lecture par UnityWebRequest.
+            string Read(string name)
+            {
+                using var request = UnityWebRequest.Get(Path.Combine(dir, name));
+                var op = request.SendWebRequest();
+                while (!op.isDone) { }
+                if (request.result != UnityWebRequest.Result.Success) throw new IOException("Lecture impossible : " + name + " (" + request.error + ")");
+                return request.downloadHandler.text;
+            }
+#else
             string Read(string name) => File.ReadAllText(Path.Combine(dir, name));
+#endif
             return GameContent.FromJson(Read("characters.json"), Read("skills.json"), Read("effects.json"), Read("boss1.json"));
         }
     }
