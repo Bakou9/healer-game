@@ -1,0 +1,17 @@
+{
+  "name": "Healer.Client",
+  "rootNamespace": "Healer.Client",
+  "references": [
+    "Healer.Combat",
+    "Healer.Ui"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

@@ -1,0 +1,5 @@
+<linker>
+  <assembly fullname="Healer.Combat" preserve="all"/>
+  <assembly fullname="Healer.Ui" preserve="all"/>
+  <assembly fullname="Newtonsoft.Json" preserve="all"/>
+</linker>

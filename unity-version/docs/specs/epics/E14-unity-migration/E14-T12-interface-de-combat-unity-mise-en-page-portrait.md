@@ -17,8 +17,8 @@ Reprise des règles de docs/UX.md : 2 gestes au plus, cibles ≥ 48 px, texte �
 
 ## Critères d'acceptation
 - [x] Jetons de design et logique de ciblage portés (mêmes tests)
-- [ ] Cartes d'alliés, barre de sorts, mana, télégraphe lisibles
-- [ ] Valeurs affichées via le formatage tronqué (7000, 12,3k, 4,9s)
+- [x] Cartes d'alliés, barre de sorts, mana, télégraphe lisibles (interface IMGUI ; vérifié sur captures et par clics réels : sort sans cible, sélection, lancement)
+- [x] Valeurs affichées via le formatage tronqué (7000, 12,3k, 4,9s)
 
 ## Tests automatiques exigés
 Tests unitaires de la logique UI ; captures.

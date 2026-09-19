@@ -30,3 +30,7 @@ unity/**/MemoryCaptures/
 
 # Sorties de dotnet (hors des sources)
 .build/
+
+# Contenu copié depuis core/content par l'outil d'Éditeur (source de vérité : core/content)
+unity/HealerGame/Assets/StreamingAssets/content/
+unity/HealerGame/Assets/StreamingAssets/content.meta

@@ -204,3 +204,15 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - Décision : l'historique de `main` a été réécrit (17 commits, `git filter-branch`) pour remplacer ces chemins par `%USERPROFILE%`, puis publié par un push forcé sécurisé (`--force-with-lease`) sur ordre explicite de l'utilisateur. Contenu actuel strictement identique ; tests verts ; intégrations continues vertes. Sauvegarde complète avant l'opération : `Documents/healer-game-sauvegarde-avant-nettoyage.bundle` (restaurable par `git clone`).
 - Limites connues : GitHub garde les anciens commits accessibles par leur numéro exact pendant un temps (purge complète via le support GitHub) ; les numéros des commits de la version Unity ont changé, ceux de la version Phaser (dont `91d7beb`) sont inchangés ; le nom et l'email des auteurs de commits restent visibles.
 - Tickets : E13-T04
+
+### D-036 — Première version jouable : rendu intégré, interface IMGUI, modèles générés par code
+- Date : 2026-09-19 · Statut : Ferme (choix réversible, voir D-034)
+- Décision : tant que les paquets du registre Unity sont bloqués par Defender, la version jouable s'appuie sur ce qui est livré dans le cœur d'Unity : rendu intégré (pas d'URP), interface dessinée par IMGUI avec les jetons de `Healer.Ui` (aucune règle dans le client), modèles 3D « figurine » générés par code à chaque lancement (`MeshKit`, `ModelFactory`) plutôt que des préfabriqués : même reproductibilité, aucun fichier binaire, budget de triangles contrôlé à chaque build.
+- Spec remise en cause (préambule A) : E14-T13 prévoyait des préfabriqués construits par scripts d'Éditeur ; la génération à l'exécution offre la même reproductibilité sans dépendre de l'Éditeur, et simplifie le build. À reconsidérer si des artistes doivent retoucher les modèles.
+- Interface : le journal de combat à 3 lignes de la version Phaser est réduit à **une ligne** (dernière action), car les modèles 3D occupent la zone du journal ; les événements se lisent aussi par les animations et les chiffres flottants.
+- Tickets : E14-T11, E14-T12, E14-T13
+
+### D-037 — Outils de vérification du jeu Unity
+- Date : 2026-09-19 · Statut : Ferme
+- Décision : `tools/unity-cycle.ps1` (construit l'exécutable, le lance en mode capture avec le bot de référence, écrit des captures d'écran) et `tools/unity-clicktest.ps1` (clique réellement dans la fenêtre du jeu et vérifie les gestes par le journal du joueur) sont les vérifications visuelles et d'interaction du jeu Unity, en attendant des tests EditMode (le Test Framework vient du registre, donc bloqué par Defender).
+- Tickets : E14-T11, E14-T12, E13-T05

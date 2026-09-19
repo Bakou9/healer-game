@@ -39,7 +39,8 @@ namespace Healer.Combat
             }
         }
 
-        private static void Decide(Battle battle, double t, bool purge)
+        /// <summary>Une décision du bot (appelée à intervalle régulier par le client pour la démonstration et les captures).</summary>
+        public static void Decide(Battle battle, double t, bool purge)
         {
             var allies = battle.GetAllies().Where(a => a.Alive).ToList();
             var healer = allies.FirstOrDefault(a => a.Role == "healer");

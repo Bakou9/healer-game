@@ -1,0 +1,20 @@
+{
+  "name": "Healer.Client.Editor",
+  "rootNamespace": "Healer.EditorTools",
+  "references": [
+    "Healer.Client",
+    "Healer.Combat",
+    "Healer.Ui"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
