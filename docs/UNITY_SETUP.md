@@ -8,8 +8,8 @@ trace de ce qui est installé et de ce que **seul l'utilisateur** peut faire.
 | Élément | État | Comment |
 |---|---|---|
 | SDK .NET 8 (8.0.425) | installé | `winget install Microsoft.DotNet.SDK.8` (autorisé par l'utilisateur) |
-| Unity Hub | installation lancée | `winget install Unity.UnityHub` (autorisé par l'utilisateur) |
-| Éditeur Unity 6 LTS + module Android | à installer via le Hub | plusieurs Go |
+| Unity Hub 3.21.3 | installé (paquet MSIX) | `winget install Unity.UnityHub` (autorisé par l'utilisateur) |
+| Éditeur Unity 6.3 LTS (6000.3.24f1) + module Android | **téléchargement en cours** (Hub en ligne de commande, tâche détachée, ~4 Mo/s) | plusieurs Go, plusieurs dizaines de minutes |
 | Licence Unity | **à activer par l'utilisateur** | connexion à son compte dans le Hub |
 | Projet Unity (`unity/HealerGame`) | à créer | voir plus bas |
 | MCP | à choisir (E14-T03) | voir plus bas |
