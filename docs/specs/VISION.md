@@ -171,7 +171,7 @@ qu'elle soit demandée (voir `CLAUDE.md`).
 2. Le soigneur est-il un personnage unique ou choisit-on parmi plusieurs soigneurs ?
 3. Énergie/stamina : oui ou non ?
 4. Monétisation : IAP dès la bêta ou seulement après le lancement ?
-5. Direction artistique (2D dessinée, pixel art, minimaliste) ?
+5. Direction artistique (2D dessinée, pixel art, minimaliste) ? *(Réponse provisoire : fantasy stylisée vectorielle, choisie par l'agent, décision D-023 — à valider après le test de jeu.)*
 6. Combien de personnages de lancement, et quelles raretés ?
 7. Cibler d'abord Android seul, ou Android et Steam en parallèle ?
 8. Mode hors ligne complet ou connexion obligatoire ?

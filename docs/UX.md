@@ -94,6 +94,8 @@ Réalisés (2026-09-19) : E04-T02 (netteté), E04-T03 (mise en page), E04-T04
 (ciblage), E04-T05 (cartes). Restent notamment : télégraphes (T07), barre de
 sorts (T06), retours maîtrisés (T08), bilan (T09), menus (T10), tutoriel (T11).
 
+Habillage graphique (D-023) : décor, Golem animé, portraits et icônes, particules, retours d'impact (E12-T01 et E12-T03 en cours).
+
 ## 7. Prochaine tranche recommandée (historique)
 
 E04-T02 (netteté) → E04-T03 (mise en page) → E04-T04 (ciblage) → E04-T05

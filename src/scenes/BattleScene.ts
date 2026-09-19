@@ -5,6 +5,7 @@ import { FixedStepper } from "../sim/fixedStep";
 import type { BattleEvent } from "../sim/events";
 import skillsData from "../data/skills.json";
 import type { SkillDef, UnitState } from "../sim/types";
+import { SKILL_ICON, portraitFor } from "../ui/artMap";
 import { formatNumber, formatRatio, formatSeconds } from "../ui/format";
 import {
   BOSS_HP_BAR,
@@ -21,6 +22,11 @@ import {
   type Rect,
 } from "../ui/layout";
 import { TargetSelection } from "../ui/targeting";
+import { drawBackground } from "./art/background";
+import { CombatEffects } from "./art/effects";
+import { GolemView } from "./art/golem";
+import { drawPortraitIcon, drawSkillIcon } from "./art/icons";
+import { drawPanel } from "./art/panel";
 import { FloatingTextPool } from "./FloatingTextPool";
 import { addText } from "./uiText";
 
@@ -46,7 +52,8 @@ const center = (r: Rect) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
  * auto-battle : seule la partie soin/survie est jouée manuellement.
  *
  * Mise en page : voir `ui/layout.ts` et `docs/UX.md`. Ciblage : toucher un
- * allié le sélectionne, puis toucher un sort (`ui/targeting.ts`).
+ * allié le sélectionne, puis toucher un sort (`ui/targeting.ts`). Graphismes
+ * vectoriels dessinés en code : `scenes/art/` (aucun fichier d'image).
  */
 export class BattleScene extends Phaser.Scene {
   private battle!: Battle;
@@ -55,7 +62,8 @@ export class BattleScene extends Phaser.Scene {
   private paused = false;
   private hintUntilMs = 0;
 
-  private bossRect!: Phaser.GameObjects.Rectangle;
+  private golem!: GolemView;
+  private effects!: CombatEffects;
   private bossHpBar!: Phaser.GameObjects.Graphics;
   private bossNameText!: Phaser.GameObjects.Text;
   private telegraphText!: Phaser.GameObjects.Text;
@@ -63,8 +71,10 @@ export class BattleScene extends Phaser.Scene {
   private allyViews: Array<{
     id: string;
     rect: Rect;
-    bg: Phaser.GameObjects.Rectangle;
-    portrait: Phaser.GameObjects.Rectangle;
+    panel: Phaser.GameObjects.Graphics;
+    portrait: Phaser.GameObjects.Graphics;
+    icon: Phaser.GameObjects.Graphics;
+    flash: Phaser.GameObjects.Graphics;
     hpBar: Phaser.GameObjects.Graphics;
     nameText: Phaser.GameObjects.Text;
     hpText: Phaser.GameObjects.Text;
@@ -75,7 +85,9 @@ export class BattleScene extends Phaser.Scene {
 
   private skillButtons: Array<{
     def: SkillDef;
-    bg: Phaser.GameObjects.Rectangle;
+    rect: Rect;
+    panel: Phaser.GameObjects.Graphics;
+    icon: Phaser.GameObjects.Graphics;
     costText: Phaser.GameObjects.Text;
     cooldownText: Phaser.GameObjects.Text;
   }> = [];
@@ -113,6 +125,9 @@ export class BattleScene extends Phaser.Scene {
     // Seed fixe pour l'instant : à terme, tirée par le serveur pour chaque run.
     this.battle = new Battle(createEncounter(Date.now() % 100000));
 
+    drawBackground(this);
+    this.effects = new CombatEffects(this);
+
     this.buildTopBar();
     this.buildBossUi();
     this.buildBand();
@@ -137,13 +152,13 @@ export class BattleScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, unsubscribe);
   }
 
-  update(_time: number, deltaMs: number): void {
+  update(time: number, deltaMs: number): void {
     if (!this.paused && this.battle.getResult() === "ongoing") {
       // Pas fixe : la simulation ne dépend pas du FPS de l'appareil.
       this.stepper.advance(deltaMs, (dt) => this.battle.step(dt));
     }
     this.selection.sync(this.battle.getAllies().filter((a) => a.alive).map((a) => a.id));
-    this.render();
+    this.render(time);
     if (this.battle.getResult() !== "ongoing" && !this.endOverlay) {
       this.showEndOverlay(this.battle.getResult() === "victory");
     }
@@ -152,21 +167,16 @@ export class BattleScene extends Phaser.Scene {
   // ---- Construction de l'UI ---------------------------------------------
 
   private buildTopBar(): void {
-    const bg = this.add
-      .rectangle(
-        PAUSE_BUTTON.x + PAUSE_BUTTON.w / 2,
-        PAUSE_BUTTON.y + PAUSE_BUTTON.h / 2,
-        PAUSE_BUTTON.w,
-        PAUSE_BUTTON.h,
-        COLOR.panel,
-      )
-      .setStrokeStyle(2, COLOR.panelStroke)
+    const panel = this.add.graphics();
+    drawPanel(panel, PAUSE_BUTTON, { fill: COLOR.panel, stroke: COLOR.panelStroke });
+    const hit = this.add
+      .rectangle(center(PAUSE_BUTTON).x, center(PAUSE_BUTTON).y, PAUSE_BUTTON.w, PAUSE_BUTTON.h, 0x000000, 0.001)
       .setInteractive({ useHandCursor: true });
     this.pauseLabel = addText(this, center(PAUSE_BUTTON).x, center(PAUSE_BUTTON).y, "⏸", {
       fontSize: `${FONT.banner}px`,
       color: COLOR.text,
     }).setOrigin(0.5);
-    bg.on("pointerdown", () => {
+    hit.on("pointerdown", () => {
       this.paused = !this.paused;
       this.pauseLabel.setText(this.paused ? "▶" : "⏸");
     });
@@ -177,16 +187,19 @@ export class BattleScene extends Phaser.Scene {
       fontSize: `${FONT.strong}px`,
       fontStyle: "bold",
       color: COLOR.text,
+      stroke: "#000000",
+      strokeThickness: 3,
     }).setOrigin(0.5, 0);
 
     this.bossHpBar = this.add.graphics();
-
-    this.bossRect = this.add.rectangle(GAME_W / 2, ZONES.boss.y + 76, 160, 120, 0x5a4a6a);
+    this.golem = new GolemView(this, GAME_W / 2, ZONES.boss.y + 84);
 
     this.telegraphText = addText(this, GAME_W / 2, ZONES.boss.y + 154, "", {
       fontSize: `${FONT.strong}px`,
       fontStyle: "bold",
       color: COLOR.danger,
+      stroke: "#000000",
+      strokeThickness: 4,
     }).setOrigin(0.5, 0);
   }
 
@@ -204,11 +217,14 @@ export class BattleScene extends Phaser.Scene {
 
     allies.forEach((ally, i) => {
       const rect = rects[i];
-      const { x: cx } = center(rect);
-      const bg = this.add
-        .rectangle(cx, center(rect).y, rect.w, rect.h, COLOR.panel)
-        .setStrokeStyle(2, COLOR.panelStroke)
+      const { x: cx, y: cy } = center(rect);
+      const panel = this.add.graphics();
+      const hit = this.add
+        .rectangle(cx, cy, rect.w, rect.h, 0x000000, 0.001)
         .setInteractive({ useHandCursor: true });
+      const flash = this.add.graphics().setAlpha(0);
+      flash.fillStyle(0xff4040, 0.55);
+      flash.fillRoundedRect(rect.x, rect.y, rect.w, rect.h, 12);
 
       const nameText = addText(this, cx, rect.y + 8, ally.name, {
         fontSize: `${FONT.body}px`,
@@ -220,11 +236,26 @@ export class BattleScene extends Phaser.Scene {
         color: COLOR.textMuted,
       }).setOrigin(0.5, 0);
 
-      const portrait = this.add.rectangle(cx, rect.y + 82, rect.w - 24, 52, COLOR.role[ally.role]);
-      const koText = addText(this, cx, rect.y + 82, "K.O.", {
+      // Portrait : cartouche coloré par rôle + icône propre au personnage.
+      const box = { x: rect.x + 12, y: rect.y + 56, w: rect.w - 24, h: 52 };
+      const portrait = this.add.graphics();
+      portrait.fillStyle(COLOR.role[ally.role], 1);
+      portrait.fillRoundedRect(box.x, box.y, box.w, box.h, 9);
+      portrait.fillStyle(0xffffff, 0.12);
+      portrait.fillRoundedRect(box.x + 2, box.y + 2, box.w - 4, box.h * 0.4, 7);
+      portrait.lineStyle(2, 0x000000, 0.35);
+      portrait.strokeRoundedRect(box.x, box.y, box.w, box.h, 9);
+      const icon = this.add.graphics();
+      const portraitIcon = portraitFor(ally.id, ally.role);
+      if (portraitIcon) drawPortraitIcon(icon, portraitIcon);
+      icon.setPosition(cx, box.y + box.h / 2).setScale(0.82);
+
+      const koText = addText(this, cx, box.y + box.h / 2, "K.O.", {
         fontSize: `${FONT.title}px`,
         fontStyle: "bold",
         color: COLOR.text,
+        stroke: "#000000",
+        strokeThickness: 4,
       })
         .setOrigin(0.5)
         .setVisible(false);
@@ -249,12 +280,25 @@ export class BattleScene extends Phaser.Scene {
         .setVisible(false);
 
       // Toucher un allié = le sélectionner (ou annuler la sélection).
-      bg.on("pointerdown", () => {
+      hit.on("pointerdown", () => {
         const current = this.battle.getAllies().find((a) => a.id === ally.id);
         this.selection.tap(ally.id, !!current?.alive);
       });
 
-      this.allyViews.push({ id: ally.id, rect, bg, portrait, hpBar, nameText, hpText, koText, shieldText, statusText });
+      this.allyViews.push({
+        id: ally.id,
+        rect,
+        panel,
+        portrait,
+        icon,
+        flash,
+        hpBar,
+        nameText,
+        hpText,
+        koText,
+        shieldText,
+        statusText,
+      });
     });
   }
 
@@ -268,6 +312,8 @@ export class BattleScene extends Phaser.Scene {
       fontSize: `${FONT.small}px`,
       fontStyle: "bold",
       color: COLOR.text,
+      stroke: "#000000",
+      strokeThickness: 3,
     }).setOrigin(0.5);
   }
 
@@ -276,34 +322,41 @@ export class BattleScene extends Phaser.Scene {
     SKILLS.forEach((skill, i) => {
       const rect = rects[i];
       const { x: cx, y: cy } = center(rect);
-      const bg = this.add
-        .rectangle(cx, cy, rect.w, rect.h, COLOR.panel)
-        .setStrokeStyle(2, COLOR.panelStroke)
+      const panel = this.add.graphics();
+      const hit = this.add
+        .rectangle(cx, cy, rect.w, rect.h, 0x000000, 0.001)
         .setInteractive({ useHandCursor: true });
 
-      addText(this, cx, rect.y + 12, skill.name, {
+      const icon = this.add.graphics();
+      const skillIcon = SKILL_ICON[skill.id];
+      if (skillIcon) drawSkillIcon(icon, skillIcon);
+      icon.setPosition(cx, rect.y + 30);
+
+      addText(this, cx, rect.y + 54, skill.name, {
         fontSize: `${FONT.body}px`,
         fontStyle: "bold",
         color: COLOR.text,
         align: "center",
         wordWrap: { width: rect.w - 12 },
       }).setOrigin(0.5, 0);
-      const costText = addText(this, cx, rect.y + 72, `${skill.manaCost} mana`, {
+      const costText = addText(this, cx, rect.y + 100, `${skill.manaCost} mana`, {
         fontSize: `${FONT.small}px`,
         color: COLOR.textMuted,
       }).setOrigin(0.5, 0);
-      addText(this, cx, rect.y + 94, skill.target === "all" ? "Toute l'équipe" : "1 allié", {
+      addText(this, cx, rect.y + 118, skill.target === "all" ? "Toute l'équipe" : "1 allié", {
         fontSize: `${FONT.small}px`,
         color: COLOR.textMuted,
       }).setOrigin(0.5, 0);
-      const cooldownText = addText(this, cx, rect.y + 136, "", {
+      const cooldownText = addText(this, cx, rect.y + 146, "", {
         fontSize: `${FONT.cooldown}px`,
         fontStyle: "bold",
         color: "#ff9d9d",
+        stroke: "#000000",
+        strokeThickness: 3,
       }).setOrigin(0.5);
 
-      bg.on("pointerdown", () => this.onSkillButtonTapped(skill));
-      this.skillButtons.push({ def: skill, bg, costText, cooldownText });
+      hit.on("pointerdown", () => this.onSkillButtonTapped(skill));
+      this.skillButtons.push({ def: skill, rect, panel, icon, costText, cooldownText });
     });
   }
 
@@ -325,15 +378,15 @@ export class BattleScene extends Phaser.Scene {
 
   // ---- Rendu ---------------------------------------------------------------
 
-  private render(): void {
-    this.renderBoss();
+  private render(timeMs: number): void {
+    this.renderBoss(timeMs);
     this.renderAllies();
     this.renderStrip();
     this.renderSkillBar();
     this.logText.setText(this.logLines.join("\n"));
   }
 
-  private renderBoss(): void {
+  private renderBoss(timeMs: number): void {
     const hp = this.battle.getBossHp();
     const maxHp = this.battle.getBossMaxHp();
     const phase = this.battle.getBossPhase();
@@ -344,17 +397,17 @@ export class BattleScene extends Phaser.Scene {
 
     const bar = BOSS_HP_BAR;
     this.bossHpBar.clear();
-    this.bossHpBar.fillStyle(0x000000, 0.4).fillRect(bar.x, bar.y, bar.w, bar.h);
-    this.bossHpBar.fillStyle(0xd9455f, 1).fillRect(bar.x, bar.y, bar.w * (hp / maxHp), bar.h);
+    this.bossHpBar.fillStyle(0x000000, 0.5).fillRoundedRect(bar.x, bar.y, bar.w, bar.h, 6);
+    this.bossHpBar.fillStyle(phase.index > 0 ? 0xff6a3d : 0xd9455f, 1);
+    if (hp > 0) this.bossHpBar.fillRoundedRect(bar.x, bar.y, Math.max(8, bar.w * (hp / maxHp)), bar.h, 6);
+    this.bossHpBar.lineStyle(2, 0x000000, 0.6).strokeRoundedRect(bar.x, bar.y, bar.w, bar.h, 6);
 
     const telegraph = this.battle.getTelegraph();
-    if (telegraph?.type === "bigAttack") {
-      this.telegraphText.setText(`⚠ Attaque de zone dans ${formatSeconds(telegraph.msRemaining)}`);
-      this.bossRect.setStrokeStyle(4, 0xff5b5b);
-    } else {
-      this.telegraphText.setText("");
-      this.bossRect.setStrokeStyle();
-    }
+    const bigAttack = telegraph?.type === "bigAttack";
+    this.golem.update(timeMs, phase.index, bigAttack);
+    this.telegraphText.setText(
+      bigAttack && telegraph ? `⚠ Attaque de zone dans ${formatSeconds(telegraph.msRemaining)}` : "",
+    );
   }
 
   private renderAllies(): void {
@@ -364,16 +417,25 @@ export class BattleScene extends Phaser.Scene {
       if (!ally) continue;
 
       const selected = this.selection.selected === ally.id;
-      view.bg.setStrokeStyle(selected ? 5 : 2, selected ? COLOR.selected : COLOR.panelStroke);
-      view.bg.setAlpha(ally.alive ? 1 : 0.45);
+      drawPanel(view.panel, view.rect, {
+        fill: COLOR.panel,
+        stroke: selected ? COLOR.selected : COLOR.panelStroke,
+        strokeWidth: selected ? 4 : 2,
+        glow: selected ? COLOR.selected : undefined,
+        alpha: ally.alive ? 1 : 0.5,
+      });
       view.portrait.setAlpha(ally.alive ? 1 : 0.3);
+      view.icon.setAlpha(ally.alive ? 1 : 0.25);
       view.koText.setVisible(!ally.alive);
 
       const ratio = Math.max(0, ally.hp / ally.maxHp);
       const bar = { x: view.rect.x + 12, y: view.rect.y + 112, w: view.rect.w - 24, h: 18 };
       view.hpBar.clear();
-      view.hpBar.fillStyle(0x000000, 0.5).fillRect(bar.x, bar.y, bar.w, bar.h);
-      view.hpBar.fillStyle(hpColor(ratio), 1).fillRect(bar.x, bar.y, bar.w * ratio, bar.h);
+      view.hpBar.fillStyle(0x000000, 0.55).fillRoundedRect(bar.x, bar.y, bar.w, bar.h, 5);
+      if (ratio > 0) {
+        view.hpBar.fillStyle(hpColor(ratio), 1).fillRoundedRect(bar.x, bar.y, Math.max(6, bar.w * ratio), bar.h, 5);
+        view.hpBar.fillStyle(0xffffff, 0.18).fillRoundedRect(bar.x, bar.y, Math.max(6, bar.w * ratio), 6, 3);
+      }
 
       view.hpText.setText(ally.alive ? formatRatio(ally.hp, ally.maxHp) : "");
       view.shieldText.setText(ally.shield > 0 ? `Bouclier ${formatNumber(ally.shield)}` : "");
@@ -404,8 +466,11 @@ export class BattleScene extends Phaser.Scene {
     const maxMana = healer?.maxMana ?? 1;
     const mana = healer?.mana ?? 0;
     this.manaBar.clear();
-    this.manaBar.fillStyle(0x000000, 0.5).fillRect(bar.x, bar.y, bar.w, bar.h);
-    this.manaBar.fillStyle(COLOR.mana, 1).fillRect(bar.x, bar.y, bar.w * (mana / maxMana), bar.h);
+    this.manaBar.fillStyle(0x000000, 0.55).fillRoundedRect(bar.x, bar.y, bar.w, bar.h, 8);
+    if (mana > 0) {
+      this.manaBar.fillStyle(COLOR.mana, 1).fillRoundedRect(bar.x, bar.y, Math.max(10, bar.w * (mana / maxMana)), bar.h, 8);
+      this.manaBar.fillStyle(0xffffff, 0.2).fillRoundedRect(bar.x, bar.y, Math.max(10, bar.w * (mana / maxMana)), 8, 4);
+    }
     this.manaText.setText(`Mana ${formatRatio(mana, maxMana)}`);
   }
 
@@ -416,7 +481,13 @@ export class BattleScene extends Phaser.Scene {
       const cooldownMs = this.battle.getCooldownRemaining(HEALER_ID, button.def.id);
       const enoughMana = (healer?.mana ?? 0) >= button.def.manaCost;
 
-      button.bg.setAlpha(usable ? 1 : 0.55);
+      drawPanel(button.panel, button.rect, {
+        fill: usable ? 0x30344a : 0x1e2030,
+        stroke: usable ? 0x8a90b4 : COLOR.panelStroke,
+        strokeWidth: usable ? 3 : 2,
+        alpha: usable ? 1 : 0.75,
+      });
+      button.icon.setAlpha(usable ? 1 : 0.4);
       button.costText.setColor(enoughMana ? COLOR.textMuted : COLOR.damage);
       button.cooldownText.setText(cooldownMs > 0 ? formatSeconds(cooldownMs) : "");
     }
@@ -427,6 +498,13 @@ export class BattleScene extends Phaser.Scene {
   private allyPosition(unitId: string): { x: number; y: number } {
     const view = this.allyViews.find((v) => v.id === unitId);
     return view ? { x: center(view.rect).x, y: view.rect.y + 60 } : { x: GAME_W / 2, y: ZONES.team.y };
+  }
+
+  private flashAlly(unitId: string): void {
+    const view = this.allyViews.find((v) => v.id === unitId);
+    if (!view) return;
+    view.flash.setAlpha(1);
+    this.tweens.add({ targets: view.flash, alpha: 0, duration: 260, ease: "Quad.easeOut" });
   }
 
   private allyName(unitId: string): string {
@@ -444,36 +522,49 @@ export class BattleScene extends Phaser.Scene {
         if (event.amount > 0) {
           const { x, y } = this.allyPosition(event.unitId);
           this.floating.spawn(x, y, `+${formatNumber(event.amount)}`, { color: COLOR.heal });
+          this.effects.healBurst(x, y + 24);
         }
         break;
       case "shielded": {
         const { x, y } = this.allyPosition(event.unitId);
         this.floating.spawn(x, y, `+${formatNumber(event.amount)}`, { color: COLOR.shield });
+        this.effects.shieldBurst(x, y + 24);
         break;
       }
       case "unitDamaged": {
         const { x, y } = this.allyPosition(event.unitId);
-        if (event.amount > 0) this.floating.spawn(x, y, `-${formatNumber(event.amount)}`, { color: COLOR.damage });
-        else this.floating.spawn(x, y, "Absorbé", { color: COLOR.shield });
+        if (event.amount > 0) {
+          this.floating.spawn(x, y, `-${formatNumber(event.amount)}`, { color: COLOR.damage });
+          this.flashAlly(event.unitId);
+          this.effects.impactBurst(x, y + 24);
+        } else {
+          this.floating.spawn(x, y, "Absorbé", { color: COLOR.shield });
+        }
         break;
       }
       case "effectTick": {
         const { x, y } = this.allyPosition(event.unitId);
-        if (event.amount > 0) this.floating.spawn(x, y, `-${formatNumber(event.amount)}`, { color: COLOR.poison });
+        if (event.amount > 0) {
+          this.floating.spawn(x, y, `-${formatNumber(event.amount)}`, { color: COLOR.poison });
+          this.effects.poisonBurst(x, y + 24, 3);
+        }
         break;
       }
       case "effectApplied": {
         const { x, y } = this.allyPosition(event.unitId);
         this.floating.spawn(x, y - 20, "Empoisonné !", { color: COLOR.poison });
+        this.effects.poisonBurst(x, y + 24, 10);
         break;
       }
       case "effectEnded":
         if (event.reason === "cleansed") {
           const { x, y } = this.allyPosition(event.unitId);
           this.floating.spawn(x, y - 20, "Purgé", { color: COLOR.heal });
+          this.effects.purgeBurst(x, y + 24);
         }
         break;
       case "bossDamaged":
+        this.golem.hit();
         this.floating.spawn(GAME_W / 2 + this.bossHitOffset(event.sourceId), ZONES.boss.y + 40, formatNumber(event.amount), {
           color: COLOR.boss,
           sizePx: FONT.small,
@@ -488,6 +579,8 @@ export class BattleScene extends Phaser.Scene {
       }
       case "bossAction":
         this.pushLog(event.timeMs, `Le boss : ${BOSS_ACTION_LABEL[event.action] ?? event.action}`);
+        this.golem.strike(event.action === "bigAttack");
+        if (event.action === "bigAttack") this.cameras.main.shake(240, 0.006);
         break;
       case "unitDied":
         this.pushLog(event.timeMs, `${this.allyName(event.unitId)} est K.O.`);
@@ -495,6 +588,7 @@ export class BattleScene extends Phaser.Scene {
       case "bossPhaseChanged":
         this.pushLog(event.timeMs, `Le boss passe en phase « ${event.name} »`);
         this.showPhaseBanner(`Phase ${event.phase + 1} — ${event.name} !`);
+        this.cameras.main.shake(420, 0.008);
         break;
       default:
         break;
@@ -519,10 +613,14 @@ export class BattleScene extends Phaser.Scene {
       fontSize: "36px",
       fontStyle: "bold",
       color: victory ? "#7CFFB2" : "#FF7C7C",
+      stroke: "#000000",
+      strokeThickness: 5,
     }).setOrigin(0.5);
-    const retryBg = this.add
-      .rectangle(GAME_W / 2, GAME_H / 2 + 30, 240, 56, 0x333652)
-      .setStrokeStyle(2, COLOR.panelStroke)
+    const retryPanel = this.add.graphics();
+    const retryRect: Rect = { x: GAME_W / 2 - 120, y: GAME_H / 2 + 2, w: 240, h: 56 };
+    drawPanel(retryPanel, retryRect, { fill: 0x333652, stroke: 0x8a90b4, strokeWidth: 3 });
+    const retryHit = this.add
+      .rectangle(GAME_W / 2, GAME_H / 2 + 30, retryRect.w, retryRect.h, 0x000000, 0.001)
       .setInteractive({ useHandCursor: true })
       .on("pointerdown", () => this.scene.restart());
     const retryLabel = addText(this, GAME_W / 2, GAME_H / 2 + 30, "Recommencer", {
@@ -530,7 +628,7 @@ export class BattleScene extends Phaser.Scene {
       color: COLOR.text,
     }).setOrigin(0.5);
 
-    container.add([bg, title, retryBg, retryLabel]);
+    container.add([bg, title, retryPanel, retryHit, retryLabel]);
     this.endOverlay = container;
   }
 }

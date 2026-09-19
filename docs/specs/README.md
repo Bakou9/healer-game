@@ -88,9 +88,9 @@ nécessaire au lancement · **P3** plus tard. Phases : voir `VISION.md` §15.
 | [E10](epics/E10-persistence-backend/README.md) | Persistance et backend | 9 | 0/9 |
 | [E11](epics/E11-platforms-release/README.md) | Plateformes et publication | 6 | 0/6 |
 | [E12](epics/E12-art-audio/README.md) | Direction artistique et audio | 5 | 0/5 |
-| [E13](epics/E13-quality-governance/README.md) | Qualité, outillage et gouvernance | 9 | 3/9 |
+| [E13](epics/E13-quality-governance/README.md) | Qualité, outillage et gouvernance | 9 | 4/9 |
 
-Total : 124 tickets, 18/124 terminés.
+Total : 124 tickets, 19/124 terminés.
 
 ### Tous les tickets
 
@@ -206,18 +206,18 @@ Total : 124 tickets, 18/124 terminés.
 | [E11-T04](epics/E11-platforms-release/E11-T04-publication-google-play-test-ferme-puis-producti.md) | Publication Google Play (test fermé puis production) | P2 | 4 | À faire |
 | [E11-T05](epics/E11-platforms-release/E11-T05-localisation-fr-en.md) | Localisation FR/EN | P2 | 4 | À faire |
 | [E11-T06](epics/E11-platforms-release/E11-T06-controles-clavier-et-manette-steam.md) | Contrôles clavier et manette (Steam) | P3 | 5 | À faire |
-| [E12-T01](epics/E12-art-audio/E12-T01-direction-artistique-et-kit-d-ui.md) | Direction artistique et kit d'UI | P1 | 3 | À faire |
+| [E12-T01](epics/E12-art-audio/E12-T01-direction-artistique-et-kit-d-ui.md) | Direction artistique et kit d'UI | P1 | 3 | En cours |
 | [E12-T02](epics/E12-art-audio/E12-T02-portraits-et-sprites-des-personnages-et-des-boss.md) | Portraits et sprites des personnages et des boss | P2 | 3 | À faire |
-| [E12-T03](epics/E12-art-audio/E12-T03-effets-visuels-soins-boucliers-poison-telegraphe.md) | Effets visuels : soins, boucliers, poison, télégraphes | P2 | 3 | À faire |
+| [E12-T03](epics/E12-art-audio/E12-T03-effets-visuels-soins-boucliers-poison-telegraphe.md) | Effets visuels : soins, boucliers, poison, télégraphes | P2 | 3 | En cours |
 | [E12-T04](epics/E12-art-audio/E12-T04-audio-effets-musique-mixage.md) | Audio : effets, musique, mixage | P2 | 3 | À faire |
 | [E12-T05](epics/E12-art-audio/E12-T05-animations-et-juice-sans-nuire-a-la-lisibilite.md) | Animations et « juice » sans nuire à la lisibilité | P3 | 4 | À faire |
 | [E13-T01](epics/E13-quality-governance/E13-T01-filet-de-non-regression-golden-equilibrage-donne.md) | Filet de non-régression : golden, équilibrage, données, architecture | P0 | 1 | Terminé |
 | [E13-T02](epics/E13-quality-governance/E13-T02-journal-des-decisions-persistant-et-regle-de-mis.md) | Journal des décisions persistant et règle de mise à jour | P0 | 2 | Terminé |
 | [E13-T03](epics/E13-quality-governance/E13-T03-cadre-de-specifications-epics-tickets-valide-aut.md) | Cadre de spécifications (epics/tickets) validé automatiquement | P0 | 2 | Terminé |
-| [E13-T04](epics/E13-quality-governance/E13-T04-depot-git-et-github.md) | Dépôt git et GitHub | P0 | 1 | En cours |
+| [E13-T04](epics/E13-quality-governance/E13-T04-depot-git-et-github.md) | Dépôt git et GitHub | P0 | 1 | Terminé |
 | [E13-T05](epics/E13-quality-governance/E13-T05-banc-de-test-navigateur-pilotage-et-pas-de-temps.md) | Banc de test navigateur (pilotage et pas de temps contrôlé) | P1 | 2 | À faire |
 | [E13-T06](epics/E13-quality-governance/E13-T06-couverture-de-code-et-tests-de-mutation-sur-la-s.md) | Couverture de code et tests de mutation sur la simulation | P2 | 3 | À faire |
 | [E13-T07](epics/E13-quality-governance/E13-T07-visionneuse-de-replay-et-surcouche-de-debogage.md) | Visionneuse de replay et surcouche de débogage | P2 | 3 | À faire |
 | [E13-T08](epics/E13-quality-governance/E13-T08-conventions-de-branches-pr-et-revue.md) | Conventions de branches, PR et revue | P1 | 2 | À faire |
-| [E13-T09](epics/E13-quality-governance/E13-T09-integration-continue-workflow-github-actions.md) | Intégration continue (workflow GitHub Actions) | P0 | 2 | À faire |
+| [E13-T09](epics/E13-quality-governance/E13-T09-integration-continue-workflow-github-actions.md) | Intégration continue (workflow GitHub Actions) | P0 | 2 | En cours |
 <!-- TICKETS:END -->

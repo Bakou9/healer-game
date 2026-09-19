@@ -125,3 +125,19 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - Constat : le serveur de développement lancé comme tâche suivie gardait la session « occupée » pendant des dizaines de minutes ; l'utilisateur ne pouvait pas envoyer de nouvelle demande.
 - Décision : le serveur est lancé détaché de la session ; aucune tâche suivie ne reste active à la fin d'un tour.
 - Tickets : E13-T05
+
+### D-022 — Dépôt GitHub en ligne
+- Date : 2026-09-19 · Statut : Ferme (remplace la partie « en attente » de D-008)
+- Décision : le projet est poussé sur https://github.com/Bakou9/healer-game (branche `main`) ; une intégration continue exécute `npm run check` à chaque envoi.
+- Tickets : E13-T04, E13-T09
+
+### D-023 — Direction artistique déléguée à l'agent
+- Date : 2026-09-19 · Statut : Ferme (provisoire, à valider après le test de jeu)
+- Décision : l'utilisateur laisse l'agent choisir des « graphismes sympas et adaptés ». Style retenu : fantasy stylisée en formes vectorielles dessinées en code (aucun fichier d'image), fond sombre avec lueurs, langage visuel par couleur (soin vert, bouclier bleu, poison violet, danger rouge, phase 2 orange), coins arrondis, Golem de pierre au cœur lumineux, icônes par rôle et par sort, particules pour soins, boucliers, poisons et impacts.
+- Pourquoi : lisible, léger pour mobile, modifiable en code, sans dépendance à des ressources graphiques.
+- Tickets : E12-T01, E12-T03
+
+### D-024 — Ordre de travail : test de jeu d'abord
+- Date : 2026-09-19 · Statut : Ferme
+- Décision : on commence par le point 1 de la revue de mon travail : un vrai test de jeu de l'utilisateur, avec des graphismes soignés, avant d'élaguer les specs, d'ajouter des tests visuels et de refactorer.
+- Tickets : E04-T14, E13-T05, E08-T15, E01-T08

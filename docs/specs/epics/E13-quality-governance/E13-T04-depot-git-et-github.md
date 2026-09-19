@@ -5,7 +5,7 @@ titre: Dépôt git et GitHub
 type: Tech
 priorité: P0
 phase: 1
-statut: En cours
+statut: Terminé
 taille: S
 dépendances: aucune
 ---
@@ -16,9 +16,9 @@ dépendances: aucune
 Historique et sauvegarde du projet ; permet de voir précisément ce qui change dans les références.
 
 ## Critères d'acceptation
-- [x] Dépôt git local initialisé, premiers commits
-- [ ] Dépôt GitHub privé créé
-- [ ] Branche principale poussée
+- [x] Dépôt git local initialisé, commits réguliers
+- [x] Dépôt GitHub créé par l'utilisateur (https://github.com/Bakou9/healer-game)
+- [x] Branche principale poussée (`main` suit `origin/main`)
 
 ## Tests automatiques exigés
 Aucun.

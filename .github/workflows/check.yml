@@ -1,0 +1,20 @@
+name: check
+
+# Filet de sécurité du projet : types, tests (dont non-régression et équilibrage) et build,
+# à chaque envoi sur la branche principale et à chaque demande de fusion.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run check
