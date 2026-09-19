@@ -32,6 +32,7 @@ namespace Healer.Client
             gameObject.AddComponent<BattleStage>().Build(cam, controller);
             var hud = gameObject.AddComponent<BattleHud>();
             hud.Init(controller);
+            gameObject.AddComponent<BattleAudio>().Init(controller);
 
             string[] args = Environment.GetCommandLineArgs();
             string Arg(string name) { int i = Array.IndexOf(args, name); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }

@@ -5,7 +5,7 @@ titre: Télégraphes lisibles
 type: Feature
 priorité: P0
 phase: 2
-statut: À faire
+statut: En cours
 taille: M
 dépendances: E03-T01
 ---
@@ -16,9 +16,9 @@ dépendances: E03-T01
 Le danger doit être perceptible sans lire un texte.
 
 ## Critères d'acceptation
-- [ ] Jauge de compte à rebours + icône + flash de bord d'écran
+- [ ] Jauge de compte à rebours + icône + flash de bord d'écran — **Unity : jauge et liseré rouge pulsé réalisés, icône restante** (durée totale du télégraphe exposée par le cœur, `Telegraph.TotalMs`)
 - [ ] Cible/zone annoncée
-- [ ] Doublé par un signal non visuel (accessibilité)
+- [x] Doublé par un signal non visuel (accessibilité) — bip d'alerte au début du télégraphe et grondement à l'impact (`SoundKit`)
 
 ## Tests automatiques exigés
 Captures ; test du minuteur affiché.

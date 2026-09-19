@@ -5,7 +5,7 @@ titre: Écran de bilan de combat
 type: Feature
 priorité: P1
 phase: 2
-statut: À faire
+statut: En cours
 taille: M
 dépendances: E01-T13
 ---
@@ -16,7 +16,7 @@ dépendances: E01-T13
 Le joueur doit comprendre pourquoi il a gagné ou perdu et s'améliorer.
 
 ## Critères d'acceptation
-- [ ] Soins effectifs, surplus, morts, moments clés
+- [ ] Soins effectifs, surplus, morts, moments clés — **Unity : durée, soins effectifs, dégâts encaissés et absorbés, sorts lancés, K.O., poisons purgés ; surplus et moments clés restants**
 - [ ] Bouton rejouer avec le même build ou en changer
 - [ ] Récompenses (E06-T06)
 

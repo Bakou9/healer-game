@@ -216,3 +216,8 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - Date : 2026-09-19 · Statut : Ferme
 - Décision : `tools/unity-cycle.ps1` (construit l'exécutable, le lance en mode capture avec le bot de référence, écrit des captures d'écran) et `tools/unity-clicktest.ps1` (clique réellement dans la fenêtre du jeu et vérifie les gestes par le journal du joueur) sont les vérifications visuelles et d'interaction du jeu Unity, en attendant des tests EditMode (le Test Framework vient du registre, donc bloqué par Defender).
 - Tickets : E14-T11, E14-T12, E13-T05
+
+### D-038 — Statistiques de combat dans le cœur, sons générés par code
+- Date : 2026-09-19 · Statut : Ferme
+- Décision : les statistiques de combat (`CombatStats`) vivent dans le cœur et sont calculées uniquement à partir des événements (testées : égalité avec la somme des événements) ; le télégraphe expose sa durée totale (`TotalMs`) pour les jauges ; les sons sont générés par code (`SoundKit`) faute de fichiers audio, avec la touche M pour couper le son.
+- Tickets : E01-T13, E04-T07, E04-T09, E04-T11

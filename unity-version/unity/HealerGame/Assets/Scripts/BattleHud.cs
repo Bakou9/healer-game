@@ -40,6 +40,7 @@ namespace Healer.Client
                 _label = new GUIStyle(GUI.skin.label) { wordWrap = false, clipping = TextClipping.Overflow };
             }
             ScreenMap.Refresh();
+            DrawDangerVignette();
             var previous = GUI.matrix;
             GUI.matrix = Matrix4x4.TRS(new Vector3(ScreenMap.OffsetX, ScreenMap.OffsetY, 0), Quaternion.identity, new Vector3(ScreenMap.Scale, ScreenMap.Scale, 1));
             DrawBoss();
@@ -71,6 +72,17 @@ namespace Healer.Client
 
         private static bool Hit(Rect r) => GUI.Button(r, GUIContent.none, GUIStyle.none);
 
+        private void DrawDangerVignette()
+        {
+            var tele = _ctl.Battle.GetTelegraph();
+            if (tele == null || tele.Type != "bigAttack") return;
+            float pulse = 0.55f + 0.45f * Mathf.Sin(Time.unscaledTime * 14f);
+            float urgency = 1f - Mathf.Clamp01((float)(tele.MsRemaining / Mathf.Max(1f, (float)tele.TotalMs)));
+            var c = new Color(Palette.Danger.r, Palette.Danger.g, Palette.Danger.b, (0.25f + 0.55f * urgency) * pulse);
+            float w = 10f + 8f * urgency;
+            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, c, new Vector4(w, w, w, w), Vector4.zero);
+        }
+
         // ---- Boss --------------------------------------------------------------------------------
 
         private void DrawBoss()
@@ -94,7 +106,12 @@ namespace Healer.Client
             var tele = b.GetTelegraph();
             var line = new Rect(0, (float)Layout.Zones.Boss.Y + 2, (float)Layout.GameW, 26);
             if (tele != null && tele.Type == "bigAttack")
+            {
                 Text(line, $"ATTAQUE DE ZONE dans {Format.Seconds(tele.MsRemaining)}", Layout.Font.Strong, Palette.Danger, TextAnchor.MiddleCenter, true);
+                var gauge = new Rect((float)Layout.GameW / 2 - 130, line.y + 30, 260, 10);
+                Fill(gauge, new Color(0, 0, 0, 0.6f), 5);
+                Fill(new Rect(gauge.x, gauge.y, Mathf.Max(6f, gauge.width * (float)(tele.MsRemaining / System.Math.Max(1.0, tele.TotalMs))), gauge.height), Palette.Danger, 5);
+            }
             else if (!string.IsNullOrEmpty(_ctl.LastAction))
                 Text(line, _ctl.LastAction, Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
         }
@@ -132,6 +149,7 @@ namespace Healer.Client
                     Fill(pill, Palette.Hex("5B2F86"), 8);
                     Text(pill, $"{e.Name} {Format.Seconds(e.MsRemaining)}", Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, true);
                 }
+                if (!_ctl.HasCast && _ctl.Selection.Selected == null && a.Alive && a.Id == GuideAllyId(allies)) Guide(r, "1");
                 if (Hit(r)) _ctl.TapAlly(a.Id);
             }
         }
@@ -178,8 +196,23 @@ namespace Healer.Client
                 Text(new Rect(r.x, r.y + 92, r.width, 20), $"{Format.Number(s.ManaCost)} mana", Layout.Font.Small, enoughMana ? Muted : Palette.Damage, TextAnchor.MiddleCenter);
                 Text(new Rect(r.x, r.y + 112, r.width, 20), s.Target == "all" ? "Toute l'équipe" : "1 allié", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
                 if (cd > 0) Text(new Rect(r.x, r.y + 134, r.width, 28), Format.Seconds(cd), Layout.Font.Cooldown, Palette.Hex("FF9D9D"), TextAnchor.MiddleCenter, true);
+                if (!_ctl.HasCast && _ctl.Selection.Selected != null && s.Id == "heal_single") Guide(r, "2");
                 if (Hit(r)) _ctl.TapSkill(s);
             }
+        }
+
+        /// <summary>Allié à soigner en premier pour le guidage : le plus abîmé, le tank à égalité.</summary>
+        private static string GuideAllyId(System.Collections.Generic.List<UnitState> allies) =>
+            allies.Where(a => a.Alive && a.Role != "healer").OrderBy(a => a.Hp / a.MaxHp).ThenBy(a => a.Role == "tank" ? 0 : 1).First().Id;
+
+        private void Guide(Rect r, string number)
+        {
+            float pulse = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 5f);
+            var ring = new Rect(r.x - 4 - pulse * 3, r.y - 4 - pulse * 3, r.width + 8 + pulse * 6, r.height + 8 + pulse * 6);
+            Outline(ring, new Color(Selected.r, Selected.g, Selected.b, 0.55f + 0.4f * pulse), 4, 14);
+            var badge = new Rect(r.xMax - 26, r.y - 12, 34, 34);
+            Fill(badge, Selected, 17);
+            Text(badge, number, Layout.Font.Title, Palette.Hex("1C1A36"), TextAnchor.MiddleCenter, true);
         }
 
         // ---- Fin de combat -----------------------------------------------------------------------
@@ -193,10 +226,31 @@ namespace Healer.Client
                 return;
             }
             var full = new Rect(-2000, -2000, 5000, 5000);
-            Fill(full, new Color(0, 0, 0, 0.72f), 0);
+            Fill(full, new Color(0, 0, 0, 0.78f), 0);
             bool win = result == BattleResults.Victory;
-            Text(new Rect(0, (float)Layout.GameH / 2 - 80, (float)Layout.GameW, 50), win ? "Victoire !" : "Défaite…", 40, win ? Palette.Heal : Palette.Damage, TextAnchor.MiddleCenter, true);
-            var btn = new Rect((float)Layout.GameW / 2 - 120, (float)Layout.GameH / 2, 240, 56);
+            float w = (float)Layout.GameW;
+            Text(new Rect(0, 150, w, 54), win ? "Victoire !" : "Défaite…", 44, win ? Palette.Heal : Palette.Damage, TextAnchor.MiddleCenter, true);
+
+            var s = _ctl.Stats;
+            var panel = new Rect(40, 224, w - 80, 236);
+            Fill(panel, new Color(Panel.r, Panel.g, Panel.b, 0.96f), 14);
+            Outline(panel, PanelStroke, 2, 14);
+            string[] labels = { "Durée du combat", "Soins effectifs", "Dégâts encaissés", "dont absorbés par boucliers", "Sorts lancés", "Alliés K.O.", "Poisons purgés" };
+            string[] values =
+            {
+                Format.Seconds(s.DurationMs), Format.Number(s.HealingDone), Format.Number(s.DamageTaken),
+                Format.Number(s.DamageAbsorbed), s.Casts.ToString(), s.Deaths.ToString(), s.Purges.ToString(),
+            };
+            for (int i = 0; i < labels.Length; i++)
+            {
+                var row = new Rect(panel.x + 20, panel.y + 12 + i * 31, panel.width - 40, 28);
+                Text(row, labels[i], Layout.Font.Body, i == 3 ? Muted : Color.white, TextAnchor.MiddleLeft);
+                Text(row, values[i], Layout.Font.Body, i == 5 && s.Deaths > 0 ? Palette.Damage : Palette.Heal, TextAnchor.MiddleRight, true);
+            }
+            if (!win)
+                Text(new Rect(40, 470, w - 80, 60), "Astuce : posez un Bouclier pendant l'annonce de l'attaque de zone,\net Purgez le poison en phase 2.", Layout.Font.Small, Muted, TextAnchor.UpperCenter);
+
+            var btn = new Rect(w / 2 - 120, 560, 240, 56);
             Fill(btn, Palette.Hex("333652"), 12);
             Outline(btn, Palette.Hex("8A90B4"), 3, 12);
             Text(btn, "Recommencer", Layout.Font.Title, Color.white, TextAnchor.MiddleCenter, true);

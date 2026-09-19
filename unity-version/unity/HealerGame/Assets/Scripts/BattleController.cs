@@ -40,6 +40,12 @@ namespace Healer.Client
         public bool HintActive => _battle != null && _battle.GetClock() < _hintUntilMs;
         public string LastAction { get; private set; } = "";
 
+        /// <summary>Statistiques du combat en cours (calculées par le cœur à partir des événements).</summary>
+        public CombatStats Stats { get; private set; } = new CombatStats();
+
+        /// <summary>Vrai dès que le joueur a lancé un sort : arrête le guidage du premier geste.</summary>
+        public bool HasCast { get; private set; }
+
         public event Action<BattleEvent>? EventEmitted;
         public event Action? Restarted;
 
@@ -53,6 +59,8 @@ namespace Healer.Client
         {
             _unsubscribe?.Invoke();
             _battle = new Battle(_content.CreateEncounter(seed));
+            Stats = new CombatStats();
+            Stats.Attach(_battle);
             _stepper = new FixedStepper();
             _selection.Clear();
             _hintUntilMs = 0;
@@ -110,6 +118,7 @@ namespace Healer.Client
                     _hintUntilMs = _battle.GetClock() + HintDurationMs;
                     break;
                 case CastKind.Cast:
+                    HasCast = true;
                     _battle.IssueCommand(new Command { TimeMs = _battle.GetClock(), SkillId = skill.Id, TargetId = resolution.TargetId });
                     break;
             }
@@ -125,6 +134,7 @@ namespace Healer.Client
             switch (e.Type)
             {
                 case "skillUsed":
+                    HasCast = true;
                     var skill = _content.Skills.FirstOrDefault(s => s.Id == e.SkillId);
                     string targets = e.TargetIds.Count > 1 ? "toute l'équipe" : AllyName(e.TargetIds.FirstOrDefault() ?? e.CasterId);
                     LastAction = $"{time}  {skill?.Name ?? e.SkillId} → {targets}";

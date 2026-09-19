@@ -166,7 +166,7 @@ namespace Healer.Combat
             if (action.TelegraphMs == 0) return null;
             double msUntilTick = _boss.NextTickAt - _clock;
             if (msUntilTick <= action.TelegraphMs)
-                return new Telegraph { Type = action.Type, MsRemaining = Math.Max(0, msUntilTick) };
+                return new Telegraph { Type = action.Type, MsRemaining = Math.Max(0, msUntilTick), TotalMs = action.TelegraphMs };
             return null;
         }
 

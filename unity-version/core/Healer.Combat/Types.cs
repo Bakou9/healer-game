@@ -126,6 +126,8 @@ namespace Healer.Combat
     {
         public string Type { get; set; } = "";
         public double MsRemaining { get; set; }
+        /// <summary>Durée totale du télégraphe (pour une jauge qui se vide : MsRemaining / TotalMs).</summary>
+        public double TotalMs { get; set; }
     }
 
     public static class BattleResults

@@ -109,7 +109,7 @@ Total : 142 tickets, 11/142 terminés.
 | [E01-T10](epics/E01-combat-core/E01-T10-ciblage-du-boss-menace-focus-du-plus-faible-alea.md) | Ciblage du boss : menace, focus du plus faible, aléatoire pondéré | P1 | 2 | À faire |
 | [E01-T11](epics/E01-combat-core/E01-T11-coups-critiques-et-variance-maitrisee.md) | Coups critiques et variance maîtrisée | P2 | 2 | À faire |
 | [E01-T12](epics/E01-combat-core/E01-T12-serialisation-et-replay-d-un-combat-seed-command.md) | Sérialisation et replay d'un combat (seed + commandes) | P1 | 2 | À faire |
-| [E01-T13](epics/E01-combat-core/E01-T13-statistiques-de-combat-soins-effectifs-surplus-d.md) | Statistiques de combat (soins effectifs, surplus, dégâts évités) | P1 | 2 | À faire |
+| [E01-T13](epics/E01-combat-core/E01-T13-statistiques-de-combat-soins-effectifs-surplus-d.md) | Statistiques de combat (soins effectifs, surplus, dégâts évités) | P1 | 2 | En cours |
 | [E02-T01](epics/E02-healer-specialisation/E02-T01-modele-de-donnees-des-specialisations-et-talents.md) | Modèle de données des spécialisations et talents (schéma) | P0 | 2 | À faire |
 | [E02-T02](epics/E02-healer-specialisation/E02-T02-trois-voies-de-specialisation-lumiere-egide-puri.md) | Trois voies de spécialisation : Lumière, Égide, Purification | P0 | 2 | À faire |
 | [E02-T03](epics/E02-healer-specialisation/E02-T03-points-de-talent-paliers-prerequis-et-reinitiali.md) | Points de talent, paliers, prérequis et réinitialisation (respec) | P1 | 2 | À faire |
@@ -135,11 +135,11 @@ Total : 142 tickets, 11/142 terminés.
 | [E04-T04](epics/E04-ux-ui/E04-T04-ciblage-en-un-geste-selection-puis-sorts-ou-tap.md) | Ciblage en un geste (sélection persistante puis sorts) | P0 | 2 | À faire |
 | [E04-T05](epics/E04-ux-ui/E04-T05-cartes-d-allies-lisibles.md) | Cartes d'alliés lisibles | P0 | 2 | À faire |
 | [E04-T06](epics/E04-ux-ui/E04-T06-barre-de-sorts-recharge-radiale-cout-de-mana-eta.md) | Barre de sorts : recharge radiale, coût de mana, états, raccourcis clavier | P1 | 2 | À faire |
-| [E04-T07](epics/E04-ux-ui/E04-T07-telegraphes-lisibles.md) | Télégraphes lisibles | P0 | 2 | À faire |
+| [E04-T07](epics/E04-ux-ui/E04-T07-telegraphes-lisibles.md) | Télégraphes lisibles | P0 | 2 | En cours |
 | [E04-T08](epics/E04-ux-ui/E04-T08-retours-visuels-maitrises-agregation-et-plafond.md) | Retours visuels maîtrisés (agrégation et plafond, flash, secousse, haptique) | P1 | 2 | À faire |
-| [E04-T09](epics/E04-ux-ui/E04-T09-ecran-de-bilan-de-combat.md) | Écran de bilan de combat | P1 | 2 | À faire |
+| [E04-T09](epics/E04-ux-ui/E04-T09-ecran-de-bilan-de-combat.md) | Écran de bilan de combat | P1 | 2 | En cours |
 | [E04-T10](epics/E04-ux-ui/E04-T10-menu-principal-choix-du-combat-pause-et-reglages.md) | Menu principal, choix du combat, pause et réglages | P1 | 2 | À faire |
-| [E04-T11](epics/E04-ux-ui/E04-T11-tutoriel-et-introduction-progressive-des-sorts.md) | Tutoriel et introduction progressive des sorts | P1 | 2 | À faire |
+| [E04-T11](epics/E04-ux-ui/E04-T11-tutoriel-et-introduction-progressive-des-sorts.md) | Tutoriel et introduction progressive des sorts | P1 | 2 | En cours |
 | [E04-T12](epics/E04-ux-ui/E04-T12-accessibilite-daltonisme-taille-du-texte-contras.md) | Accessibilité (daltonisme, taille du texte, contraste, gaucher, animations réduites) | P1 | 3 | À faire |
 | [E04-T13](epics/E04-ux-ui/E04-T13-tests-visuels-automatises-captures-deterministes.md) | Tests visuels automatisés (captures déterministes) | P1 | 2 | À faire |
 | [E04-T14](epics/E04-ux-ui/E04-T14-protocole-de-playtest-et-metriques-ux.md) | Protocole de playtest et métriques UX | P2 | 3 | À faire |

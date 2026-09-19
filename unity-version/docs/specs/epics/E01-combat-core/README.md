@@ -35,5 +35,5 @@ Rendu (E04), contenu de boss (E03), spécialisation (E02).
 | [E01-T10](E01-T10-ciblage-du-boss-menace-focus-du-plus-faible-alea.md) | Ciblage du boss : menace, focus du plus faible, aléatoire pondéré | Feature | P1 | 2 | À faire | E01-T06 |
 | [E01-T11](E01-T11-coups-critiques-et-variance-maitrisee.md) | Coups critiques et variance maîtrisée | Feature | P2 | 2 | À faire | E01-T01 |
 | [E01-T12](E01-T12-serialisation-et-replay-d-un-combat-seed-command.md) | Sérialisation et replay d'un combat (seed + commandes) | Tech | P1 | 2 | À faire | E01-T04 |
-| [E01-T13](E01-T13-statistiques-de-combat-soins-effectifs-surplus-d.md) | Statistiques de combat (soins effectifs, surplus, dégâts évités) | Feature | P1 | 2 | À faire | E01-T03 |
+| [E01-T13](E01-T13-statistiques-de-combat-soins-effectifs-surplus-d.md) | Statistiques de combat (soins effectifs, surplus, dégâts évités) | Feature | P1 | 2 | En cours | E01-T03 |
 <!-- TICKETS:END -->
