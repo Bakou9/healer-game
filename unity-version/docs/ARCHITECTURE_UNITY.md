@@ -23,7 +23,7 @@ intégralement**, sans dépendre d'un Éditeur Unity lancé.
 ## Structure du dépôt
 
 ```
-healer-game-unity/
+healer-game/unity-version/   (sous-dossier du dépôt unique ; le reste du dépôt = version Phaser)
   CLAUDE.md                règles de travail (préambule systématique inclus)
   docs/                    specs, décisions, équilibrage, UX, patterns, architecture…
   core/                    tout ce qui est indépendant d'Unity

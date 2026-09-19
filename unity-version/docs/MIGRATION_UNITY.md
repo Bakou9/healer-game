@@ -1,8 +1,10 @@
 # Migration Phaser → Unity : table de correspondance
 
-La version **Phaser** reste intacte et consultable :
-- dossier local : `%USERPROFILE%\Documents\healer-game` (**ne jamais le modifier ni le supprimer**)
-- dépôt : https://github.com/Bakou9/healer-game (dernier état repris : `91d7beb`)
+La version **Phaser** reste intacte et consultable : c'est **le reste du dépôt unique**
+https://github.com/Bakou9/healer-game (racine, `src/`, `docs/`…), dont la version Unity
+est un sous-dossier (`unity-version/`, décision D-033). Dernier état de Phaser repris : `91d7beb`.
+**Ne jamais modifier ni supprimer la version Phaser.** Les chemins Phaser ci-dessous sont
+relatifs à la **racine du dépôt** (`..` depuis `unity-version/`).
 
 Les documents de ce dépôt ont été repris tels quels ; beaucoup citent encore des
 chemins et des commandes de la version Phaser. **Règle** : quand un document

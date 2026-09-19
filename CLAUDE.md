@@ -1,5 +1,9 @@
 # Instructions pour un agent travaillant sur ce projet
 
+> **Sous-projet Unity :** la version Unity + MCP du jeu vit dans `unity-version/` (décision D-033) avec
+> son propre `CLAUDE.md`. Quand on travaille dans `unity-version/`, ce sont SES règles qui s’appliquent ;
+> ce fichier-ci ne concerne que la version Phaser (racine du dépôt).
+
 Ce fichier s'adresse à un assistant IA (Claude Code ou équivalent) amené à
 modifier ce dépôt. Contexte complet dans `README.md`.
 

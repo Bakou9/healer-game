@@ -186,3 +186,8 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - À préciser par l'utilisateur (sans jamais donner de mot de passe ni de coordonnées bancaires à l'agent) : quel essai (Unity Pro, outils IA, autre) ; date de fin ; renouvellement automatique ou non ; carte bancaire demandée ou non ; coût après l'essai.
 - Règle : l'utilisateur note la date de fin dans son calendrier et annule avant l'échéance s'il ne veut pas payer ; l'agent rappelle cette date à chaque étape qui dépend de l'essai (MCP officiel).
 - Tickets : E14-T02, E14-T03
+
+### D-033 — Un seul dépôt GitHub : la version Unity vit dans unity-version/
+- Date : 2026-09-19 · Statut : Ferme (précise D-027 : la version Phaser reste intacte, mais la version Unity n'a plus de dépôt séparé)
+- Décision : sur demande de l'utilisateur, la version Unity est poussée dans un répertoire imbriqué du dépôt https://github.com/Bakou9/healer-game, dossier `unity-version/` (historique complet conservé, import par `git subtree add`). Les fichiers Phaser ne sont pas modifiés ; ajouts : `vitest.config.ts` (les tests Phaser ignorent le sous-dossier), un workflow `unity-version.yml`, et un pointeur en tête du `CLAUDE.md` racine. Le dossier local `%USERPROFILE%\Documents\healer-game-unity` devient une copie de secours : on ne travaille plus que dans `unity-version/`.
+- Tickets : E14-T01, E14-T16

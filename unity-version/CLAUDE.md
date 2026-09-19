@@ -3,12 +3,15 @@
 Ce fichier s'adresse à un assistant IA (Claude Code ou équivalent) amené à
 modifier ce dépôt. Contexte complet dans `README.md` et `docs/`.
 
-**Ce dépôt est la version Unity du jeu.** La version **Phaser** (TypeScript) est
-conservée à part et **ne doit jamais être modifiée ni supprimée** (décision
-D-027) : `%USERPROFILE%\Documents\healer-game` et
-https://github.com/Bakou9/healer-game. On peut la **lire** pour référence. Un
-retour à Phaser doit toujours rester possible. Table de correspondance des
-chemins et commandes : `docs/MIGRATION_UNITY.md`.
+**Ce dossier est la version Unity du jeu.** Il vit dans `unity-version/` à
+l'intérieur du dépôt unique https://github.com/Bakou9/healer-game (décision
+D-033) ; en local : `%USERPROFILE%\Documents\healer-game\unity-version`.
+La version **Phaser** (TypeScript) occupe le reste du dépôt (racine, `src/`,
+`docs/`…) et **ne doit jamais être modifiée ni supprimée** (décision D-027) :
+on peut la **lire** pour référence, un retour à Phaser doit toujours rester
+possible. Le `CLAUDE.md` de la racine ne concerne que Phaser : **dans
+`unity-version/`, ce fichier-ci fait foi**, y compris pour l'architecture, les
+chemins et les commandes. Table de correspondance : `docs/MIGRATION_UNITY.md`.
 
 ## PRÉAMBULE SYSTÉMATIQUE (à appliquer AVANT et APRÈS chaque ticket)
 

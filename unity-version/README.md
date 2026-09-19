@@ -5,9 +5,10 @@ l'équipe est en auto-battle). Cette version refait le jeu avec **Unity** (C#, 3
 stylisée) piloté avec un serveur **MCP**, en reprenant toutes les règles, la
 documentation et la mécanique de test de la version Phaser.
 
-> La version **Phaser** (TypeScript) est conservée intacte et reste une option de
-> retour : `%USERPROFILE%\Documents\healer-game` et
-> https://github.com/Bakou9/healer-game. Ne jamais la modifier ni la supprimer.
+> Ce dossier est le sous-projet `unity-version/` du dépôt unique
+> https://github.com/Bakou9/healer-game. La version **Phaser** (TypeScript) occupe le
+> reste du dépôt, reste intacte et demeure une option de retour : ne jamais la modifier
+> ni la supprimer.
 
 ## Où en est-on ?
 
@@ -17,7 +18,8 @@ documentation et la mécanique de test de la version Phaser.
 | Cœur C# pur (`core/Healer.Combat`) | **porté ; reproduit à l'identique les 7 combats de référence** |
 | Tests C# (`core/Healer.Combat.Tests`) | 62 tests : conformité golden, règles, équilibrage, données, architecture |
 | Environnement | SDK .NET installé ; Unity Hub installé ; Éditeur Unity 6.3 LTS en cours d'installation |
-| Projet Unity, scène 3D, modèles, MCP | à venir (epic E14) |
+| Projet Unity (`unity/HealerGame`, Unity 6.3 LTS) | **créé** ; licence Unity Personal active |
+| Scène 3D, modèles, MCP | à venir (epic E14) |
 
 ## Documents à lire
 

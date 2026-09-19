@@ -16,9 +16,9 @@ dépendances: E14-T04
 Le filet ne sert que s'il s'exécute toujours.
 
 ## Critères d'acceptation
-- [ ] Workflow exécutant `npm run check`
+- [ ] Première exécution du workflow vérifiée verte sur GitHub
 - [ ] Compilation Unity en mode batch en option (licence requise)
-- [ ] Dépôt GitHub dédié créé par l'utilisateur
+- [x] Dépôt unique : le workflow `.github/workflows/unity-version.yml` (racine du dépôt) ne se déclenche que pour `unity-version/` (décision D-033)
 
 ## Tests automatiques exigés
 Le workflow.

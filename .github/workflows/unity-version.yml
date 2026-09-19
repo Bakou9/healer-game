@@ -1,0 +1,34 @@
+name: unity-version
+
+# Filet de sécurité de la version Unity (sous-dossier unity-version/) : cohérence des specs
+# et tests du cœur C# (conformité aux combats de référence, équilibrage, données, architecture).
+# Ne se déclenche que lorsque ce sous-dossier (ou ce workflow) change.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "unity-version/**"
+      - ".github/workflows/unity-version.yml"
+  pull_request:
+    paths:
+      - "unity-version/**"
+      - ".github/workflows/unity-version.yml"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: unity-version
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: unity-version/package-lock.json
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: npm ci
+      - run: npm run check

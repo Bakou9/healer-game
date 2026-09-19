@@ -10,9 +10,9 @@ trace de ce qui est installé et de ce que **seul l'utilisateur** peut faire.
 | SDK .NET 8 (8.0.425) | installé | `winget install Microsoft.DotNet.SDK.8` (autorisé par l'utilisateur) |
 | Unity Hub 3.21.3 | installé (paquet MSIX) | `winget install Unity.UnityHub` (autorisé par l'utilisateur) |
 | Éditeur Unity 6.3 LTS (6000.3.24f1) + module Android | **téléchargement en cours** (Hub en ligne de commande, tâche détachée, ~4 Mo/s) | plusieurs Go, plusieurs dizaines de minutes |
-| Licence Unity | **à activer par l'utilisateur** | connexion à son compte dans le Hub |
+| Licence Unity | **active** (Unity Personal) | activée par l'utilisateur ; voir « Piège MSIX » plus bas |
 | Compte Unity et essai | compte créé, essai démarré le 2026-09-19 ; **type et date de fin à préciser** (D-032) | à noter dans un calendrier : un essai peut devenir payant |
-| Projet Unity (`unity/HealerGame`) | à créer | voir plus bas |
+| Projet Unity (`unity/HealerGame`) | **créé** (Unity 6000.3.24f1, mode automatique) | à ouvrir avec le Hub |
 | MCP | à choisir (E14-T03) | voir plus bas |
 
 Règle de sécurité : l'agent **ne saisit jamais** d'identifiant, de mot de passe
@@ -75,3 +75,13 @@ dotnet --list-sdks          # 8.0.x attendu
 
 Le dépôt compte sur `npm run check` : il **échoue** si des tests C# existent alors
 que `dotnet` manque, au lieu de « passer » en silence.
+
+## Piège MSIX : la licence activée dans le Hub n'est pas vue par l'Éditeur en ligne de commande
+
+Le Hub installé par winget est un paquet **MSIX** : il enregistre la licence dans un dossier
+virtualisé (`%LOCALAPPDATA%\Packages\UnityTechnologies.UnityHub_…\LocalCache\Local\Unity\licenses`),
+que l'Éditeur lancé **en dehors du Hub** (mode automatique, MCP, CI locale) ne lit pas : il répond
+« No valid Unity Editor license found ». Contournement appliqué le 2026-09-19 : copier
+`UnityEntitlementLicense.xml` dans `%LOCALAPPDATA%\Unity\licenses\` (même machine, même utilisateur ;
+réversible en supprimant la copie). Vérification : `Unity.Licensing.Client.exe --showEntitlements`
+doit afficher « Unity Personal ». À refaire si la licence est renouvelée.
