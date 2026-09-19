@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Cœur de jeu en C# pur : AUCUNE dépendance à Unity (voir docs/ARCHITECTURE_UNITY.md).
+    Compilé par dotnet (tests, CI, futur serveur) et par Unity (paquet local).
+    netstandard2.1 = compatible Unity 6.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Healer.Combat</RootNamespace>
+    <AssemblyName>Healer.Combat</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+</Project>

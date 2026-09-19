@@ -1,0 +1,10 @@
+[
+  {
+    "id": "poison",
+    "name": "Poison",
+    "kind": "damageOverTime",
+    "damagePerTick": 20,
+    "tickMs": 1000,
+    "durationMs": 8000
+  }
+]

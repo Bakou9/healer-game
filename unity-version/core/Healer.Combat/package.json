@@ -1,0 +1,10 @@
+{
+  "name": "com.healer.combat",
+  "version": "0.1.0",
+  "displayName": "Healer Combat (cœur du jeu)",
+  "description": "Simulation de combat déterministe en C# pur, sans dépendance à Unity. Même code compilé par dotnet (tests, serveur) et par Unity (jeu).",
+  "unity": "6000.0",
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  }
+}
