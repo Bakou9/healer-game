@@ -15,7 +15,8 @@
     "check": "npm run typecheck && npm test && npm run build",
     "cap:add:android": "cap add android",
     "cap:sync": "npm run build && cap sync android",
-    "cap:open:android": "cap open android"
+    "cap:open:android": "cap open android",
+    "specs:index": "vite-node scripts/specs-index.ts"
   },
   "dependencies": {
     "@capacitor/android": "^6.1.2",

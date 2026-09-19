@@ -50,6 +50,31 @@ Command, Observer, data-driven, séparation modèle/vue…), lesquels sont diff�
 le ou les patterns appliqués**. Ne pas introduire un pattern différé avant que
 son déclencheur soit atteint. Si on en adopte un, mettre le fichier à jour.
 
+## Specs, décisions et mémoire persistante (OBLIGATOIRE)
+
+- **Mémoire du projet = fichiers du dépôt, pas la conversation.** Avant de
+  travailler, lire `docs/DECISIONS.md` et le ticket concerné
+  (`docs/specs/`, index dans `docs/specs/README.md`, vision dans `VISION.md`).
+- **Toute nouvelle décision, exigence ou correction de l'utilisateur** est
+  ajoutée à `docs/DECISIONS.md` (daté, numéroté, statut) et rattachée à un
+  ticket (nouveau ou existant). On ne supprime pas une décision : on la remplace
+  par une nouvelle qui la cite. Une information manquante = statut « À préciser »
+  (le dire à l'utilisateur), une hypothèse à moi = « Proposition ».
+- **Un ticket = une unité de travail.** Critères d'acceptation cochés seulement
+  s'ils sont vrais et testés ; définition de « terminé » dans `docs/specs/README.md`.
+  Après tout changement de ticket ou de statut : `npm run specs:index`.
+  `src/testing/specs.test.ts` échoue si les specs sont incohérentes.
+- **Spécifier n'autorise pas à implémenter.** Ne développer que les tickets de
+  la phase en cours ou explicitement demandés ; ne pas anticiper les autres.
+- **Architecture cible : `docs/ARCHITECTURE.md`** (monolithe modulaire, frontières
+  strictes, registres). Tout nouveau code respecte les frontières ; les migrations
+  se font par petites étapes **sans changer les golden**.
+- **UX : `docs/UX.md`.** Toute interface respecte ses principes (2 gestes au plus,
+  cibles ≥ 48 px, texte ≥ 14 px, jamais la couleur seule, retours plafonnés).
+- **Équilibrage entre choix de spécialisation** : toute nouvelle option de
+  spécialisation, talent ou build passe la batterie d'équilibrage (E08 et
+  `docs/EQUILIBRAGE.md` §8) ; aucune option n'est livrée sans ses mesures.
+
 ## Équilibrage et valeurs lisibles (OBLIGATOIRE)
 
 - **`docs/EQUILIBRAGE.md`** définit ce qu'est un jeu équilibré pour ce projet

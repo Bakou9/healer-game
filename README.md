@@ -60,6 +60,8 @@ triche sur les tirages et les récompenses).
 
 - `CLAUDE.md` : règles de travail (architecture, non-régression, valeurs lisibles).
 - `docs/PATTERNS_JEU_VIDEO.md` : patterns de développement à appliquer.
+- `docs/specs/README.md` : spécifications (vision, 13 epics, tickets) ; `docs/DECISIONS.md` : journal des décisions.
+- `docs/ARCHITECTURE.md` (architecture modulaire cible) et `docs/UX.md` (audit et principes UX).
 - `docs/EQUILIBRAGE.md` : ce qu'est un combat équilibré ici, mesures et réglages.
 
 ## Scripts utiles
@@ -70,6 +72,7 @@ triche sur les tirages et les récompenses).
 | `npm test` | Lance les tests de la simulation (Vitest) |
 | `npm run check` | Types + tests + build : à passer avant de considérer un changement terminé |
 | `npm run test:update-golden` | Régénère les combats de référence (uniquement après validation d'un changement voulu) |
+| `npm run specs:index` | Régénère l'index des spécifications après un changement de ticket |
 | `npm run typecheck` | Vérifie les types TypeScript sans rien construire |
 | `npm run build` | Vérifie les types puis construit `dist/` (web + base pour Android) |
 

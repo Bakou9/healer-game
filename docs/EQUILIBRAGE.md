@@ -121,9 +121,38 @@ pendant 8 s, soit 160 par application non purgée) y apparaît.
    est mauvaise, soit la définition de « équilibré » change — et dans ce cas
    c'est une décision de l'utilisateur, à noter ici.
 
-## 8. Hors périmètre pour l'instant
+## 8. Choix de spécialisation : équilibre entre chaque décision
 
-Progression, puissance des personnages, gacha, économie : **pas encore**
-(voir `CLAUDE.md`, « phases »). Quand ces sujets arrivent, ce fichier devra
-définir l'équilibre *entre* combats (courbe de puissance, « power creep »), pas
-seulement *dans* un combat.
+Le joueur spécialise son soigneur par des **choix** (voies, talents, paliers).
+L'équilibre doit tenir **pour chaque choix et chaque suite de choix**, pas
+seulement pour le build final. Décision D-011 ; tickets E08-T02 à T11.
+Statut : **à construire** (phase 2) — les seuils ci-dessous sont des valeurs
+initiales *proposées*, à calibrer par mesure puis à figer ici.
+
+| Exigence | Ce que le test vérifie | Seuil initial proposé | Ticket |
+|---|---|---|---|
+| **Viabilité** | chaque build, joué par son bot, atteint un plancher sur le contenu de référence | ≥ 85 % de victoires | E08-T05 |
+| **Non-dominance** | pas de « meilleur build » : écart borné sur le contenu générique, et aucun build supérieur sur toutes les métriques (dominance de Pareto) | écart de victoires ≤ 10 points ; de PV minimum ≤ 12 points | E08-T06 |
+| **Niche** | chaque voie est la meilleure sur ≥ 1 archétype de boss, sans y être obligatoire | dans le meilleur quart, d'au moins 5 points | E08-T07 |
+| **Ablation** | retirer un talent ne change ni trop (écrasant) ni trop peu (mort) | 1 à 8 points sur son terrain | E08-T08 |
+| **Parité de budget** | les choix d'un même palier ont des budgets de puissance comparables | ±10 % | E08-T09 |
+| **Chemins** | chaque suite de choix atteignable est viable **au niveau où elle existe**, y compris après respec | plancher du niveau | E08-T11 |
+| **Rapport versionné** | toute évolution du tableau d'équilibre est signalée et expliquée | diff dans `docs/balance/report.md` | E08-T10 |
+
+Principes :
+- **Un build se juge joué comme il se joue** : un bot par spécialisation
+  (E08-T02), avec le **même délai humain** pour tous.
+- **Espace de builds couvert de façon reproductible** : énumération si petit,
+  sinon échantillonnage seedé qui couvre chaque talent au moins N fois (E08-T03).
+- **Un choix sans intérêt est un défaut**, au même titre qu'un choix écrasant.
+- **Une régression d'équilibre entre builds se traite comme une régression
+  golden** : cause, verdict voulu/accidentel, accord avant de bouger une borne.
+- Deux niveaux d'exécution : rapide à chaque commit (échantillon), complet la
+  nuit (E08-T12).
+
+## 9. Hors périmètre pour l'instant
+
+Progression entre combats, puissance des personnages, gacha, économie : **pas
+encore** (voir `CLAUDE.md`, « phases »). Quand ces sujets arrivent, ce fichier
+devra définir l'équilibre *entre* combats (courbe de puissance, « power creep »,
+gratuit vs payant : E06-T09, E08-T13), pas seulement *dans* un combat.
