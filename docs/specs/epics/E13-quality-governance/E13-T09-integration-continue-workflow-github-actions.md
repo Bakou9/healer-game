@@ -17,7 +17,7 @@ Le filet de tests ne sert que s'il s'exécute toujours, pas seulement sur le pos
 
 ## Critères d'acceptation
 - [x] Workflow `.github/workflows/check.yml` : `npm ci` puis `npm run check` à chaque envoi sur `main` et chaque demande de fusion
-- [ ] Première exécution vérifiée verte sur GitHub
+- [x] Première exécution vérifiée verte sur GitHub (2026-09-19, commit 24faa39)
 - [ ] Tests d'équilibrage complets de nuit (E08-T12)
 - [ ] Échec visible avec message explicatif
 
