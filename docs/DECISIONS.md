@@ -82,7 +82,7 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - Tickets : E04-T01, E04-T02, E04-T03, E04-T04, E04-T05, E04-T07
 
 ### D-014 — Architecture plus modulaire
-- Date : 2026-09-19 · Statut : À préciser (la phrase de l'utilisateur est coupée : « Le projet va être large, il faut… »)
+- Date : 2026-09-19 · Statut : Remplacée par D-025 (la phrase coupée de l'utilisateur est abandonnée)
 - Décision provisoire : monolithe modulaire à frontières strictes (`docs/ARCHITECTURE.md`), avec extension par registres et contenus validés par schémas.
 - Question ouverte : quelle contrainte exacte l'utilisateur voulait-il ajouter ?
 - Tickets : E09-T01, E09-T02, E09-T03, E09-T04, E09-T05
@@ -141,3 +141,14 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - Date : 2026-09-19 · Statut : Ferme
 - Décision : on commence par le point 1 de la revue de mon travail : un vrai test de jeu de l'utilisateur, avec des graphismes soignés, avant d'élaguer les specs, d'ajouter des tests visuels et de refactorer.
 - Tickets : E04-T14, E13-T05, E08-T15, E01-T08
+
+### D-025 — Question d'architecture abandonnée
+- Date : 2026-09-19 · Statut : Ferme (remplace D-014)
+- Décision : la phrase coupée de l'utilisateur (« Le projet va être large, il faut… ») « n'a plus de sens » : on l'oublie, aucune contrainte supplémentaire. La proposition provisoire de `docs/ARCHITECTURE.md` (monolithe modulaire, frontières testées) reste la cible ; elle sera réévaluée si le moteur change (D-026).
+- Tickets : E09-T01
+
+### D-026 — Unity et son MCP : point de décision, pas de bascule maintenant
+- Date : 2026-09-19 · Statut : Proposition (avis de l'agent, à valider)
+- Contexte : l'utilisateur demande si utiliser Unity via son MCP (serveur officiel, plugin officiel pour Claude Code) a du sens.
+- Position : rester sur TypeScript + Phaser + Capacitor pour la phase 1-3 ; décider d'un éventuel passage à Unity à une porte précise, après le test sur appareil Android d'entrée de gamme et les budgets de performance, selon des critères posés à l'avance. Si bascule, les références golden (indépendantes du langage) servent de spécification de conformité pour porter la simulation en C#.
+- Tickets : E11-T07, E11-T01, E11-T02

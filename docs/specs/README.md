@@ -86,11 +86,11 @@ nécessaire au lancement · **P3** plus tard. Phases : voir `VISION.md` §15.
 | [E08](epics/E08-balance-framework/README.md) | Cadre d'équilibrage automatisé | 15 | 1/15 |
 | [E09](epics/E09-modular-architecture/README.md) | Architecture modulaire | 11 | 1/11 |
 | [E10](epics/E10-persistence-backend/README.md) | Persistance et backend | 9 | 0/9 |
-| [E11](epics/E11-platforms-release/README.md) | Plateformes et publication | 6 | 0/6 |
+| [E11](epics/E11-platforms-release/README.md) | Plateformes et publication | 7 | 0/7 |
 | [E12](epics/E12-art-audio/README.md) | Direction artistique et audio | 5 | 0/5 |
 | [E13](epics/E13-quality-governance/README.md) | Qualité, outillage et gouvernance | 9 | 4/9 |
 
-Total : 124 tickets, 19/124 terminés.
+Total : 125 tickets, 19/125 terminés.
 
 ### Tous les tickets
 
@@ -206,6 +206,7 @@ Total : 124 tickets, 19/124 terminés.
 | [E11-T04](epics/E11-platforms-release/E11-T04-publication-google-play-test-ferme-puis-producti.md) | Publication Google Play (test fermé puis production) | P2 | 4 | À faire |
 | [E11-T05](epics/E11-platforms-release/E11-T05-localisation-fr-en.md) | Localisation FR/EN | P2 | 4 | À faire |
 | [E11-T06](epics/E11-platforms-release/E11-T06-controles-clavier-et-manette-steam.md) | Contrôles clavier et manette (Steam) | P3 | 5 | À faire |
+| [E11-T07](epics/E11-platforms-release/E11-T07-point-de-decision-moteur-phaser-ou-unity.md) | Point de décision moteur : Phaser ou Unity | P2 | 4 | À faire |
 | [E12-T01](epics/E12-art-audio/E12-T01-direction-artistique-et-kit-d-ui.md) | Direction artistique et kit d'UI | P1 | 3 | En cours |
 | [E12-T02](epics/E12-art-audio/E12-T02-portraits-et-sprites-des-personnages-et-des-boss.md) | Portraits et sprites des personnages et des boss | P2 | 3 | À faire |
 | [E12-T03](epics/E12-art-audio/E12-T03-effets-visuels-soins-boucliers-poison-telegraphe.md) | Effets visuels : soins, boucliers, poison, télégraphes | P2 | 3 | En cours |
