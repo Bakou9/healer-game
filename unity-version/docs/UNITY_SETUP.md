@@ -85,3 +85,18 @@ que l'Éditeur lancé **en dehors du Hub** (mode automatique, MCP, CI locale) ne
 `UnityEntitlementLicense.xml` dans `%LOCALAPPDATA%\Unity\licenses\` (même machine, même utilisateur ;
 réversible en supprimant la copie). Vérification : `Unity.Licensing.Client.exe --showEntitlements`
 doit afficher « Unity Personal ». À refaire si la licence est renouvelée.
+
+## Piège Windows Defender : « EPERM: operation not permitted, rename » à la résolution des paquets
+
+Constat du 2026-09-19 : à l'ouverture du projet, Unity résout ses paquets mais échoue à **renommer** les
+dossiers extraits des paquets téléchargés du registre (`Library\PackageCache\.tmp-…\package` vers
+`com.unity.…@hash`) avec « EPERM: operation not permitted » ; les paquets intégrés (`com.unity.modules.*`)
+passent. La protection en temps réel de Windows Defender (et l'indexeur de recherche) tient les fichiers
+fraîchement écrits au moment du renommage. Un déplacement manuel du dossier fonctionne, mais Unity retente
+et rebute à chaque ouverture : ce n'est pas tenable pour URP, Input System, etc.
+
+**Correctif recommandé par Unity, à faire par l'utilisateur** (réglage de sécurité : jamais fait par l'agent) :
+Sécurité Windows → Protection contre les virus et menaces → Gérer les paramètres → Exclusions → Ajouter une
+exclusion → Dossier → `%USERPROFILE%\Documents\healer-game\unity-version\unity\HealerGame\Library`
+(le dossier `Library` est entièrement régénérable ; on n'exclut PAS le code source).
+Vérification : ouvrir le projet en mode automatique ne doit plus afficher « An error occurred while resolving packages ».

@@ -33,7 +33,7 @@ Nouvelles mécaniques de jeu (spécialisation, gacha…) : elles suivent les epi
 | [E14-T07](E14-T07-chargement-et-validation-du-contenu-json-en-c.md) | Chargement et validation du contenu JSON en C# | Feature | P0 | 2 | Terminé | E14-T04 |
 | [E14-T08](E14-T08-portage-des-tests-d-equilibrage-bots-profils-bor.md) | Portage des tests d'équilibrage : bots, profils, bornes, sensibilité | Test | P0 | 2 | Terminé | E14-T06 |
 | [E14-T09](E14-T09-garde-fous-d-architecture-en-c.md) | Garde-fous d'architecture en C# | Test | P0 | 2 | Terminé | E14-T04 |
-| [E14-T10](E14-T10-projet-unity-urp-portrait-input-system-c-ur-en-p.md) | Projet Unity : URP, portrait, Input System, cœur en paquet local | Tech | P1 | 2 | À faire | E14-T02, E14-T04 |
+| [E14-T10](E14-T10-projet-unity-urp-portrait-input-system-c-ur-en-p.md) | Projet Unity : URP, portrait, Input System, cœur en paquet local | Tech | P1 | 2 | En cours | E14-T02, E14-T04 |
 | [E14-T11](E14-T11-scene-de-combat-3d-camera-eclairage-lecture-de-b.md) | Scène de combat 3D : caméra, éclairage, lecture de Battle, événements vers la présentation | Feature | P1 | 2 | À faire | E14-T10, E14-T05 |
 | [E14-T12](E14-T12-interface-de-combat-unity-mise-en-page-portrait.md) | Interface de combat Unity : mise en page portrait, ciblage en un geste, cartes lisibles | Feature | P1 | 2 | En cours | E14-T11 |
 | [E14-T13](E14-T13-modeles-3d-stylises-user-friendly-golem-et-4-per.md) | Modèles 3D stylisés « user friendly » : Golem et 4 personnages, construits par scripts reproductibles | Feature | P1 | 2 | À faire | E14-T10 |
