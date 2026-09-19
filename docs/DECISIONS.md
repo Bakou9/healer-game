@@ -119,3 +119,9 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - Constat : le bot de référence décide à intervalle fixe ; ses résultats sont non monotones (800 ms pire que 1000 ms) car son rythme se cale sur la fenêtre de 1,4 s des télégraphes. Un humain a un délai moyen avec dispersion.
 - Proposition : modéliser les profils avec un délai tiré d'une distribution (Rng seedé). Les bornes d'équilibrage seront ré-évaluées et les écarts validés avec l'utilisateur.
 - Tickets : E08-T15
+
+### D-021 — Toujours rendre la main à l'utilisateur
+- Date : 2026-09-19 · Statut : Ferme
+- Constat : le serveur de développement lancé comme tâche suivie gardait la session « occupée » pendant des dizaines de minutes ; l'utilisateur ne pouvait pas envoyer de nouvelle demande.
+- Décision : le serveur est lancé détaché de la session ; aucune tâche suivie ne reste active à la fin d'un tour.
+- Tickets : E13-T05

@@ -148,6 +148,13 @@ Les tests détectent les régressions ; l'utilisateur veut **comprendre chacune*
 
 ## Développement local
 
+**Ne jamais lancer le serveur de développement comme tâche d'arrière-plan
+suivie par la session** (outil Bash/PowerShell en `run_in_background`) : la
+session paraît alors occupée en permanence et ne rend pas la main à
+l'utilisateur (décision D-021). Le lancer **détaché** (`Start-Process` caché,
+journal dans `%TEMP%\healer-game-vite.log`), ou laisser l'utilisateur utiliser
+`lancer-le-jeu.bat`. Ne jamais laisser une tâche suivie tourner à la fin d'un tour.
+
 `npm run dev` (Vite, http://localhost:5173, port verrouillé) recharge la page
 automatiquement à chaque modification de fichier, y compris dans un navigateur
 externe : ne pas demander à l'utilisateur de rafraîchir, et ne pas relancer le
