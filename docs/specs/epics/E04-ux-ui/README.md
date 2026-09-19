@@ -25,10 +25,10 @@ Art final (E12), contenus (E02, E03).
 | Ticket | Titre | Type | Priorité | Phase | Statut | Dépend de |
 |---|---|---|---|---|---|---|
 | [E04-T01](E04-T01-audit-ux-et-principes-de-conception-docs-ux-md.md) | Audit UX et principes de conception (docs/UX.md) | Design | P0 | 2 | Terminé | — |
-| [E04-T02](E04-T02-rendu-net-sur-ecrans-haute-densite-et-mise-a-l-e.md) | Rendu net sur écrans haute densité et mise à l'échelle | Tech | P0 | 2 | À faire | E04-T01 |
-| [E04-T03](E04-T03-refonte-de-la-mise-en-page-portrait-zone-du-pouc.md) | Refonte de la mise en page portrait (zone du pouce) | Feature | P0 | 2 | À faire | E04-T01 |
-| [E04-T04](E04-T04-ciblage-en-un-geste-selection-puis-sorts-ou-tap.md) | Ciblage en un geste (sélection puis sorts, ou tap direct) | Feature | P0 | 2 | À faire | E04-T01 |
-| [E04-T05](E04-T05-cartes-d-allies-lisibles.md) | Cartes d'alliés lisibles | Feature | P0 | 2 | À faire | E04-T03 |
+| [E04-T02](E04-T02-rendu-net-sur-ecrans-haute-densite-et-mise-a-l-e.md) | Rendu net sur écrans haute densité et mise à l'échelle | Tech | P0 | 2 | Terminé | E04-T01 |
+| [E04-T03](E04-T03-refonte-de-la-mise-en-page-portrait-zone-du-pouc.md) | Refonte de la mise en page portrait (zone du pouce) | Feature | P0 | 2 | Terminé | E04-T01 |
+| [E04-T04](E04-T04-ciblage-en-un-geste-selection-puis-sorts-ou-tap.md) | Ciblage en un geste (sélection persistante puis sorts) | Feature | P0 | 2 | Terminé | E04-T01 |
+| [E04-T05](E04-T05-cartes-d-allies-lisibles.md) | Cartes d'alliés lisibles | Feature | P0 | 2 | Terminé | E04-T03 |
 | [E04-T06](E04-T06-barre-de-sorts-recharge-radiale-cout-de-mana-eta.md) | Barre de sorts : recharge radiale, coût de mana, états, raccourcis clavier | Feature | P1 | 2 | À faire | E04-T03 |
 | [E04-T07](E04-T07-telegraphes-lisibles.md) | Télégraphes lisibles | Feature | P0 | 2 | À faire | E03-T01 |
 | [E04-T08](E04-T08-retours-visuels-maitrises-agregation-et-plafond.md) | Retours visuels maîtrisés (agrégation et plafond, flash, secousse, haptique) | Feature | P1 | 2 | À faire | E04-T03 |

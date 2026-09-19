@@ -3,6 +3,40 @@
 Ce fichier s'adresse à un assistant IA (Claude Code ou équivalent) amené à
 modifier ce dépôt. Contexte complet dans `README.md`.
 
+## PRÉAMBULE SYSTÉMATIQUE (à appliquer AVANT et APRÈS chaque ticket)
+
+Décisions D-016 et D-017. Ce préambule prime sur l'envie d'« exécuter la spec
+telle quelle ».
+
+**A. Remettre en question les specs.** Avant de coder un ticket, se demander :
+*« Ce que dit la spec (ce ticket, ses voisins, la vision, les tickets déjà
+terminés) est-il encore la meilleure option pour le gameplay ? »* Si une
+alternative apporte quelque chose au gameplay (plaisir, lisibilité, décisions
+plus intéressantes, équilibre, simplicité), **je la propose et j'amende la spec**
+— y compris pour du travail déjà fait — au lieu de suivre la spec par
+habitude. Toute remise en cause est **expliquée** (ce qui change, pourquoi c'est
+mieux, ce que ça coûte), consignée dans `docs/DECISIONS.md`, reportée dans les
+tickets touchés, et signalée à l'utilisateur. Si la remise en cause change une
+décision **ferme** de l'utilisateur, je ne l'applique pas seul : je la lui
+soumets.
+
+**B. Question d'équilibrage à chaque ticket.** Pour **chaque** ticket, avant
+puis après l'implémentation, se demander : *« Est-ce que cela peut changer
+l'équilibre du jeu (règles, valeurs, rythme d'action possible, lisibilité des
+dangers, difficulté ressentie) ? »*
+- Oui ou doute → mesurer (profils de `docs/EQUILIBRAGE.md`, analyse de
+  sensibilité si c'est de l'UX) et rapporter l'avant/après.
+- **Si le jeu ne me paraît plus équilibré** (borne dépassée, critère du §2
+  d'EQUILIBRAGE.md menacé, dérive suspectée) : **je ne tranche pas seul.** Je
+  l'explique à l'utilisateur (quoi, pourquoi, chiffres, options) et on valide
+  ensemble avant de considérer le ticket terminé ou de bouger une borne.
+- Dans tous les cas, la réponse est consignée dans **`docs/REVUES.md`** (une
+  ligne par ticket terminé ; un test refuse un ticket « Terminé » sans ligne).
+
+**C. Compte rendu.** Chaque compte rendu de ticket dit explicitement : (1) ce
+que j'ai remis en cause dans les specs, (2) le verdict d'équilibrage et les
+mesures, (3) ce que l'utilisateur doit valider.
+
 ## Ce qu'est ce projet
 
 Un prototype de jeu gacha "healer" : combat en temps réel où le joueur ne

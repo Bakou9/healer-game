@@ -91,3 +91,31 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - Date : 2026-09-19 · Statut : Proposition
 - Contenu : trois voies de spécialisation (Lumière, Égide, Purification) × 4 paliers × 2 choix ; archétypes de boss (Burst, Attrition, Multi-cibles, Punisseur, Compte à rebours) ; équipe de 4 emplacements ; questions ouvertes de `VISION.md` §16.
 - Tickets : E02-T02, E03-T01, E05-T02
+
+### D-016 — Remettre systématiquement en question les specs
+- Date : 2026-09-19 · Statut : Ferme
+- Décision : avant chaque ticket, je me demande si la spec est encore la meilleure option pour le gameplay ; si une alternative apporte quelque chose, je la propose et j'amende la spec (même pour du travail déjà fait), en expliquant, en consignant et en le signalant. Une décision ferme de l'utilisateur ne se change pas sans son accord.
+- Réalisé : préambule systématique dans `CLAUDE.md` ; première application sur E04-T04 (voir `docs/REVUES.md`).
+- Tickets : E13-T02, E04-T04
+
+### D-017 — Question d'équilibrage à chaque ticket, validation conjointe en cas de doute
+- Date : 2026-09-19 · Statut : Ferme
+- Décision : pour chaque ticket, se demander si l'équilibre peut changer ; mesurer ; si le jeu ne paraît plus équilibré, l'expliquer à l'utilisateur et valider ensemble avant de continuer. La réponse est consignée dans `docs/REVUES.md`, et un test refuse un ticket terminé sans revue.
+- Tickets : E13-T02, E08-T10
+
+### D-018 — Priorité à la série UX E04-T02 à T05
+- Date : 2026-09-19 · Statut : Ferme
+- Décision : commencer par la netteté, la mise en page, le ciblage en un geste et les cartes d'alliés lisibles.
+- Tickets : E04-T02, E04-T03, E04-T04, E04-T05
+
+### D-019 — Amendement de E04-T04 : sélection persistante, pas de soin par tap
+- Date : 2026-09-19 · Statut : Ferme (première application de D-016)
+- Décision : le « geste rapide pour le soin par défaut » est retiré de la spec du ciblage ; remplacé par une sélection persistante (toucher un allié le sélectionne, les sorts s'y appliquent, la sélection reste après le sort). Aucun ciblage automatique.
+- Pourquoi : le tap-pour-soigner entre en conflit avec la sélection (viser un bouclier lancerait un soin et gaspillerait du mana) et rapproche du soin automatique, alors que choisir qui soigner est la décision centrale du jeu (pilier 1).
+- Tickets : E04-T04
+
+### D-020 — Profils humains à délais variables
+- Date : 2026-09-19 · Statut : Proposition
+- Constat : le bot de référence décide à intervalle fixe ; ses résultats sont non monotones (800 ms pire que 1000 ms) car son rythme se cale sur la fenêtre de 1,4 s des télégraphes. Un humain a un délai moyen avec dispersion.
+- Proposition : modéliser les profils avec un délai tiré d'une distribution (Rng seedé). Les bornes d'équilibrage seront ré-évaluées et les écarts validés avec l'utilisateur.
+- Tickets : E08-T15

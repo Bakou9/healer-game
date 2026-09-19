@@ -1,5 +1,10 @@
 import Phaser from "phaser";
 import { BattleScene } from "./scenes/BattleScene";
+import { GAME_H, GAME_W, renderScale } from "./ui/layout";
+
+// La toile est agrandie à la résolution de l'appareil (netteté) ; la scène
+// dessine en pixels logiques GAME_W × GAME_H grâce au zoom de sa caméra.
+const RES = renderScale();
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -8,8 +13,8 @@ const config: Phaser.Types.Core.GameConfig = {
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: 480,
-    height: 854,
+    width: GAME_W * RES,
+    height: GAME_H * RES,
   },
   scene: [BattleScene],
 };

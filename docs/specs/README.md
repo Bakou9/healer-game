@@ -34,6 +34,9 @@ si l'index n'est pas à jour.
 - [ ] `npm run check` est vert (types, tests, build)
 - [ ] Les tests exigés par le ticket existent
 - [ ] **Impact équilibrage évalué** : si « Oui », les mesures de `docs/EQUILIBRAGE.md` sont rejouées, l'avant/après est rapporté et les bornes tiennent
+- [ ] **Spec remise en question** (préambule A de `CLAUDE.md`) : la spec du ticket et de ses voisins est-elle encore la meilleure option pour le gameplay ? Amendements expliqués et consignés
+- [ ] **Question d'équilibrage posée** (préambule B) : mesurée si oui/doute ; si le jeu ne paraît plus équilibré, expliqué à l'utilisateur et validé ensemble
+- [ ] Une ligne dans `docs/REVUES.md` (vérifié par test)
 - [ ] Les patterns de `docs/PATTERNS_JEU_VIDEO.md` appliqués sont cités
 - [ ] Valeurs affichées tronquées à hauteur humaine (`src/ui/format.ts`)
 - [ ] Les régressions détectées sont expliquées (voulu/accidentel) selon `CLAUDE.md`
@@ -76,18 +79,18 @@ nécessaire au lancement · **P3** plus tard. Phases : voir `VISION.md` §15.
 | [E01](epics/E01-combat-core/README.md) | Cœur du combat | 13 | 7/13 |
 | [E02](epics/E02-healer-specialisation/README.md) | Spécialisation et progression du soigneur | 10 | 0/10 |
 | [E03](epics/E03-bosses-encounters/README.md) | Boss et rencontres | 9 | 1/9 |
-| [E04](epics/E04-ux-ui/README.md) | Expérience et interface (UX/UI) | 14 | 1/14 |
+| [E04](epics/E04-ux-ui/README.md) | Expérience et interface (UX/UI) | 14 | 5/14 |
 | [E05](epics/E05-roster-team/README.md) | Personnages et équipe | 8 | 0/8 |
 | [E06](epics/E06-gacha-economy/README.md) | Gacha et économie | 9 | 0/9 |
 | [E07](epics/E07-game-modes/README.md) | Modes de jeu et méta-progression | 6 | 0/6 |
-| [E08](epics/E08-balance-framework/README.md) | Cadre d'équilibrage automatisé | 14 | 1/14 |
+| [E08](epics/E08-balance-framework/README.md) | Cadre d'équilibrage automatisé | 15 | 1/15 |
 | [E09](epics/E09-modular-architecture/README.md) | Architecture modulaire | 11 | 1/11 |
 | [E10](epics/E10-persistence-backend/README.md) | Persistance et backend | 9 | 0/9 |
 | [E11](epics/E11-platforms-release/README.md) | Plateformes et publication | 6 | 0/6 |
 | [E12](epics/E12-art-audio/README.md) | Direction artistique et audio | 5 | 0/5 |
 | [E13](epics/E13-quality-governance/README.md) | Qualité, outillage et gouvernance | 9 | 3/9 |
 
-Total : 123 tickets, 14/123 terminés.
+Total : 124 tickets, 18/124 terminés.
 
 ### Tous les tickets
 
@@ -126,10 +129,10 @@ Total : 123 tickets, 14/123 terminés.
 | [E03-T08](epics/E03-bosses-encounters/E03-T08-modificateurs-de-difficulte-affixes.md) | Modificateurs de difficulté (affixes) | P3 | 4 | À faire |
 | [E03-T09](epics/E03-bosses-encounters/E03-T09-bestiaire-et-recit-des-boss.md) | Bestiaire et récit des boss | P3 | 4 | À faire |
 | [E04-T01](epics/E04-ux-ui/E04-T01-audit-ux-et-principes-de-conception-docs-ux-md.md) | Audit UX et principes de conception (docs/UX.md) | P0 | 2 | Terminé |
-| [E04-T02](epics/E04-ux-ui/E04-T02-rendu-net-sur-ecrans-haute-densite-et-mise-a-l-e.md) | Rendu net sur écrans haute densité et mise à l'échelle | P0 | 2 | À faire |
-| [E04-T03](epics/E04-ux-ui/E04-T03-refonte-de-la-mise-en-page-portrait-zone-du-pouc.md) | Refonte de la mise en page portrait (zone du pouce) | P0 | 2 | À faire |
-| [E04-T04](epics/E04-ux-ui/E04-T04-ciblage-en-un-geste-selection-puis-sorts-ou-tap.md) | Ciblage en un geste (sélection puis sorts, ou tap direct) | P0 | 2 | À faire |
-| [E04-T05](epics/E04-ux-ui/E04-T05-cartes-d-allies-lisibles.md) | Cartes d'alliés lisibles | P0 | 2 | À faire |
+| [E04-T02](epics/E04-ux-ui/E04-T02-rendu-net-sur-ecrans-haute-densite-et-mise-a-l-e.md) | Rendu net sur écrans haute densité et mise à l'échelle | P0 | 2 | Terminé |
+| [E04-T03](epics/E04-ux-ui/E04-T03-refonte-de-la-mise-en-page-portrait-zone-du-pouc.md) | Refonte de la mise en page portrait (zone du pouce) | P0 | 2 | Terminé |
+| [E04-T04](epics/E04-ux-ui/E04-T04-ciblage-en-un-geste-selection-puis-sorts-ou-tap.md) | Ciblage en un geste (sélection persistante puis sorts) | P0 | 2 | Terminé |
+| [E04-T05](epics/E04-ux-ui/E04-T05-cartes-d-allies-lisibles.md) | Cartes d'alliés lisibles | P0 | 2 | Terminé |
 | [E04-T06](epics/E04-ux-ui/E04-T06-barre-de-sorts-recharge-radiale-cout-de-mana-eta.md) | Barre de sorts : recharge radiale, coût de mana, états, raccourcis clavier | P1 | 2 | À faire |
 | [E04-T07](epics/E04-ux-ui/E04-T07-telegraphes-lisibles.md) | Télégraphes lisibles | P0 | 2 | À faire |
 | [E04-T08](epics/E04-ux-ui/E04-T08-retours-visuels-maitrises-agregation-et-plafond.md) | Retours visuels maîtrisés (agrégation et plafond, flash, secousse, haptique) | P1 | 2 | À faire |
@@ -176,6 +179,7 @@ Total : 123 tickets, 14/123 terminés.
 | [E08-T12](epics/E08-balance-framework/E08-T12-niveaux-de-test-rapide-a-chaque-commit-complet-c.md) | Niveaux de test : rapide à chaque commit, complet chaque nuit | P1 | 2 | À faire |
 | [E08-T13](epics/E08-balance-framework/E08-T13-equilibrage-de-la-progression-puissance-par-nive.md) | Équilibrage de la progression (puissance par niveau, contenu par niveau) | P1 | 3 | À faire |
 | [E08-T14](epics/E08-balance-framework/E08-T14-outil-de-balayage-de-parametres-reutilisable.md) | Outil de balayage de paramètres réutilisable | P1 | 2 | À faire |
+| [E08-T15](epics/E08-balance-framework/E08-T15-profils-humains-a-delais-variables.md) | Profils humains à délais de décision variables | P1 | 2 | À faire |
 | [E09-T01](epics/E09-modular-architecture/E09-T01-decision-d-architecture-monolithe-modulaire-a-fr.md) | Décision d'architecture : monolithe modulaire à frontières strictes | P0 | 2 | Terminé |
 | [E09-T02](epics/E09-modular-architecture/E09-T02-decoupage-en-modules.md) | Découpage en modules | P0 | 2 | À faire |
 | [E09-T03](epics/E09-modular-architecture/E09-T03-frontieres-appliquees-automatiquement.md) | Frontières appliquées automatiquement | P0 | 2 | À faire |

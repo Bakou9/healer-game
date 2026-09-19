@@ -1,4 +1,6 @@
 import Phaser from "phaser";
+import { FONT } from "../ui/layout";
+import { addText } from "./uiText";
 
 export interface FloatingTextStyle {
   color: string;
@@ -16,11 +18,10 @@ export class FloatingTextPool {
 
   constructor(private readonly scene: Phaser.Scene) {}
 
-  spawn(x: number, y: number, text: string, { color, sizePx = 16 }: FloatingTextStyle): void {
+  spawn(x: number, y: number, text: string, { color, sizePx = FONT.body }: FloatingTextStyle): void {
     const label =
       this.free.pop() ??
-      this.scene.add
-        .text(0, 0, "", { fontFamily: "sans-serif", fontStyle: "bold", stroke: "#000000", strokeThickness: 3 })
+      addText(this.scene, 0, 0, "", { fontStyle: "bold", stroke: "#000000", strokeThickness: 3 })
         .setOrigin(0.5)
         .setDepth(50);
 
@@ -31,7 +32,8 @@ export class FloatingTextPool {
     label
       .setText(text)
       .setColor(color)
-      .setFontSize(sizePx)
+      // Jamais sous la taille minimale de lisibilité.
+      .setFontSize(Math.max(sizePx, FONT.small))
       .setPosition(x + offsetX, y)
       .setAlpha(1)
       .setVisible(true);

@@ -29,7 +29,7 @@ const REQUIRED_SECTIONS = [
 describe("spécifications : structure", () => {
   it("contient les documents de référence et des epics", () => {
     for (const doc of ["VISION.md", "README.md"]) expect(existsSync(join(SPECS_DIR, doc)), doc).toBe(true);
-    for (const doc of ["DECISIONS.md", "ARCHITECTURE.md", "UX.md", "EQUILIBRAGE.md"]) {
+    for (const doc of ["DECISIONS.md", "ARCHITECTURE.md", "UX.md", "EQUILIBRAGE.md", "REVUES.md"]) {
       expect(existsSync(join(SPECS_DIR, "..", doc)), doc).toBe(true);
     }
     expect(epics.length).toBeGreaterThanOrEqual(13);
@@ -142,5 +142,35 @@ describe("journal des décisions", () => {
     const known = new Set(tickets.map((t) => t.id));
     const referenced = [...decisions.matchAll(/\bE\d\d-T\d\d\b/g)].map((m) => m[0]);
     for (const id of referenced) expect(known.has(id), `DECISIONS.md cite un ticket inconnu : ${id}`).toBe(true);
+  });
+});
+
+describe("registre des revues (préambule systématique)", () => {
+  const revues = readFileSync(join(SPECS_DIR, "..", "REVUES.md"), "utf-8");
+  const rows = revues
+    .split(/\r?\n/)
+    .filter((line) => /^\| E\d\d-T\d\d \|/.test(line))
+    .map((line) => line.split("|").map((cell) => cell.trim()).filter((_, i, all) => i > 0 && i < all.length - 1));
+
+  it("chaque ticket terminé a une ligne de revue (specs remises en question, équilibrage, validation)", () => {
+    const reviewed = new Set(rows.map((r) => r[0]));
+    for (const t of tickets.filter((x) => x.status === "Terminé")) {
+      expect(reviewed.has(t.id), `${t.id} est « Terminé » sans ligne dans docs/REVUES.md`).toBe(true);
+    }
+  });
+
+  it("chaque ligne renseigne les trois colonnes avec une validation reconnue", () => {
+    for (const row of rows) {
+      expect(row.length, row[0]).toBe(4);
+      for (const cell of row) expect(cell.length, `cellule vide pour ${row[0]}`).toBeGreaterThan(0);
+      expect(["Non requise", "À valider", "Validé"], row[0]).toContain(row[3]);
+    }
+  });
+
+  it("chaque ligne renvoie à un ticket existant, sans doublon", () => {
+    const known = new Set(tickets.map((t) => t.id));
+    const ids = rows.map((r) => r[0]);
+    for (const id of ids) expect(known.has(id), id).toBe(true);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });

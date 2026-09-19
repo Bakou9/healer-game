@@ -44,9 +44,12 @@ comment y remédier.
 
 ## 3. Recommandations, par ordre de valeur
 
-1. **Ciblage en un geste (E04-T04).** Toucher un allié le sélectionne ; les
-   sorts s'appliquent à la cible sélectionnée ; un toucher rapide sur la carte
-   lance le soin par défaut. Le sort de zone reste en un tap. Annulation : retoucher.
+1. **Ciblage en un geste (E04-T04) — réalisé.** Toucher un allié le sélectionne ;
+   les sorts s'appliquent à la cible sélectionnée et **la sélection reste** après un
+   sort (re-soigner la même cible = un seul geste). Le sort de zone reste en un tap.
+   Annulation : retoucher la carte. *Amendé (D-019)* : le « toucher rapide = soin par
+   défaut » initialement prévu est retiré (il gaspillerait du mana en cas de
+   sélection pour un bouclier, et rapproche du soin automatique).
 2. **Refonte de la mise en page (E04-T03).** Boss et jauge de télégraphe en haut ;
    équipe dans le tiers inférieur ; **barre de sorts dans la zone du pouce** ; le
    mana du soigneur directement au-dessus des sorts.
@@ -85,7 +88,13 @@ Changer le ciblage (rythme d'action possible) ou ajouter des contrôles clavier
 E11-T06). Un télégraphe plus lisible renforce le critère d'équité (§2.5 de
 EQUILIBRAGE.md).
 
-## 6. Prochaine tranche recommandée
+## 6. Avancement
+
+Réalisés (2026-09-19) : E04-T02 (netteté), E04-T03 (mise en page), E04-T04
+(ciblage), E04-T05 (cartes). Restent notamment : télégraphes (T07), barre de
+sorts (T06), retours maîtrisés (T08), bilan (T09), menus (T10), tutoriel (T11).
+
+## 7. Prochaine tranche recommandée (historique)
 
 E04-T02 (netteté) → E04-T03 (mise en page) → E04-T04 (ciblage) → E04-T05
 (cartes) → E04-T07 (télégraphes). C'est la plus petite série qui transforme

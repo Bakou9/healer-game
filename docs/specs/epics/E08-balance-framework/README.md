@@ -37,4 +37,5 @@ Définition du contenu (E02, E03, E05), économie (E06).
 | [E08-T12](E08-T12-niveaux-de-test-rapide-a-chaque-commit-complet-c.md) | Niveaux de test : rapide à chaque commit, complet chaque nuit | Tech | P1 | 2 | À faire | E08-T03 |
 | [E08-T13](E08-T13-equilibrage-de-la-progression-puissance-par-nive.md) | Équilibrage de la progression (puissance par niveau, contenu par niveau) | Test | P1 | 3 | À faire | E02-T06 |
 | [E08-T14](E08-T14-outil-de-balayage-de-parametres-reutilisable.md) | Outil de balayage de paramètres réutilisable | Tech | P1 | 2 | À faire | E08-T04 |
+| [E08-T15](E08-T15-profils-humains-a-delais-variables.md) | Profils humains à délais de décision variables | Test | P1 | 2 | À faire | E08-T01 |
 <!-- TICKETS:END -->
