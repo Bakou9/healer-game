@@ -13,10 +13,11 @@ namespace Healer.Combat.Tests
     public class ArchitectureTests
     {
         private static readonly string CombatDir = Path.Combine(Fixtures.CoreDir, "Healer.Combat");
+        private static readonly string[] PureLibraries = { "Healer.Combat", "Healer.Ui" };
 
         private static IEnumerable<(string name, string code)> CoreSources()
         {
-            foreach (var file in Directory.GetFiles(CombatDir, "*.cs", SearchOption.AllDirectories))
+            foreach (var file in PureLibraries.SelectMany(lib => Directory.GetFiles(Path.Combine(Fixtures.CoreDir, lib), "*.cs", SearchOption.AllDirectories)))
             {
                 var sep = Path.DirectorySeparatorChar;
                 if (file.Contains($"{sep}obj{sep}") || file.Contains($"{sep}bin{sep}")) continue;
@@ -41,7 +42,7 @@ namespace Healer.Combat.Tests
         [Test]
         public void Le_cœur_est_bien_trouve()
         {
-            Assert.That(CoreSources().Select(s => s.name), Does.Contain("Battle.cs"));
+            Assert.That(CoreSources().Select(s => s.name), Does.Contain("Battle.cs").And.Contain("Format.cs"));
         }
 
         [TestCaseSource(nameof(ForbiddenCases))]
@@ -53,6 +54,38 @@ namespace Healer.Combat.Tests
 
         public static IEnumerable<TestCaseData> ForbiddenCases() =>
             Forbidden.Select(f => new TestCaseData(f.pattern, f.why).SetName("Le_cœur_reste_pur : " + f.why));
+
+        [TestCase("Healer.Combat")]
+        [TestCase("Healer.Ui")]
+        public void Chaque_bibliotheque_est_un_paquet_Unity_sans_references_moteur(string lib)
+        {
+            var asmdef = File.ReadAllText(Path.Combine(Fixtures.CoreDir, lib, lib + ".asmdef"));
+            Assert.That(asmdef, Does.Contain("\"noEngineReferences\": true"), "le paquet ne doit référencer aucun module moteur");
+            Assert.That(File.Exists(Path.Combine(Fixtures.CoreDir, lib, "package.json")), Is.True);
+        }
+
+        [Test]
+        public void Les_dependances_vont_vers_le_bas_le_cœur_ne_depend_jamais_de_l_interface()
+        {
+            // Sens autorisé : Healer.Ui peut utiliser Healer.Combat ; l'inverse est interdit (docs/ARCHITECTURE_UNITY.md).
+            var combatCode = CoreSources().Where(s => File.Exists(Path.Combine(CombatDir, s.name))).ToList();
+            Assert.That(combatCode, Is.Not.Empty);
+            Assert.That(combatCode.Where(s => Regex.IsMatch(s.code, @"\bHealer\.Ui\b")).Select(s => s.name), Is.Empty);
+            var csproj = File.ReadAllText(Path.Combine(CombatDir, "Healer.Combat.csproj"));
+            Assert.That(csproj, Does.Not.Contain("Healer.Ui"));
+            var asmdef = File.ReadAllText(Path.Combine(CombatDir, "Healer.Combat.asmdef"));
+            Assert.That(asmdef, Does.Not.Contain("Healer.Ui"));
+        }
+
+        [Test]
+        public void Aucun_fichier_genere_par_dotnet_ne_traine_a_cote_des_sources()
+        {
+            foreach (var lib in PureLibraries)
+            {
+                Assert.That(Directory.Exists(Path.Combine(Fixtures.CoreDir, lib, "obj")), Is.False, lib + "/obj : Unity compilerait ces fichiers");
+                Assert.That(Directory.Exists(Path.Combine(Fixtures.CoreDir, lib, "bin")), Is.False, lib + "/bin");
+            }
+        }
 
         [Test]
         public void Le_projet_du_cœur_ne_reference_pas_Unity()

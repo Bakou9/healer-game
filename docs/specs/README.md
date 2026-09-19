@@ -89,9 +89,9 @@ nécessaire au lancement · **P3** plus tard. Phases : voir `VISION.md` §15.
 | [E11](epics/E11-platforms-release/README.md) | Plateformes et publication | 7 | 0/7 |
 | [E12](epics/E12-art-audio/README.md) | Direction artistique et audio | 5 | 0/5 |
 | [E13](epics/E13-quality-governance/README.md) | Qualité, outillage et gouvernance | 9 | 2/9 |
-| [E14](epics/E14-unity-migration/README.md) | Migration Unity et MCP | 17 | 6/17 |
+| [E14](epics/E14-unity-migration/README.md) | Migration Unity et MCP | 17 | 7/17 |
 
-Total : 142 tickets, 10/142 terminés.
+Total : 142 tickets, 11/142 terminés.
 
 ### Tous les tickets
 
@@ -230,10 +230,10 @@ Total : 142 tickets, 10/142 terminés.
 | [E14-T06](epics/E14-unity-migration/E14-T06-conformite-golden-la-simulation-c-reproduit-a-l.md) | Conformité golden : la simulation C# reproduit à l'identique les combats de référence | P0 | 2 | Terminé |
 | [E14-T07](epics/E14-unity-migration/E14-T07-chargement-et-validation-du-contenu-json-en-c.md) | Chargement et validation du contenu JSON en C# | P0 | 2 | Terminé |
 | [E14-T08](epics/E14-unity-migration/E14-T08-portage-des-tests-d-equilibrage-bots-profils-bor.md) | Portage des tests d'équilibrage : bots, profils, bornes, sensibilité | P0 | 2 | Terminé |
-| [E14-T09](epics/E14-unity-migration/E14-T09-garde-fous-d-architecture-en-c.md) | Garde-fous d'architecture en C# | P0 | 2 | À faire |
+| [E14-T09](epics/E14-unity-migration/E14-T09-garde-fous-d-architecture-en-c.md) | Garde-fous d'architecture en C# | P0 | 2 | Terminé |
 | [E14-T10](epics/E14-unity-migration/E14-T10-projet-unity-urp-portrait-input-system-c-ur-en-p.md) | Projet Unity : URP, portrait, Input System, cœur en paquet local | P1 | 2 | À faire |
 | [E14-T11](epics/E14-unity-migration/E14-T11-scene-de-combat-3d-camera-eclairage-lecture-de-b.md) | Scène de combat 3D : caméra, éclairage, lecture de Battle, événements vers la présentation | P1 | 2 | À faire |
-| [E14-T12](epics/E14-unity-migration/E14-T12-interface-de-combat-unity-mise-en-page-portrait.md) | Interface de combat Unity : mise en page portrait, ciblage en un geste, cartes lisibles | P1 | 2 | À faire |
+| [E14-T12](epics/E14-unity-migration/E14-T12-interface-de-combat-unity-mise-en-page-portrait.md) | Interface de combat Unity : mise en page portrait, ciblage en un geste, cartes lisibles | P1 | 2 | En cours |
 | [E14-T13](epics/E14-unity-migration/E14-T13-modeles-3d-stylises-user-friendly-golem-et-4-per.md) | Modèles 3D stylisés « user friendly » : Golem et 4 personnages, construits par scripts reproductibles | P1 | 2 | À faire |
 | [E14-T14](epics/E14-unity-migration/E14-T14-effets-visuels-et-retours-en-unity.md) | Effets visuels et retours en Unity | P2 | 2 | À faire |
 | [E14-T15](epics/E14-unity-migration/E14-T15-build-android-et-test-sur-appareil-d-entree-de-g.md) | Build Android et test sur appareil d'entrée de gamme | P2 | 2 | À faire |

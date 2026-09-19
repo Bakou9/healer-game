@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Healer.Combat\Healer.Combat.csproj" />
+    <ProjectReference Include="..\Healer.Ui\Healer.Ui.csproj" />
   </ItemGroup>
 
 </Project>

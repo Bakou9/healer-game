@@ -27,3 +27,6 @@ unity/**/MemoryCaptures/
 .claude/settings.local.json
 .tmp-*
 .DS_Store
+
+# Sorties de dotnet (hors des sources)
+.build/

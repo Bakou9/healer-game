@@ -1,0 +1,15 @@
+<Project>
+
+  <!--
+    Les fichiers générés par dotnet (obj/bin) vont dans .build/ à la racine du dépôt, JAMAIS à côté
+    des sources : le dossier core/Healer.Combat est aussi un paquet Unity, et Unity compilerait sinon
+    les fichiers .cs générés de obj/ (doublons d'attributs d'assembly).
+  -->
+  <PropertyGroup>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\'))</RepoRoot>
+    <BaseIntermediateOutputPath>$(RepoRoot).build\$(MSBuildProjectName)\obj\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(RepoRoot).build\$(MSBuildProjectName)\bin\</BaseOutputPath>
+    <EnableDefaultCompileItems>true</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+</Project>

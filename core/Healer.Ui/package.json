@@ -1,0 +1,7 @@
+{
+  "name": "com.healer.ui",
+  "version": "0.1.0",
+  "displayName": "Healer UI (logique d'interface pure)",
+  "description": "Formatage des valeurs à hauteur humaine, jetons de mise en page et ciblage en un geste, en C# pur.",
+  "unity": "6000.0"
+}
