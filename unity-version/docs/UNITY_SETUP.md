@@ -100,3 +100,8 @@ Sécurité Windows → Protection contre les virus et menaces → Gérer les par
 exclusion → Dossier → `%USERPROFILE%\Documents\healer-game\unity-version\unity\HealerGame\Library`
 (le dossier `Library` est entièrement régénérable ; on n'exclut PAS le code source).
 Vérification : ouvrir le projet en mode automatique ne doit plus afficher « An error occurred while resolving packages ».
+
+**Contournement en place (2026-09-19, décision D-034)** : le projet ne dépend plus d'aucun paquet du registre Unity
+(`com.unity.multiplayer.center` retiré ; Newtonsoft.Json intégré au paquet du cœur, `core/Healer.Combat/Plugins/`,
+licence MIT dans `core/THIRD_PARTY_NOTICES.md`). Unity ouvre et compile le projet sans erreur. L'exclusion Defender
+du dossier `Library` redeviendra **nécessaire** dès l'ajout de paquets du registre (URP, Input System, Test Framework).

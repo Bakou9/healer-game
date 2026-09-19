@@ -191,3 +191,9 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - Date : 2026-09-19 · Statut : Ferme (précise D-027 : la version Phaser reste intacte, mais la version Unity n'a plus de dépôt séparé)
 - Décision : sur demande de l'utilisateur, la version Unity est poussée dans un répertoire imbriqué du dépôt https://github.com/Bakou9/healer-game, dossier `unity-version/` (historique complet conservé, import par `git subtree add`). Les fichiers Phaser ne sont pas modifiés ; ajouts : `vitest.config.ts` (les tests Phaser ignorent le sous-dossier), un workflow `unity-version.yml`, et un pointeur en tête du `CLAUDE.md` racine. Le dossier local `%USERPROFILE%\Documents\healer-game-unity` devient une copie de secours : on ne travaille plus que dans `unity-version/`.
 - Tickets : E14-T01, E14-T16
+
+### D-034 — Newtonsoft.Json intégré au cœur, aucun paquet du registre Unity pour l'instant
+- Date : 2026-09-19 · Statut : Ferme (contournement temporaire, réversible)
+- Constat : Windows Defender fait échouer le renommage des paquets téléchargés du registre Unity (EPERM). Ce n'est pas un jugement sur le projet : l'analyse en temps réel tient les fichiers fraîchement écrits.
+- Décision : intégrer la DLL Newtonsoft.Json 13.0.3 (identique à celle des tests dotnet, licence MIT) au paquet du cœur et ne dépendre d'aucun paquet du registre, ce qui permet à Unity d'ouvrir et de compiler le projet sans toucher aux réglages de sécurité de l'utilisateur. Une exclusion Defender du dossier `Library` (cache régénérable) sera demandée à l'utilisateur au moment d'ajouter URP, Input System ou Test Framework.
+- Tickets : E14-T10

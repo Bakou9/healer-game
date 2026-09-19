@@ -1,12 +1,16 @@
 {
   "dependencies": {
-    "com.unity.multiplayer.center": {
-      "version": "1.0.1",
+    "com.healer.combat": {
+      "version": "file:../../../core/Healer.Combat",
       "depth": 0,
-      "source": "builtin",
-      "dependencies": {
-        "com.unity.modules.uielements": "1.0.0"
-      }
+      "source": "local",
+      "dependencies": {}
+    },
+    "com.healer.ui": {
+      "version": "file:../../../core/Healer.Ui",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
