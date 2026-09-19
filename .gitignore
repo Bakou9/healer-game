@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# Le dossier natif généré par `npm run cap:add:android` est normalement versionné
+# (c'est là que vivent les réglages Android spécifiques), donc on ne l'ignore pas.
+
+# Local à chaque machine
+.claude/settings.local.json
+.tmp-*

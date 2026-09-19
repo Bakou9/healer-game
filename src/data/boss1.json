@@ -1,0 +1,14 @@
+{
+  "id": "boss1",
+  "name": "Golem Ancestral",
+  "maxHp": 7000,
+  "atk": 55,
+  "def": 18,
+  "tickMs": 2200,
+  "pattern": [
+    { "type": "attack", "telegraphMs": 0 },
+    { "type": "attack", "telegraphMs": 0 },
+    { "type": "bigAttack", "telegraphMs": 1400, "multiplier": 2.5, "hitsAll": true },
+    { "type": "attack", "telegraphMs": 0 }
+  ]
+}

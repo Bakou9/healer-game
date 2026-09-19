@@ -1,0 +1,32 @@
+{
+  "name": "healer-game",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Prototype d'un healer gacha : boucle de combat en TypeScript pur (testable) + rendu Phaser, packagé pour Android via Capacitor et pensé pour un futur build Steam.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "test:update-golden": "node scripts/update-golden.mjs",
+    "check": "npm run typecheck && npm test && npm run build",
+    "cap:add:android": "cap add android",
+    "cap:sync": "npm run build && cap sync android",
+    "cap:open:android": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "phaser": "^3.85.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2",
+    "@types/node": "^20.19.43",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.4"
+  }
+}
