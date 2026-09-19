@@ -14,5 +14,9 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: [BattleScene],
 };
 
-// eslint-disable-next-line no-new
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+
+// Poignée de débogage, uniquement en développement (retirée du build de production).
+if (import.meta.env.DEV) {
+  (window as unknown as { __game: Phaser.Game }).__game = game;
+}

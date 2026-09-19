@@ -56,6 +56,12 @@ résultat), et réutilisable telle quelle si un jour la validation des combats
 doit se faire côté serveur (indispensable pour un gacha, afin d'éviter la
 triche sur les tirages et les récompenses).
 
+## Documents de référence
+
+- `CLAUDE.md` : règles de travail (architecture, non-régression, valeurs lisibles).
+- `docs/PATTERNS_JEU_VIDEO.md` : patterns de développement à appliquer.
+- `docs/EQUILIBRAGE.md` : ce qu'est un combat équilibré ici, mesures et réglages.
+
 ## Scripts utiles
 
 | Commande | Effet |

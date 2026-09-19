@@ -2,8 +2,11 @@ import Phaser from "phaser";
 import { Battle } from "../sim/Battle";
 import { createEncounter } from "../sim/encounter";
 import { FixedStepper } from "../sim/fixedStep";
+import type { BattleEvent } from "../sim/events";
 import skillsData from "../data/skills.json";
 import type { SkillDef, UnitState } from "../sim/types";
+import { formatNumber, formatRatio, formatSeconds } from "../ui/format";
+import { FloatingTextPool } from "./FloatingTextPool";
 
 const SKILLS = skillsData as SkillDef[];
 
@@ -14,6 +17,22 @@ const ROLE_COLOR: Record<UnitState["role"], number> = {
 };
 
 const HEALER_ID = "healer";
+
+const COLOR = {
+  heal: "#7CFFB2",
+  damage: "#FF7C7C",
+  poison: "#C78CFF",
+  shield: "#7CC8FF",
+  boss: "#E6E6E6",
+};
+
+const BOSS_ACTION_LABEL: Record<string, string> = {
+  attack: "attaque",
+  bigAttack: "attaque de zone",
+  poison: "poison",
+};
+
+const LOG_LINES = 4;
 
 /**
  * Écran de combat. Rend l'état de `Battle` (simulation pure) et transforme
@@ -39,6 +58,9 @@ export class BattleScene extends Phaser.Scene {
     hpBar: Phaser.GameObjects.Graphics;
     manaBar: Phaser.GameObjects.Graphics | null;
     nameText: Phaser.GameObjects.Text;
+    hpText: Phaser.GameObjects.Text;
+    statusText: Phaser.GameObjects.Text;
+    manaText: Phaser.GameObjects.Text | null;
   }> = [];
 
   private skillButtons: Array<{
@@ -48,6 +70,9 @@ export class BattleScene extends Phaser.Scene {
     cooldownText: Phaser.GameObjects.Text;
   }> = [];
 
+  private floating!: FloatingTextPool;
+  private phaseBanner!: Phaser.GameObjects.Text;
+  private logLines: string[] = [];
   private logText!: Phaser.GameObjects.Text;
   private endOverlay: Phaser.GameObjects.Container | null = null;
   private pauseButton!: Phaser.GameObjects.Text;
@@ -61,6 +86,10 @@ export class BattleScene extends Phaser.Scene {
     this.armedSkillId = null;
     this.endOverlay = null;
     this.stepper = new FixedStepper();
+    // La scène est réutilisée par « Recommencer » : on repart de listes vides.
+    this.allyViews = [];
+    this.skillButtons = [];
+    this.logLines = [];
 
     // Seed fixe pour l'instant : à terme, tirée par le serveur pour chaque run.
     this.battle = new Battle(createEncounter(Date.now() % 100000));
@@ -70,10 +99,29 @@ export class BattleScene extends Phaser.Scene {
     this.buildSkillBar();
     this.buildTopBar();
 
-    this.logText = this.add.text(16, 250, "", {
+    this.floating = new FloatingTextPool(this);
+    this.phaseBanner = this.add
+      .text(this.scale.width / 2, 250, "", {
+        fontFamily: "sans-serif",
+        fontSize: "26px",
+        fontStyle: "bold",
+        color: "#ffb347",
+        stroke: "#000000",
+        strokeThickness: 5,
+      })
+      .setOrigin(0.5)
+      .setAlpha(0)
+      .setDepth(60);
+    // Observer : la scène réagit aux événements de la simulation, qui ne la connaît pas.
+    const unsubscribe = this.battle.subscribe((event) => this.onBattleEvent(event));
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, unsubscribe);
+
+    // Sous les cartes d'alliés, dans l'espace libre au-dessus de la barre de compétences.
+    this.logText = this.add.text(24, 450, "", {
       fontFamily: "monospace",
-      fontSize: "12px",
+      fontSize: "14px",
       color: "#8a8fa3",
+      lineSpacing: 6,
     });
   }
 
@@ -138,6 +186,11 @@ export class BattleScene extends Phaser.Scene {
         .setOrigin(0.5, 0);
       const hpBar = this.add.graphics();
       const manaBar = ally.role === "healer" ? this.add.graphics() : null;
+      const hpText = this.add.text(x, y - 14, "", { fontSize: "13px", color: "#ffffff" }).setOrigin(0.5);
+      const statusText = this.add.text(x, y + 6, "", { fontSize: "11px", color: COLOR.poison }).setOrigin(0.5);
+      const manaText = manaBar
+        ? this.add.text(x, y + 62, "", { fontSize: "11px", color: "#8fc9ff" }).setOrigin(0.5)
+        : null;
 
       // Tap sur un allié = cible pour la compétence armée (le cas échéant).
       rect.setInteractive({ useHandCursor: true }).on("pointerdown", () => {
@@ -146,7 +199,7 @@ export class BattleScene extends Phaser.Scene {
         }
       });
 
-      this.allyViews.push({ id: ally.id, rect, hpBar, manaBar, nameText });
+      this.allyViews.push({ id: ally.id, rect, hpBar, manaBar, nameText, hpText, statusText, manaText });
     });
   }
 
@@ -220,7 +273,11 @@ export class BattleScene extends Phaser.Scene {
   private renderBoss(): void {
     const hp = this.battle.getBossHp();
     const maxHp = this.battle.getBossMaxHp();
-    this.bossNameText.setText(`${this.battle.getBossName()}  ${hp} / ${maxHp}`);
+    const phase = this.battle.getBossPhase();
+    const phaseSuffix = phase.index > 0 ? `  · ${phase.name}` : "";
+    this.bossNameText.setText(
+      `${this.battle.getBossName()}  ${formatNumber(hp)} / ${formatNumber(maxHp)}${phaseSuffix}`,
+    );
 
     const barWidth = 260;
     const x = this.scale.width / 2 - barWidth / 2;
@@ -231,8 +288,7 @@ export class BattleScene extends Phaser.Scene {
 
     const telegraph = this.battle.getTelegraph();
     if (telegraph?.type === "bigAttack") {
-      const seconds = (telegraph.msRemaining / 1000).toFixed(1);
-      this.telegraphText.setText(`⚠ Attaque de zone dans ${seconds}s`);
+      this.telegraphText.setText(`⚠ Attaque de zone dans ${formatSeconds(telegraph.msRemaining)}`);
       this.bossRect.setStrokeStyle(4, 0xff5b5b);
     } else {
       this.telegraphText.setText("");
@@ -266,8 +322,11 @@ export class BattleScene extends Phaser.Scene {
           .fillRect(x, view.rect.y + 42, barWidth * (ally.mana / (ally.maxMana || 1)), 6);
       }
 
-      const shieldSuffix = ally.shield > 0 ? ` 🛡${Math.round(ally.shield)}` : "";
+      const shieldSuffix = ally.shield > 0 ? ` 🛡${formatNumber(ally.shield)}` : "";
       view.nameText.setText(`${ally.name}${shieldSuffix}`);
+      view.hpText.setText(ally.alive ? formatRatio(ally.hp, ally.maxHp) : "K.O.");
+      view.statusText.setText(ally.effects.map((e) => `${e.name} ${formatSeconds(e.msRemaining)}`).join("\n"));
+      view.manaText?.setText(`Mana ${formatRatio(ally.mana, ally.maxMana)}`);
     }
   }
 
@@ -279,13 +338,104 @@ export class BattleScene extends Phaser.Scene {
 
       button.bg.setFillStyle(armed ? 0x445577 : 0x2a2d3a);
       button.bg.setAlpha(usable || armed ? 1 : 0.5);
-      button.cooldownText.setText(cooldownMs > 0 ? `${(cooldownMs / 1000).toFixed(1)}s` : "");
+      button.cooldownText.setText(cooldownMs > 0 ? formatSeconds(cooldownMs) : "");
     }
   }
 
   private renderLog(): void {
-    const lines = this.battle.getLog().slice(-4);
-    this.logText.setText(lines.join("\n"));
+    this.logText.setText(this.logLines.join("\n"));
+  }
+
+  // ---- Réaction aux événements de combat (Observer) --------------------------
+
+  private allyPosition(unitId: string): { x: number; y: number } {
+    const view = this.allyViews.find((v) => v.id === unitId);
+    return view ? { x: view.rect.x, y: view.rect.y - 30 } : { x: this.scale.width / 2, y: 340 };
+  }
+
+  private allyName(unitId: string): string {
+    return this.battle.getAllies().find((a) => a.id === unitId)?.name ?? unitId;
+  }
+
+  private pushLog(timeMs: number, text: string): void {
+    this.logLines.push(`${formatSeconds(timeMs)}  ${text}`);
+    if (this.logLines.length > LOG_LINES) this.logLines.shift();
+  }
+
+  private onBattleEvent(event: BattleEvent): void {
+    switch (event.type) {
+      case "healed":
+        if (event.amount > 0) {
+          const { x, y } = this.allyPosition(event.unitId);
+          this.floating.spawn(x, y, `+${formatNumber(event.amount)}`, { color: COLOR.heal });
+        }
+        break;
+      case "shielded": {
+        const { x, y } = this.allyPosition(event.unitId);
+        this.floating.spawn(x, y, `Bouclier +${formatNumber(event.amount)}`, { color: COLOR.shield, sizePx: 14 });
+        break;
+      }
+      case "unitDamaged": {
+        const { x, y } = this.allyPosition(event.unitId);
+        if (event.amount > 0) this.floating.spawn(x, y, `-${formatNumber(event.amount)}`, { color: COLOR.damage });
+        else this.floating.spawn(x, y, "Absorbé", { color: COLOR.shield, sizePx: 14 });
+        break;
+      }
+      case "effectTick": {
+        const { x, y } = this.allyPosition(event.unitId);
+        if (event.amount > 0) {
+          this.floating.spawn(x, y, `-${formatNumber(event.amount)}`, { color: COLOR.poison, sizePx: 14 });
+        }
+        break;
+      }
+      case "effectApplied": {
+        const { x, y } = this.allyPosition(event.unitId);
+        this.floating.spawn(x, y - 18, "Empoisonné !", { color: COLOR.poison, sizePx: 14 });
+        break;
+      }
+      case "effectEnded":
+        if (event.reason === "cleansed") {
+          const { x, y } = this.allyPosition(event.unitId);
+          this.floating.spawn(x, y - 18, "Purgé", { color: COLOR.heal, sizePx: 14 });
+        }
+        break;
+      case "bossDamaged":
+        this.floating.spawn(this.scale.width / 2 + this.bossHitOffset(event.sourceId), 100, formatNumber(event.amount), {
+          color: COLOR.boss,
+          sizePx: 12,
+        });
+        break;
+      case "skillUsed": {
+        const skill = SKILLS.find((s) => s.id === event.skillId);
+        const targets =
+          event.targetIds.length > 1 ? "toute l'équipe" : this.allyName(event.targetIds[0] ?? event.casterId);
+        this.pushLog(event.timeMs, `${skill?.name ?? event.skillId} → ${targets}`);
+        break;
+      }
+      case "bossAction":
+        this.pushLog(event.timeMs, `Le boss : ${BOSS_ACTION_LABEL[event.action] ?? event.action}`);
+        break;
+      case "unitDied":
+        this.pushLog(event.timeMs, `${this.allyName(event.unitId)} est K.O.`);
+        break;
+      case "bossPhaseChanged":
+        this.pushLog(event.timeMs, `Le boss passe en phase « ${event.name} »`);
+        this.showPhaseBanner(`Phase ${event.phase + 1} — ${event.name} !`);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /** Décale les chiffres de dégâts sur le boss selon l'attaquant, pour qu'ils ne se superposent pas. */
+  private bossHitOffset(sourceId: string): number {
+    const index = this.allyViews.findIndex((v) => v.id === sourceId);
+    return (index - 1) * 36;
+  }
+
+  private showPhaseBanner(text: string): void {
+    this.phaseBanner.setText(text).setAlpha(1);
+    this.tweens.add({ targets: this.phaseBanner, alpha: 0, delay: 1400, duration: 700 });
   }
 
   private showEndOverlay(victory: boolean): void {

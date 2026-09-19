@@ -29,36 +29,87 @@ describe("outil golden", () => {
   });
 });
 
-describe("non-régression : équilibrage avec le bot de soin de référence", () => {
+/**
+ * Bornes d'équilibrage : voir docs/EQUILIBRAGE.md (définition de « équilibré »
+ * pour ce jeu). Une modification de valeurs qui sort de ces bornes est une
+ * régression d'équilibrage à expliquer à l'utilisateur.
+ */
+describe("non-régression : équilibrage (docs/EQUILIBRAGE.md)", () => {
   const SEEDS = 100;
+  const MAX_MS = 150000;
 
-  function playAll() {
-    return Array.from({ length: SEEDS }, (_, i) => {
-      const battle = new Battle(createEncounter(i + 1), []);
-      let lowestHpRatio = 1;
-      battle.subscribe(() => {
-        for (const u of battle.getAllies()) lowestHpRatio = Math.min(lowestHpRatio, u.hp / u.maxHp);
-      });
-      runWithReferenceHealer(battle, 120000);
-      return { result: battle.getResult(), durationMs: battle.getClock(), lowestHpRatio };
-    });
+  interface Stats {
+    winRate: number;
+    deathRate: number;
+    avgLowestHp: number;
+    minDurationMs: number;
+    maxDurationMs: number;
   }
 
-  it("le combat reste gagnable : au moins 95 % de victoires", () => {
-    const wins = playAll().filter((r) => r.result === "victory").length;
-    expect(wins / SEEDS).toBeGreaterThanOrEqual(0.95);
-  });
-
-  it("le combat reste tendu : l'équipe descend en moyenne sous 60 % de PV au plus bas", () => {
-    const lows = playAll().map((r) => r.lowestHpRatio);
-    const average = lows.reduce((a, b) => a + b, 0) / lows.length;
-    expect(average).toBeLessThan(0.6);
-  });
-
-  it("la durée du combat reste dans une fourchette raisonnable (40 s à 110 s)", () => {
-    for (const r of playAll()) {
-      expect(r.durationMs).toBeGreaterThanOrEqual(40000);
-      expect(r.durationMs).toBeLessThanOrEqual(110000);
+  function play(drive: (b: Battle) => void): Stats {
+    let wins = 0;
+    let deaths = 0;
+    let lowSum = 0;
+    const durations: number[] = [];
+    for (let seed = 1; seed <= SEEDS; seed++) {
+      const battle = new Battle(createEncounter(seed), []);
+      let lowest = 1;
+      battle.subscribe(() => {
+        for (const u of battle.getAllies()) lowest = Math.min(lowest, u.hp / u.maxHp);
+      });
+      drive(battle);
+      if (battle.getResult() === "victory") wins += 1;
+      if (battle.getAllies().some((u) => !u.alive)) deaths += 1;
+      lowSum += lowest;
+      durations.push(battle.getClock());
     }
+    return {
+      winRate: wins / SEEDS,
+      deathRate: deaths / SEEDS,
+      avgLowestHp: lowSum / SEEDS,
+      minDurationMs: Math.min(...durations),
+      maxDurationMs: Math.max(...durations),
+    };
+  }
+
+  const attentive = play((b) => runWithReferenceHealer(b, MAX_MS));
+  const slow = play((b) => runWithReferenceHealer(b, MAX_MS, { decisionEveryMs: 1500 }));
+  const noPurge = play((b) => runWithReferenceHealer(b, MAX_MS, { purge: false }));
+  const noHealer = play((b) => void b.run(MAX_MS));
+  const spamSingleHeal = play((b) => {
+    for (let i = 0; i < 100; i++) b.issueCommand({ timeMs: i * 1200, skillId: "heal_single", targetId: "tank" });
+    b.run(MAX_MS);
+  });
+
+  it("gagnable : un joueur attentif gagne au moins 95 % des combats", () => {
+    expect(attentive.winRate).toBeGreaterThanOrEqual(0.95);
+  });
+
+  it("juste : un joueur attentif perd rarement un allié (10 % des combats au plus)", () => {
+    expect(attentive.deathRate).toBeLessThanOrEqual(0.1);
+  });
+
+  it("tendu mais pas au bord du gouffre : PV minimum moyen de l'équipe entre 15 % et 45 %", () => {
+    expect(attentive.avgLowestHp).toBeGreaterThanOrEqual(0.15);
+    expect(attentive.avgLowestHp).toBeLessThanOrEqual(0.45);
+  });
+
+  it("durée adaptée au mobile : 60 s à 120 s", () => {
+    expect(attentive.minDurationMs).toBeGreaterThanOrEqual(60000);
+    expect(attentive.maxDurationMs).toBeLessThanOrEqual(120000);
+  });
+
+  it("la passivité est punie : sans soigneur, ou en spammant un seul sort, on perd toujours", () => {
+    expect(noHealer.winRate).toBe(0);
+    expect(spamSingleHeal.winRate).toBe(0);
+  });
+
+  it("la réactivité compte : un joueur lent (1,5 s) descend nettement plus bas qu'un joueur attentif", () => {
+    expect(attentive.avgLowestHp - slow.avgLowestHp).toBeGreaterThanOrEqual(0.05);
+  });
+
+  it("la Purge compte : ignorer le poison fait descendre l'équipe nettement plus bas", () => {
+    expect(attentive.avgLowestHp - noPurge.avgLowestHp).toBeGreaterThanOrEqual(0.05);
+    expect(noPurge.deathRate).toBeGreaterThan(attentive.deathRate);
   });
 });

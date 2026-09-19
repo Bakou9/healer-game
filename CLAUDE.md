@@ -50,6 +50,21 @@ Command, Observer, data-driven, séparation modèle/vue…), lesquels sont diff�
 le ou les patterns appliqués**. Ne pas introduire un pattern différé avant que
 son déclencheur soit atteint. Si on en adopte un, mettre le fichier à jour.
 
+## Équilibrage et valeurs lisibles (OBLIGATOIRE)
+
+- **`docs/EQUILIBRAGE.md`** définit ce qu'est un jeu équilibré pour ce projet
+  (6 critères mesurables, profils de joueurs de référence, boutons de réglage,
+  procédure). Le lire avant de toucher à `src/data/*.json`, à une règle de
+  combat ou au bot de référence, et rendre compte de l'avant/après des mesures.
+  Ne jamais relâcher une borne d'équilibrage pour faire passer un test.
+- **Valeurs à hauteur humaine.** Tout nombre affiché au joueur est **tronqué**
+  (jamais arrondi vers le haut), sans décimales inutiles, abrégé si long
+  (`7000`, `12,3k`, `4,9s`) : toujours via `src/ui/format.ts`
+  (`formatNumber`, `formatSeconds`, `formatRatio`), jamais de `toFixed`,
+  `Math.round` ou nombre brut dans un texte affiché. Dans les données JSON,
+  toute quantité de jeu est un entier rond ; seuls `multiplier` et les ratios
+  (`…Ratio`) peuvent être décimaux (vérifié par un test).
+
 ## Protocole de non-régression (OBLIGATOIRE)
 
 Les tests détectent les régressions ; l'utilisateur veut **comprendre chacune**.

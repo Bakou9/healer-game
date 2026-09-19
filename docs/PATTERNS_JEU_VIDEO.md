@@ -28,11 +28,11 @@ les autres.
 | Data-driven (Prototype / Factory par données) | **Adopté** | `src/data/*.json`, `sim/encounter.ts` | — |
 | Séparation Modèle / Vue (MVC/MVP) | **Adopté** | `sim/` (modèle) vs `scenes/` (vue + saisie) | — |
 | Facade | **Adopté** | getters de `Battle` (`getAllies`, `getTelegraph`…) | — |
-| State / State Machine | Partiel | `BattleResult` | Phases de boss, ou états d'un personnage (étourdi, mort…) |
+| State / State Machine | **Adopté** (phases de boss) | `BattleResult`, `BossPhaseDef` + `checkBossPhase` | États de personnage (étourdi…) : même approche, table de transitions en données |
 | Dependency Injection | Partiel | `Rng` et `EncounterDef` injectés | Besoin de tester avec un autre catalogue de compétences |
 | Strategy | Différé | — | Un 2e type d'effet de compétence ou de comportement de boss qui exige du code |
-| Decorator (buffs/debuffs) | Différé | — | Arrivée des effets sur la durée (poison, marque) : liste d'effets actifs pilotée par les données |
-| Object Pool | Différé | — | Objets Phaser créés/détruits en boucle (chiffres de dégâts, particules) |
+| Decorator (effets actifs) | **Adopté** | `sim/types.ts` `EffectDef`, `data/effects.json`, `Battle.applyEffect/runEffects` | — |
+| Object Pool | **Adopté** | `scenes/FloatingTextPool.ts` | Particules ou projectiles : réutiliser ce modèle |
 | Adapter | Différé | — | Services de plateforme (Steam, Android, sauvegarde) |
 | ECS | Différé | — | Dizaines d'entités hétérogènes, ou combinatoire de comportements (vagues d'ennemis) |
 | Behavior Tree / Utility AI / GOAP | Différé | — | Décisions du boss/alliés dépendant de l'état du combat, pas d'un pattern fixe |
@@ -75,11 +75,22 @@ les autres.
 ### Facade
 - `Battle` expose des getters qui renvoient des copies/vues (`UnitState`), pas ses structures internes. L'UI ne dépend donc pas de la représentation interne.
 
-## Patterns partiels
+### State / State Machine (phases de boss)
+- **Problème :** le boss change de comportement au cours du combat sans une cascade de booléens.
+- **Application :** `boss1.json` déclare `phases[]` (seuil `atHpRatio`, `tickMs`, `pattern`) = la **table de transitions**, en données. `Battle.checkBossPhase` la parcourt dans l'ordre, émet `bossPhaseChanged` et bascule le comportement courant ; l'index de phase ne fait qu'avancer. Un test vérifie qu'on change de phase une seule fois, au bon seuil, et que le comportement change réellement.
+- **Ne pas :** ajouter des `if (hp < …)` dispersés dans `Battle`. Nouvel état (personnage étourdi…) = même approche : états explicites, table de transitions, un test par transition.
 
-### State / State Machine
-- **Aujourd'hui :** `BattleResult` (`ongoing` → `victory` | `defeat`) suffit.
-- **Quand passer à une vraie FSM :** dès qu'il y a des phases de boss ou des états de personnage avec transitions. Alors : états explicites (enum ou union typée), une table de transitions, un test par transition. Éviter les booléens en cascade (`isStunned && !isDead && …`).
+### Decorator (effets actifs)
+- **Problème :** poison, marque, étourdissement… sans sous-classes ni cas particuliers par sort.
+- **Application :** un effet est une **donnée** (`effects.json` : dégâts par tick, tick, durée) ; l'unité porte une **liste d'effets actifs**. Un sort ou une action de boss applique un effet par son `effectId` ; `cleanse` (Purge) les retire tous. Une nouvelle application rafraîchit la durée (pas d'empilement). Événements : `effectApplied`, `effectTick`, `effectEnded` (expiré, purgé, mort).
+- **Ne pas :** coder un effet précis en dur ; ni faire durer un effet moins qu'un pas de simulation (test sur `tickMs > FIXED_STEP_MS`).
+
+### Object Pool
+- **Problème :** un chiffre flottant par soin ou coup = des dizaines d'objets Phaser créés puis détruits, donc des saccades sur mobile d'entrée de gamme.
+- **Application :** `FloatingTextPool` réutilise ses textes (`spawn` prend un objet libre ou en crée un ; à la fin du tween il retourne dans la réserve). Le nombre d'objets créés reste borné par le nombre d'affichages simultanés.
+- **Ne pas :** créer `this.add.text(...)` dans un gestionnaire d'événement de combat ; réutiliser ce modèle pour particules et projectiles.
+
+## Patterns partiels
 
 ### Dependency Injection
 - **Aujourd'hui :** le générateur aléatoire et la rencontre sont injectés dans `Battle` ; le catalogue de compétences est importé directement.
@@ -88,8 +99,6 @@ les autres.
 ## Patterns différés (avec leur déclencheur)
 
 - **Strategy** — Si un deuxième type d'effet ou de comportement de boss nécessite du code, remplacer les `if` par une table `type → gestionnaire`, dans `sim/`, et non par un `switch` dispersé.
-- **Decorator / effets actifs** — Poison, marque, étourdissement : modéliser comme une **liste d'effets actifs** sur l'unité (données : durée, tick, modificateur), pas comme des sous-classes. La compétence Purge (déjà dans les données, sans effet à retirer aujourd'hui) s'appuiera dessus.
-- **Object Pool** — Dès que la scène crée puis détruit des objets Phaser à chaque événement (chiffres de dégâts, particules) : réserve d'objets réutilisés, sinon saccades sur mobile d'entrée de gamme.
 - **Adapter** — Au moment de Steam/Android : une interface `PlatformServices` (sauvegarde, succès…) implémentée par plateforme. Aucun appel Capacitor/Steam dans `sim/`.
 - **ECS** — Pas justifié pour 4 alliés + 1 boss. À envisager pour des dizaines d'entités hétérogènes.
 - **Behavior Tree / Utility AI / GOAP** — Le boss suit un pattern en données. Une Utility AI (score par action) est le premier candidat si le boss doit décider selon l'état du combat (qui viser, quand enrager). GOAP : pas pertinent pour ce type de jeu.

@@ -3,9 +3,12 @@ import type { BattleEvent, BattleListener } from "./events";
 import skillsData from "../data/skills.json";
 import type {
   BattleResult,
+  BossActionDef,
   BossDef,
+  BossPhaseState,
   CharacterDef,
   Command,
+  EffectDef,
   EncounterDef,
   SkillDef,
   Telegraph,
@@ -19,17 +22,28 @@ const SKILLS: Record<string, SkillDef> = Object.fromEntries(
 /** Intervalle d'attaque automatique des alliés non-soigneurs. */
 export const ALLY_ATTACK_INTERVAL_MS = 1600;
 
-interface InternalUnit extends UnitState {
+interface RunningEffect {
+  def: EffectDef;
+  expiresAt: number;
+  nextTickAt: number;
+}
+
+interface InternalUnit extends Omit<UnitState, "effects"> {
   atk: number;
   def: number;
   manaRegenPerSec: number;
   nextAttackAt: number;
   cooldowns: Record<string, number>;
+  effects: RunningEffect[];
 }
 
 interface BossRuntime {
   def: BossDef;
   hp: number;
+  /** Comportement courant : celui de la phase active. */
+  pattern: BossActionDef[];
+  tickMs: number;
+  phaseIndex: number;
   patternIndex: number;
   nextTickAt: number;
 }
@@ -43,6 +57,7 @@ export class Battle {
   private clock = 0;
   private rng: Rng;
   private allies: InternalUnit[];
+  private effectDefs: Record<string, EffectDef>;
   private boss: BossRuntime;
   private commands: Command[];
   private commandIndex = 0;
@@ -54,9 +69,13 @@ export class Battle {
     this.rng = createRng(encounter.seed);
     this.commands = [...commands].sort((a, b) => a.timeMs - b.timeMs);
     this.allies = encounter.allies.map((c) => this.toUnit(c));
+    this.effectDefs = Object.fromEntries(encounter.effects.map((e) => [e.id, e]));
     this.boss = {
       def: encounter.boss,
       hp: encounter.boss.maxHp,
+      pattern: encounter.boss.pattern,
+      tickMs: encounter.boss.tickMs,
+      phaseIndex: 0,
       patternIndex: 0,
       nextTickAt: encounter.boss.tickMs,
     };
@@ -78,6 +97,7 @@ export class Battle {
       manaRegenPerSec: c.manaRegenPerSec ?? 0,
       nextAttackAt: ALLY_ATTACK_INTERVAL_MS,
       cooldowns: {},
+      effects: [],
     };
   }
 
@@ -119,8 +139,21 @@ export class Battle {
 
   getAllies(): UnitState[] {
     return this.allies.map(
-      ({ atk: _atk, def: _def, manaRegenPerSec: _mr, nextAttackAt: _na, cooldowns: _cd, ...rest }) => rest,
+      ({ atk: _atk, def: _def, manaRegenPerSec: _mr, nextAttackAt: _na, cooldowns: _cd, effects, ...rest }) => ({
+        ...rest,
+        effects: effects.map((e) => ({
+          id: e.def.id,
+          name: e.def.name,
+          msRemaining: Math.max(0, e.expiresAt - this.clock),
+        })),
+      }),
     );
+  }
+
+  getBossPhase(): BossPhaseState {
+    const index = this.boss.phaseIndex;
+    const name = index === 0 ? "" : (this.boss.def.phases?.[index - 1]?.name ?? "");
+    return { index, name };
   }
 
   getCooldownRemaining(unitId: string, skillId: string): number {
@@ -136,7 +169,7 @@ export class Battle {
 
   /** Renvoie l'attaque à venir du boss si elle est actuellement télégraphiée. */
   getTelegraph(): Telegraph | null {
-    const action = this.boss.def.pattern[this.boss.patternIndex % this.boss.def.pattern.length];
+    const action = this.boss.pattern[this.boss.patternIndex % this.boss.pattern.length];
     if (!action.telegraphMs) return null;
     const msUntilTick = this.boss.nextTickAt - this.clock;
     if (msUntilTick <= action.telegraphMs) {
@@ -185,7 +218,8 @@ export class Battle {
     this.emit({ type: "healed", timeMs: now, unitId: unit.id, amount: unit.hp - before });
   }
 
-  private applyDamage(unit: InternalUnit, amount: number, now: number) {
+  /** `effectId` renseigné = dégâts d'un effet sur la durée ; sinon, un coup direct. */
+  private applyDamage(unit: InternalUnit, amount: number, now: number, effectId?: string) {
     let remaining = amount;
     let absorbed = 0;
     if (unit.shield > 0) {
@@ -194,11 +228,52 @@ export class Battle {
       remaining -= absorbed;
     }
     unit.hp -= remaining;
-    this.emit({ type: "unitDamaged", timeMs: now, unitId: unit.id, amount: remaining, absorbed });
-    if (unit.hp <= 0) {
+    const died = unit.hp <= 0;
+    if (died) {
       unit.hp = 0;
       unit.alive = false;
+    }
+    // L'état est final avant d'émettre : un observateur ne voit jamais de PV négatifs.
+    if (effectId) {
+      this.emit({ type: "effectTick", timeMs: now, unitId: unit.id, effectId, amount: remaining, absorbed });
+    } else {
+      this.emit({ type: "unitDamaged", timeMs: now, unitId: unit.id, amount: remaining, absorbed });
+    }
+    if (died) {
       this.emit({ type: "unitDied", timeMs: now, unitId: unit.id });
+      this.clearEffects(unit, now, "died");
+    }
+  }
+
+  private applyEffect(unit: InternalUnit, effectId: string, now: number) {
+    const def = this.effectDefs[effectId];
+    if (!def || !unit.alive) return;
+    // Ré-application = la durée est rafraîchie (pas d'empilement).
+    unit.effects = unit.effects.filter((e) => e.def.id !== effectId);
+    unit.effects.push({ def, expiresAt: now + def.durationMs, nextTickAt: now + def.tickMs });
+    this.emit({ type: "effectApplied", timeMs: now, unitId: unit.id, effectId });
+  }
+
+  private clearEffects(unit: InternalUnit, now: number, reason: "cleansed" | "died") {
+    for (const fx of unit.effects) {
+      this.emit({ type: "effectEnded", timeMs: now, unitId: unit.id, effectId: fx.def.id, reason });
+    }
+    unit.effects = [];
+  }
+
+  private runEffects(now: number) {
+    for (const unit of this.allies) {
+      for (const fx of [...unit.effects]) {
+        if (!unit.alive) break;
+        if (now >= fx.nextTickAt) {
+          this.applyDamage(unit, fx.def.damagePerTick, now, fx.def.id);
+          fx.nextTickAt += fx.def.tickMs;
+        }
+        if (unit.alive && now >= fx.expiresAt) {
+          unit.effects = unit.effects.filter((e) => e !== fx);
+          this.emit({ type: "effectEnded", timeMs: now, unitId: unit.id, effectId: fx.def.id, reason: "expired" });
+        }
+      }
     }
   }
 
@@ -225,6 +300,7 @@ export class Battle {
         t.shield += skill.shieldAmount;
         this.emit({ type: "shielded", timeMs: now, unitId: t.id, amount: skill.shieldAmount });
       }
+      if (skill.cleanse) this.clearEffects(t, now, "cleansed");
     }
     this.log.push(`${now}ms: ${healer.name} utilise ${skill.name}`);
   }
@@ -248,20 +324,34 @@ export class Battle {
     }
   }
 
+  /** Passe à la phase suivante quand les PV du boss franchissent son seuil (table de transitions dans les données). */
+  private checkBossPhase(now: number) {
+    const next = this.boss.def.phases?.[this.boss.phaseIndex];
+    if (!next || this.boss.hp <= 0) return;
+    if (this.boss.hp / this.boss.def.maxHp > next.atHpRatio) return;
+    this.boss.phaseIndex += 1;
+    this.boss.pattern = next.pattern;
+    this.boss.tickMs = next.tickMs;
+    this.boss.patternIndex = 0;
+    this.boss.nextTickAt = now + next.tickMs;
+    this.emit({ type: "bossPhaseChanged", timeMs: now, phase: this.boss.phaseIndex, name: next.name });
+    this.log.push(`${now}ms: le boss entre en phase « ${next.name} »`);
+  }
+
   private runBossTick(now: number) {
     if (now < this.boss.nextTickAt) return;
-    const action = this.boss.def.pattern[this.boss.patternIndex % this.boss.def.pattern.length];
+    const action = this.boss.pattern[this.boss.patternIndex % this.boss.pattern.length];
     const alive = this.aliveAllies();
     const targets = action.hitsAll ? alive : alive.length ? [pickRandom(this.rng, alive)] : [];
     const dmg = Math.round(this.boss.def.atk * (action.multiplier ?? 1));
     this.emit({ type: "bossAction", timeMs: now, action: action.type, hitsAll: !!action.hitsAll });
     for (const t of targets) {
-      const mitigated = Math.max(1, dmg - t.def);
-      this.applyDamage(t, mitigated, now);
+      if (dmg > 0) this.applyDamage(t, Math.max(1, dmg - t.def), now);
+      if (action.effectId) this.applyEffect(t, action.effectId, now);
     }
     this.log.push(`${now}ms: le boss utilise ${action.type}${action.hitsAll ? " (zone)" : ""}`);
     this.boss.patternIndex += 1;
-    this.boss.nextTickAt = now + this.boss.def.tickMs;
+    this.boss.nextTickAt = now + this.boss.tickMs;
   }
 
   private checkEnd() {
@@ -295,7 +385,9 @@ export class Battle {
 
     this.clock = targetClock;
     this.runManaRegen(dtMs);
+    this.runEffects(this.clock);
     this.runAllyAttacks(this.clock);
+    this.checkBossPhase(this.clock);
     this.runBossTick(this.clock);
     this.checkEnd();
   }

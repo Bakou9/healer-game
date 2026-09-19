@@ -34,6 +34,16 @@ describe("événements de combat (Observer)", () => {
     expect(dealt).toBeGreaterThanOrEqual(battle.getBossMaxHp());
   });
 
+  it("l'état est final à l'émission : un observateur ne voit jamais de PV négatifs", () => {
+    const battle = new Battle(createEncounter(1), []); // sans soigneur : des alliés meurent
+    let minHp = Infinity;
+    battle.subscribe(() => {
+      for (const u of battle.getAllies()) minHp = Math.min(minHp, u.hp);
+    });
+    battle.run(120000);
+    expect(minHp).toBeGreaterThanOrEqual(0);
+  });
+
   it("se désabonner arrête bien la réception des événements", () => {
     const battle = new Battle(createEncounter(1), []);
     let received = 0;

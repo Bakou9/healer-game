@@ -10,5 +10,19 @@
     { "type": "attack", "telegraphMs": 0 },
     { "type": "bigAttack", "telegraphMs": 1400, "multiplier": 2.5, "hitsAll": true },
     { "type": "attack", "telegraphMs": 0 }
+  ],
+  "phases": [
+    {
+      "name": "Fureur",
+      "atHpRatio": 0.5,
+      "tickMs": 2000,
+      "pattern": [
+        { "type": "attack", "telegraphMs": 0 },
+        { "type": "poison", "telegraphMs": 0, "multiplier": 0, "effectId": "poison" },
+        { "type": "bigAttack", "telegraphMs": 1400, "multiplier": 2.5, "hitsAll": true },
+        { "type": "attack", "telegraphMs": 0 },
+        { "type": "poison", "telegraphMs": 0, "multiplier": 0, "effectId": "poison" }
+      ]
+    }
   ]
 }
