@@ -197,3 +197,10 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - Constat : Windows Defender fait échouer le renommage des paquets téléchargés du registre Unity (EPERM). Ce n'est pas un jugement sur le projet : l'analyse en temps réel tient les fichiers fraîchement écrits.
 - Décision : intégrer la DLL Newtonsoft.Json 13.0.3 (identique à celle des tests dotnet, licence MIT) au paquet du cœur et ne dépendre d'aucun paquet du registre, ce qui permet à Unity d'ouvrir et de compiler le projet sans toucher aux réglages de sécurité de l'utilisateur. Une exclusion Defender du dossier `Library` (cache régénérable) sera demandée à l'utilisateur au moment d'ajouter URP, Input System ou Test Framework.
 - Tickets : E14-T10
+
+### D-035 — Historique du dépôt nettoyé (nom d'utilisateur Windows retiré)
+- Date : 2026-09-19 · Statut : Ferme
+- Constat : d'anciens commits (documentation) contenaient des chemins avec le nom d'utilisateur Windows de l'utilisateur, dans un dépôt public.
+- Décision : l'historique de `main` a été réécrit (17 commits, `git filter-branch`) pour remplacer ces chemins par `%USERPROFILE%`, puis publié par un push forcé sécurisé (`--force-with-lease`) sur ordre explicite de l'utilisateur. Contenu actuel strictement identique ; tests verts ; intégrations continues vertes. Sauvegarde complète avant l'opération : `Documents/healer-game-sauvegarde-avant-nettoyage.bundle` (restaurable par `git clone`).
+- Limites connues : GitHub garde les anciens commits accessibles par leur numéro exact pendant un temps (purge complète via le support GitHub) ; les numéros de commits ont changé (état Phaser repris : `91d7beb`) ; le nom et l'email des auteurs de commits restent visibles.
+- Tickets : E13-T04
