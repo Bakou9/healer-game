@@ -5,7 +5,8 @@
     "kind": "damageOverTime",
     "damagePerTick": 20,
     "tickMs": 1000,
-    "durationMs": 8000
+    "durationMs": 8000,
+    "damageType": "poison"
   },
   {
     "id": "venom",
@@ -13,7 +14,8 @@
     "kind": "damageOverTime",
     "damagePerTick": 30,
     "tickMs": 1000,
-    "durationMs": 9000
+    "durationMs": 9000,
+    "damageType": "poison"
   },
   {
     "id": "burn",
@@ -21,6 +23,7 @@
     "kind": "damageOverTime",
     "damagePerTick": 36,
     "tickMs": 1000,
-    "durationMs": 6000
+    "durationMs": 6000,
+    "damageType": "fire"
   }
 ]

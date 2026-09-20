@@ -37,6 +37,7 @@ namespace Healer.Combat.Presentation
 
         private readonly string _id;
         private readonly bool _isBoss;
+        private double _castDurationMs = CastMs;
         private double _lungeAt = double.NegativeInfinity, _recoilAt = double.NegativeInfinity, _castAt = double.NegativeInfinity, _glowAt = double.NegativeInfinity, _diedAt = double.PositiveInfinity;
 
         public UnitAnimator(string unitId, bool isBoss = false)
@@ -59,8 +60,20 @@ namespace Healer.Combat.Presentation
                 case "unitDamaged":
                     if (!_isBoss && e.UnitId == _id && e.Amount > 0) _recoilAt = e.TimeMs;
                     break;
+                case "castStarted":
+                    // Incantation : le geste dure tout le temps du sort (bâton levé jusqu'au lancer).
+                    if (!_isBoss && e.CasterId == _id) { _castAt = e.TimeMs; _castDurationMs = Math.Max(CastMs, e.Amount); }
+                    break;
                 case "skillUsed":
-                    if (!_isBoss && e.CasterId == _id) _castAt = e.TimeMs;
+                    // Un sort instantané lance un geste court ; à l'achèvement d'une incantation le geste se termine.
+                    if (!_isBoss && e.CasterId == _id)
+                    {
+                        if (_castDurationMs > CastMs && e.TimeMs - _castAt <= _castDurationMs + 1) { _castAt = double.NegativeInfinity; _castDurationMs = CastMs; }
+                        else { _castAt = e.TimeMs; _castDurationMs = CastMs; }
+                    }
+                    break;
+                case "castFailed":
+                    if (!_isBoss && e.CasterId == _id) { _castAt = double.NegativeInfinity; _castDurationMs = CastMs; }
                     break;
                 case "healed":
                 case "shielded":
@@ -78,6 +91,7 @@ namespace Healer.Combat.Presentation
         public void Reset()
         {
             _lungeAt = _recoilAt = _castAt = _glowAt = double.NegativeInfinity;
+            _castDurationMs = CastMs;
             _diedAt = double.PositiveInfinity;
         }
 
@@ -85,7 +99,7 @@ namespace Healer.Combat.Presentation
         public UnitPose Sample(double nowMs) => new UnitPose(
             Pulse(nowMs - _lungeAt, LungeMs),
             Decay(nowMs - _recoilAt, RecoilMs),
-            Pulse(nowMs - _castAt, CastMs),
+            Pulse(nowMs - _castAt, _castDurationMs),
             Decay(nowMs - _glowAt, GlowMs),
             nowMs >= _diedAt ? Math.Min(1, Ease((nowMs - _diedAt) / FallMs)) : 0);
 

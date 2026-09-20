@@ -587,6 +587,12 @@ namespace Healer.Client
                             if (id != e.CasterId && _units.TryGetValue(id, out var beamTarget)) Beam(from, beamTarget.Root.transform.position + Vector3.up * 1.4f, sc);
                     }
                     break;
+                case "unitDodged":
+                    if (_units.TryGetValue(e.UnitId, out var dgv)) Float(dgv, "Esquive", Palette.Shield, 0.95f);
+                    break;
+                case "castFailed":
+                    if (_units.TryGetValue(e.CasterId, out var cfv)) Float(cfv, "Interrompu", Palette.Damage, 0.85f);
+                    break;
                 case "bossEnraged":
                     AddShake(0.5f);
                     Ring(_boss.Root.transform.position, _coreFury, 7f);
@@ -596,7 +602,7 @@ namespace Healer.Client
                     if (e.Amount > 0 && _units.TryGetValue(e.UnitId, out var hv))
                     {
                         Burst(_heal, hv.Root.transform.position + Vector3.up * 1.0f, Palette.Heal, 10, 1.6f);
-                        Float(hv, "+" + Format.Number(e.Amount), Palette.Heal);
+                        Float(hv, (e.Crit ? "CRITIQUE +" : "+") + Format.Number(e.Amount) + (e.Crit ? "!" : ""), e.Crit ? UiKit.Gold : Palette.Heal, e.Crit ? 1.35f : 1f);
                     }
                     break;
                 case "shielded":
@@ -613,7 +619,7 @@ namespace Healer.Client
                         if (e.Amount > 0)
                         {
                             Burst(_impact, dv.Root.transform.position + Vector3.up * 1.2f, Palette.Damage, 8, 3f);
-                            Float(dv, "-" + Format.Number(e.Amount), Palette.Damage);
+                            Float(dv, (e.Crit ? "CRITIQUE -" : "-") + Format.Number(e.Amount) + (e.Crit ? "!" : ""), DamageColor(e), e.Crit ? 1.35f : 1f);
                         }
                         else Float(dv, "Absorbé", Palette.Shield, 0.8f);
                     }
@@ -694,6 +700,18 @@ namespace Healer.Client
                 var c = new Color(b.Color.r, b.Color.g, b.Color.b, 0.9f * (1f - k));
                 b.Line.startColor = c;
                 b.Line.endColor = new Color(c.r, c.g, c.b, c.a * 0.3f);
+            }
+        }
+
+        /// <summary>Couleur d'un nombre de dégâts selon le type (feu orange, magie violette, physique rouge).</summary>
+        private static Color DamageColor(BattleEvent e)
+        {
+            switch (e.DamageType)
+            {
+                case "fire": return Palette.Hex("FF9A4D");
+                case "magic": return Palette.Hex("B98CFF");
+                case "poison": return Palette.Poison;
+                default: return Palette.Damage;
             }
         }
 

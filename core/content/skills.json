@@ -2,11 +2,12 @@
   {
     "id": "heal_single",
     "name": "Soin",
-    "description": "Soigne rapidement un allié ciblé.",
+    "description": "Soigne un allié ciblé après une incantation d'une seconde.",
     "manaCost": 18,
-    "cooldownMs": 1200,
+    "cooldownMs": 0,
     "target": "single",
-    "healAmount": 170
+    "healAmount": 170,
+    "castMs": 1000
   },
   {
     "id": "heal_aoe",

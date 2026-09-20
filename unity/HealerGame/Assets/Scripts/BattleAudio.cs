@@ -42,6 +42,8 @@ namespace Healer.Client
             _clips[SoundCue.Death] = SoundKit.Death();
             _clips[SoundCue.Victory] = SoundKit.Victory();
             _clips[SoundCue.Defeat] = SoundKit.Defeat();
+            _clips[SoundCue.Dodge] = SoundKit.Dodge();
+            _clips[SoundCue.Crit] = SoundKit.Crit();
             _clips[SoundCue.Click] = SoundKit.Click();
             _clips[SoundCue.Buy] = SoundKit.Buy();
             _clips[SoundCue.Refuse] = SoundKit.Refuse();

@@ -1,7 +1,7 @@
 {
   "id": "boss3",
   "name": "Seigneur de Cendre",
-  "maxHp": 8200,
+  "maxHp": 9020,
   "atk": 34,
   "def": 20,
   "tickMs": 1900,
@@ -91,5 +91,13 @@
     "afterMs": 65000,
     "everyMs": 10000,
     "pct": 5
+  },
+  "targeting": "threat",
+  "damageType": "fire",
+  "critPct": 12,
+  "critMultPct": 175,
+  "resist": {
+    "physical": 10,
+    "magic": -10
   }
 }

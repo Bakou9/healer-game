@@ -762,3 +762,65 @@ namespace Healer.Combat.Tests
         }
     }
 }
+
+namespace Healer.Combat.Tests
+{
+    using Healer.Combat.Presentation;
+
+    /// <summary>Animation et sons des nouvelles mécaniques (incantation, critique, esquive).</summary>
+    public class MechanicsPresentationTests
+    {
+        [Test]
+        public void Pendant_une_incantation_le_soigneur_garde_le_baton_leve_pendant_tout_le_sort()
+        {
+            var a = new UnitAnimator("healer");
+            a.OnEvent(new BattleEvent { Type = "castStarted", TimeMs = 1000, CasterId = "healer", SkillId = "heal_single", Amount = 1000 });
+            Assert.That(a.Sample(1500).Cast, Is.EqualTo(1).Within(1e-9), "mi-incantation : geste au maximum");
+            Assert.That(a.Sample(1900).Cast, Is.GreaterThan(0), "encore levé juste avant la fin");
+        }
+
+        [Test]
+        public void A_l_achevement_du_sort_le_geste_se_termine()
+        {
+            var a = new UnitAnimator("healer");
+            a.OnEvent(new BattleEvent { Type = "castStarted", TimeMs = 1000, CasterId = "healer", SkillId = "heal_single", Amount = 1000 });
+            a.OnEvent(new BattleEvent { Type = "skillUsed", TimeMs = 2000, CasterId = "healer", SkillId = "heal_single" });
+            Assert.That(a.Sample(2100).Cast, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Une_incantation_qui_echoue_baisse_le_baton()
+        {
+            var a = new UnitAnimator("healer");
+            a.OnEvent(new BattleEvent { Type = "castStarted", TimeMs = 1000, CasterId = "healer", SkillId = "heal_single", Amount = 1000 });
+            a.OnEvent(new BattleEvent { Type = "castFailed", TimeMs = 1400, CasterId = "healer", SkillId = "heal_single", Reason = "target" });
+            Assert.That(a.Sample(1500).Cast, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Un_sort_instantane_garde_un_geste_court()
+        {
+            var a = new UnitAnimator("healer");
+            a.OnEvent(new BattleEvent { Type = "skillUsed", TimeMs = 500, CasterId = "healer", SkillId = "shield" });
+            Assert.That(a.Sample(500 + UnitAnimator.CastMs / 2).Cast, Is.EqualTo(1).Within(1e-9));
+            Assert.That(a.Sample(500 + UnitAnimator.CastMs + 1).Cast, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Une_esquive_a_son_son_et_un_critique_aussi()
+        {
+            Assert.That(AudioCues.ForEvent(new BattleEvent { Type = "unitDodged", UnitId = "tank" })!.Value.Cue, Is.EqualTo(SoundCue.Dodge));
+            Assert.That(AudioCues.ForEvent(new BattleEvent { Type = "unitDamaged", Amount = 30, Crit = true })!.Value.Cue, Is.EqualTo(SoundCue.Crit));
+            Assert.That(AudioCues.ForEvent(new BattleEvent { Type = "unitDamaged", Amount = 30 })!.Value.Cue, Is.EqualTo(SoundCue.Hit));
+            Assert.That(AudioCues.ForEvent(new BattleEvent { Type = "healed", Amount = 30, Crit = true })!.Value.Cue, Is.EqualTo(SoundCue.Crit));
+        }
+
+        [Test]
+        public void Un_critique_sonne_plus_fort_qu_un_coup_normal()
+        {
+            var normal = AudioCues.ForEvent(new BattleEvent { Type = "unitDamaged", Amount = 30 })!.Value.Volume;
+            var crit = AudioCues.ForEvent(new BattleEvent { Type = "unitDamaged", Amount = 30, Crit = true })!.Value.Volume;
+            Assert.That(crit, Is.GreaterThan(normal));
+        }
+    }
+}

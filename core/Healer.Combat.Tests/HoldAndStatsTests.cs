@@ -144,19 +144,22 @@ namespace Healer.Combat.Tests
         }
 
         [Test]
-        public void Maintenir_le_Soin_sur_une_cible_le_relance_des_que_possible_sans_jamais_depasser_la_recharge()
+        public void Maintenir_le_Soin_sur_une_cible_l_incante_bout_a_bout_sans_jamais_depasser_le_temps_d_incantation()
         {
             var (_, casts) = Hold("heal_single", "tank", untilMs: 10000);
-            Assert.That(casts.Count, Is.GreaterThanOrEqualTo(5));
-            for (int i = 1; i < casts.Count; i++) Assert.That(casts[i] - casts[i - 1], Is.GreaterThanOrEqualTo(1200 - 1e-6), "recharge respectée");
-            Assert.That(casts.Count, Is.LessThanOrEqualTo(10000 / 1200 + 1));
+            double castMs = C.Skills.Single(s => s.Id == "heal_single").CastMs;
+            Assert.That(castMs, Is.GreaterThan(0), "le Soin de base s'incante");
+            Assert.That(casts.Count, Is.GreaterThanOrEqualTo(6));
+            for (int i = 1; i < casts.Count; i++) Assert.That(casts[i] - casts[i - 1], Is.GreaterThanOrEqualTo(castMs - 1e-6), "une incantation à la fois");
+            Assert.That(casts.Count, Is.LessThanOrEqualTo(10000 / castMs + 1));
         }
 
         [Test]
-        public void Le_premier_lancer_est_immediat()
+        public void Le_premier_lancer_demarre_tout_de_suite_et_aboutit_apres_l_incantation()
         {
-            var (_, casts) = Hold("heal_single", "tank", untilMs: 2000);
-            Assert.That(casts[0], Is.LessThanOrEqualTo(200));
+            var (_, casts) = Hold("heal_single", "tank", untilMs: 3000);
+            double castMs = C.Skills.Single(s => s.Id == "heal_single").CastMs;
+            Assert.That(casts[0], Is.InRange(castMs, castMs + 200));
         }
 
         [Test]

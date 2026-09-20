@@ -105,13 +105,14 @@ namespace Healer.Combat.Tests
         }
 
         [Test]
-        public void Les_mesures_retrouvent_celles_de_la_version_Phaser()
+        public void Les_mesures_de_reference_du_premier_boss_avec_les_mecaniques_actuelles()
         {
-            // Mesures de docs/EQUILIBRAGE.md §5 (200 combats) : le portage doit les retrouver, à l'échantillon près.
+            // Mesures de référence du jeu ACTUEL (docs/EQUILIBRAGE.md §12, D-052). Elles ne sont plus celles de la version Phaser :
+            // critiques, résistances, armure en %, esquive, menace et incantation ont volontairement déplacé l'équilibre.
             Assert.That(_attentive.WinRate, Is.EqualTo(1.0));
-            Assert.That(_attentive.AvgLowestHp, Is.EqualTo(0.28).Within(0.03));
-            Assert.That(_slow.AvgLowestHp, Is.EqualTo(0.16).Within(0.04));
-            Assert.That(_noPurge.AvgLowestHp, Is.EqualTo(0.17).Within(0.04));
+            Assert.That(_attentive.AvgLowestHp, Is.EqualTo(0.32).Within(0.03));
+            Assert.That(_slow.AvgLowestHp, Is.EqualTo(0.19).Within(0.04));
+            Assert.That(_noPurge.AvgLowestHp, Is.EqualTo(0.24).Within(0.04));
         }
     }
 }

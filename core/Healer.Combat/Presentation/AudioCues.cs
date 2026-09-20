@@ -23,6 +23,10 @@ namespace Healer.Combat.Presentation
         Click,
         Buy,
         Refuse,
+        /// <summary>Un allié esquive un coup.</summary>
+        Dodge,
+        /// <summary>Un coup ou un soin critique.</summary>
+        Crit,
     }
 
     public readonly struct CueRequest
@@ -48,12 +52,13 @@ namespace Healer.Combat.Presentation
             switch (e.Type)
             {
                 case "skillUsed": return new CueRequest(SoundCue.Cast, 0.35);
-                case "healed": return e.Amount > 0 ? new CueRequest(SoundCue.Heal, 0.55) : (CueRequest?)null;
+                case "healed": return e.Amount > 0 ? new CueRequest(e.Crit ? SoundCue.Crit : SoundCue.Heal, e.Crit ? 0.7 : 0.55) : (CueRequest?)null;
                 case "shielded": return new CueRequest(SoundCue.Shield, 0.5);
                 case "effectEnded": return e.Reason == "cleansed" ? new CueRequest(SoundCue.Purge, 0.5) : (CueRequest?)null;
                 case "effectApplied": return new CueRequest(SoundCue.Poison, 0.5);
-                case "unitDamaged": return e.Amount > 0 ? new CueRequest(SoundCue.Hit, 0.6) : (CueRequest?)null;
+                case "unitDamaged": return e.Amount > 0 ? new CueRequest(e.Crit ? SoundCue.Crit : SoundCue.Hit, e.Crit ? 0.8 : 0.6) : (CueRequest?)null;
                 case "unitDied": return new CueRequest(SoundCue.Death, 0.7);
+                case "unitDodged": return new CueRequest(SoundCue.Dodge, 0.45);
                 case "bossAction": return e.Action == "bigAttack" ? new CueRequest(SoundCue.Boom, 0.9) : new CueRequest(SoundCue.BossTick, 0.5);
                 case "bossPhaseChanged": return new CueRequest(SoundCue.Roar, 0.8);
                 case "bossEnraged": return new CueRequest(SoundCue.Enrage, 0.7);

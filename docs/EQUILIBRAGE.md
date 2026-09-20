@@ -235,3 +235,30 @@ Joueur de référence : bot attentif (500 ms), 100 combats. Mesure : PV minimum 
 **Enrage** : mécanique générique (données : `afterMs`, `everyMs`, `pct`). Choix de la valeur par balayage de paramètres avec les contraintes du §4 **plus** celles ci-dessus. Deux constats : accélérer simplement le boss fait basculer le jeu d'un coup (un joueur attentif perd trop d'alliés) ; l'enrage, lui, punit précisément les combats qui s'éternisent, donc les stratégies lentes ou passives, sans toucher au joueur attentif qui finit à 102-114 s.
 
 **Limite** : le bot attentif meurt dans 10 % des combats sur ce boss (exactement la borne). Durcir davantage exige de nouvelles mécaniques (attaques ciblées sur un allié précis, purges plus urgentes…), pas seulement des chiffres.
+
+
+## 12. Nouvelles mécaniques : mesures avant et après (D-052)
+
+Joueur attentif, 100 combats. Les mesures « avant » sont celles du §9 et du §11.
+
+| Boss | | PV minimum | Allié K.O. | Durée |
+|---|---|---|---|---|
+| Golem | avant | 0,28 | 1 % | 83-86 s |
+| | mécaniques activées, boss non retouché | 0,44 | 0 % | 61-75 s |
+| | **après réglage** (7 700 PV, attaque 58) | **0,32** | 3 % | 67-83 s |
+| Reine | avant | 0,31 | 9 % | 74-90 s |
+| | mécaniques activées, boss non retouché | 0,50 | 1 % | **59-74 s** (sous la borne de 60 s) |
+| | **après réglage** (8 450 PV, attaque 37) | **0,29** | 10 % | 78-102 s |
+| Seigneur | avant | 0,26 | 10 % | 102-114 s |
+| | mécaniques activées, boss non retouché | 0,35 | 9 % | 80-102 s |
+| | **après réglage** (9 020 PV) | **0,30** | 7 % | 86-117 s |
+
+**Pourquoi tout devenait plus facile** : l'armure du Garde et la menace concentrent les coups sur le Garde (le plus résistant) ; les critiques du
+Mage et la faiblesse magique du Golem accélèrent le combat ; les esquives évitent des coups. **Contre-mesure** : plus de PV au boss (durées de 75-100 s
+retrouvées) et une attaque un peu plus forte, réglées ensemble par balayage sous **toutes** les bornes : victoire ≥ 97 % (60 combats), allié K.O. ≤ 9 %, PV minimum
+0,18 à 0,36, durée 62-115 s, écart avec le joueur lent et sans purge, et stratégies paresseuses (§11) punies sur les boss avancés.
+
+**Sensibilité** : l'attaque du boss est très sensible (un pas de 10 % fait passer le joueur attentif de « à l'aise » à « il perd un allié sur deux ») : les
+valeurs finales sont dans un intervalle étroit. Reine des Marais : 10 % d'allié K.O., exactement la borne.
+
+**Non rééquilibré** : talents et équipement (§10) n'utilisent pas encore critique, esquive ni armure ; ils passent leurs bornes, mesurées avec les nouveaux boss.

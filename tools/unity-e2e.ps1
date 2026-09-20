@@ -289,13 +289,13 @@ Expect $g2 "geste : sort heal_single → Cast \(cible tank\)" "le sort maintenu 
 # ---- Scénario H -----------------------------------------------------------------------------
 if (Want "H") {
 Write-Output "Scénario H : le Seigneur de Cendre s'enrage, le Golem (tutoriel) jamais"
-Start-Game @("-healer-timescale", "40", "-healer-level", "l3", "-healer-profile-dir", (New-ProfileDir "H"))
+Start-Game @("-healer-autoplay", "-healer-timescale", "40", "-healer-level", "l3", "-healer-profile-dir", (New-ProfileDir "H"))
 Press 0x39 "Espace (jouer)"
 Start-Sleep -Seconds 6
 Stop-Game
 $h1 = Log
 Expect $h1 "état : boss enragé palier 1 .\+5 %." "le palier 1 d'enrage arrive (+5 %)"
-Start-Game @("-healer-timescale", "40", "-healer-level", "l1", "-healer-profile-dir", (New-ProfileDir "H2"))
+Start-Game @("-healer-autoplay", "-healer-timescale", "40", "-healer-level", "l1", "-healer-profile-dir", (New-ProfileDir "H2"))
 Press 0x39 "Espace (jouer)"
 Start-Sleep -Seconds 6
 Stop-Game

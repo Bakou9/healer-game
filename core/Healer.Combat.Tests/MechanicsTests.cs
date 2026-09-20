@@ -23,6 +23,7 @@ namespace Healer.Combat.Tests
             var healer = new CharacterDef { Id = "healer", Name = "Vous", Role = "healer", MaxHp = 1e9, Atk = 0, Def = 10, MaxMana = 100, ManaRegenPerSec = 6 };
             allies?.Invoke(tank, healer);
             var sk = content.Skills;
+            foreach (var s in sk) s.CastMs = 0; // isolé : un test active l'incantation explicitement
             skills?.Invoke(sk);
             return new EncounterDef { Id = "arena", Boss = b, Allies = new List<CharacterDef> { tank, healer }, Effects = effects ?? content.Effects, Skills = sk, Seed = seed };
         }

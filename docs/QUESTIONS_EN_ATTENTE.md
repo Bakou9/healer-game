@@ -51,3 +51,12 @@ avec ma recommandation. À passer en revue ensemble au retour, puis à consigner
 3. **Interface** : elle est dessinée avec IMGUI (module de développement d'Unity). Pour un jeu vendable il faut UI Toolkit ou uGUI (mise à l'échelle, accessibilité, manettes, textes traduits). C'est un chantier de plusieurs jours : à lancer maintenant ou après le contenu ?
 4. **Langues** : tout le texte est en français, écrit dans le code. Avant de viser Steam ou les stores, il faudra extraire les textes (fichiers de traduction).
 5. **Manette et accessibilité** : pas de support manette, pas de mode daltonien, pas de sous-titres des sons. À planifier.
+
+
+## Nouvelles mécaniques (D-052) — à trancher ensemble
+
+1. **Critiques et esquive rendent le combat moins prévisible** : le joueur attentif a plus de variance (un boss qui crit deux fois de suite sur un allié fragile). Est-ce l'effet voulu, ou préférez-vous limiter le hasard aux alliés ?
+2. **Menace** : le Garde attire désormais la plupart des coups à cible unique, ce qui allège le rôle « qui soigner ». Voulez-vous des attaques qui ignorent la menace (un boss qui vise toujours le plus faible) ?
+3. **Incantation du Soin** : 1 s, sans interruption par les coups. Faut-il qu'un coup reçu par le soigneur puisse l'interrompre, ou qu'un talent réduise l'incantation ?
+4. **Équipement et talents** : ajouter des pistes de critique, d'esquive et d'armure ? Cela demande de refaire la batterie d'équilibrage des choix.
+5. **Qui est faible à quoi** : le Golem est faible à la magie, le Seigneur inflige du feu. Voulez-vous davantage de types (glace, sacré…) et des résistances plus marquées, au risque de rendre certaines équipes obligatoires ?

@@ -80,6 +80,10 @@ namespace Healer.Client
 
         public static AudioClip Death() => Make("death", 0.7f, (t, i) => Attack(t) * (0.6f * Decay(t, 6f) * Sweep(t, 220f, 60f, 0.7f) + 0.2f * Decay(t, 14f) * Noise(i)));
 
+        public static AudioClip Dodge() => Make("dodge", 0.2f, (t, i) => Attack(t) * 0.25f * Decay(t, 14f) * Sweep(t, 1400f, 500f, 0.2f) + 0.05f * Decay(t, 30f) * Noise(i));
+
+        public static AudioClip Crit() => Make("crit", 0.35f, (t, i) => Attack(t) * (0.5f * Decay(t, 12f) * Mathf.Sin(Tau * 1760f * t) + 0.35f * Decay(t, 9f) * Mathf.Sin(Tau * 110f * t) + 0.2f * Decay(t, 30f) * Noise(i)));
+
         public static AudioClip Click() => Make("click", 0.09f, (t, i) => Attack(t) * 0.3f * Decay(t, 40f) * Mathf.Sin(Tau * 900f * t));
 
         public static AudioClip Buy() => Make("buy", 0.45f, (t, i) =>

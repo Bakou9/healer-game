@@ -22,6 +22,9 @@ namespace Healer.Combat.Tests
                 TickMs = tickMs, Pattern = pattern, Phases = removePhases ? null : enc.Boss.Phases,
             };
             enc.Boss = boss;
+            // Tests de règles isolées : on neutralise les mécaniques aléatoires du contenu (critique, esquive) pour que
+            // les commandes n'influencent pas le tirage des cibles du boss.
+            foreach (var a in enc.Allies) { a.CritPct = 0; a.DodgePct = 0; a.ArmorPct = 0; a.Resist = null; }
             return enc;
         }
 
@@ -92,7 +95,7 @@ namespace Healer.Combat.Tests
             var battle = new Battle(Fixtures.Encounter(1), new[] { new Command { TimeMs = 0, SkillId = "heal_single", TargetId = "tank" } });
             var healed = new List<double>();
             battle.Subscribe(e => { if (e.Type == "healed") healed.Add(e.Amount); });
-            battle.Step(100);
+            battle.Run(1100); // le Soin s'incante 1 s : il se lance à 1000 ms
             Assert.That(healed, Is.EqualTo(new[] { 0.0 })); // le tank est déjà à pleine vie
         }
 
@@ -198,7 +201,7 @@ namespace Healer.Combat.Tests
         [Test]
         public void L_equipe_est_vaincue_si_le_soigneur_ne_soigne_jamais()
         {
-            Assert.That(new Battle(Fixtures.Encounter(1)).Run(60000), Is.EqualTo(BattleResults.Defeat));
+            Assert.That(new Battle(Fixtures.Encounter(1)).Run(150000), Is.EqualTo(BattleResults.Defeat)); // armure, esquive et menace font durer l'équipe plus longtemps qu'avant (60 s)
         }
 
         [Test]

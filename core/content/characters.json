@@ -5,7 +5,12 @@
     "role": "tank",
     "maxHp": 900,
     "atk": 35,
-    "def": 28
+    "def": 28,
+    "armorPct": 25,
+    "threatMod": 500,
+    "resist": {
+      "fire": 15
+    }
   },
   {
     "id": "dps1",
@@ -13,7 +18,10 @@
     "role": "dps",
     "maxHp": 420,
     "atk": 70,
-    "def": 10
+    "def": 10,
+    "dodgePct": 15,
+    "critPct": 20,
+    "critMultPct": 200
   },
   {
     "id": "dps2",
@@ -21,7 +29,13 @@
     "role": "dps",
     "maxHp": 360,
     "atk": 85,
-    "def": 8
+    "def": 8,
+    "critPct": 12,
+    "critMultPct": 200,
+    "damageType": "magic",
+    "resist": {
+      "magic": 25
+    }
   },
   {
     "id": "healer",
@@ -31,6 +45,11 @@
     "atk": 12,
     "def": 14,
     "maxMana": 100,
-    "manaRegenPerSec": 6
+    "manaRegenPerSec": 6,
+    "critPct": 10,
+    "dodgePct": 8,
+    "resist": {
+      "poison": 15
+    }
   }
 ]

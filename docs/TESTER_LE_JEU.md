@@ -46,7 +46,7 @@ Les touches sont physiques (même position sur QWERTY et AZERTY) ; les pastilles
 
 | Commande | Ce qu'elle vérifie | Durée |
 |---|---|---|
-| `npm run check` | cohérence des specs + 610 tests du cœur (règles, golden, équilibrage de chaque boss et de chaque choix, stratégies limitées, enrage, progression, atelier, sauvegarde, navigation, entrées, mise en page, sons, musique, animations, réglages) | ~15 s |
+| `npm run check` | cohérence des specs + 691 tests du cœur (règles, golden, équilibrage de chaque boss et de chaque choix, stratégies limitées, enrage, mécaniques de combat, progression, atelier, sauvegarde, navigation, entrées, mise en page, sons, musique, animations, réglages) | ~15 s |
 | `npm run e2e` | le vrai jeu Windows à la souris et au clavier : menu, choix du niveau, niveau verrouillé, combat, pause, victoire, atelier (achats, talents), maintien des sorts, enrage, réglages, sauvegarde sur disque, relance | ~10 min |
 
 Lancer `npm run e2e` sans toucher souris ni clavier.

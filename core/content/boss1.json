@@ -1,15 +1,29 @@
 {
   "id": "boss1",
   "name": "Golem Ancestral",
-  "maxHp": 7000,
-  "atk": 55,
+  "maxHp": 7700,
+  "atk": 58,
   "def": 18,
   "tickMs": 2200,
   "pattern": [
-    { "type": "attack", "telegraphMs": 0 },
-    { "type": "attack", "telegraphMs": 0 },
-    { "type": "bigAttack", "telegraphMs": 1400, "multiplier": 2.5, "hitsAll": true },
-    { "type": "attack", "telegraphMs": 0 }
+    {
+      "type": "attack",
+      "telegraphMs": 0
+    },
+    {
+      "type": "attack",
+      "telegraphMs": 0
+    },
+    {
+      "type": "bigAttack",
+      "telegraphMs": 1400,
+      "multiplier": 2.5,
+      "hitsAll": true
+    },
+    {
+      "type": "attack",
+      "telegraphMs": 0
+    }
   ],
   "phases": [
     {
@@ -17,12 +31,38 @@
       "atHpRatio": 0.5,
       "tickMs": 2000,
       "pattern": [
-        { "type": "attack", "telegraphMs": 0 },
-        { "type": "poison", "telegraphMs": 0, "multiplier": 0, "effectId": "poison" },
-        { "type": "bigAttack", "telegraphMs": 1400, "multiplier": 2.5, "hitsAll": true },
-        { "type": "attack", "telegraphMs": 0 },
-        { "type": "poison", "telegraphMs": 0, "multiplier": 0, "effectId": "poison" }
+        {
+          "type": "attack",
+          "telegraphMs": 0
+        },
+        {
+          "type": "poison",
+          "telegraphMs": 0,
+          "multiplier": 0,
+          "effectId": "poison"
+        },
+        {
+          "type": "bigAttack",
+          "telegraphMs": 1400,
+          "multiplier": 2.5,
+          "hitsAll": true
+        },
+        {
+          "type": "attack",
+          "telegraphMs": 0
+        },
+        {
+          "type": "poison",
+          "telegraphMs": 0,
+          "multiplier": 0,
+          "effectId": "poison"
+        }
       ]
     }
-  ]
+  ],
+  "targeting": "threat",
+  "resist": {
+    "physical": 15,
+    "magic": -25
+  }
 }

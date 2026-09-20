@@ -15,6 +15,7 @@ namespace Healer.Client
     public sealed class BattleHud : MonoBehaviour
     {
         private BattleController _ctl = null!;
+        private string? _threatId;
         private GameFlow _flow = null!;
         private GUIStyle _label = null!;
 
@@ -162,6 +163,7 @@ namespace Healer.Client
         private void DrawTeam()
         {
             var allies = _ctl.Battle.GetAllies();
+            _threatId = _ctl.Battle.GetTopThreatId();
             var rects = Layout.TeamCardRects(allies.Count);
             for (int i = 0; i < allies.Count; i++)
             {
@@ -182,6 +184,7 @@ namespace Healer.Client
                 Fill(bar, new Color(0, 0, 0, 0.55f), 5);
                 if (ratio > 0) Fill(new Rect(bar.x, bar.y, Mathf.Max(6f, bar.width * (float)ratio), bar.height), HpColor(ratio), 5);
                 Text(new Rect(r.x, r.y + 84, r.width, 26), a.Alive ? Format.Ratio(a.Hp, a.MaxHp) : "K.O.", Layout.Font.Title, Color.white, TextAnchor.MiddleCenter, true);
+                if (a.Alive && a.Id == _threatId && a.Role != "healer") Text(new Rect(r.xMax - 74, r.y + 10, 66, 20), "Menace", Layout.Font.Small, Palette.Danger, TextAnchor.MiddleRight, true);
                 if (a.Shield > 0) Text(new Rect(r.x + 8, r.y + 110, r.width * 0.5f, 20), $"Bouclier {Format.Number(a.Shield)}", Layout.Font.Small, Palette.Shield, TextAnchor.MiddleLeft);
                 if (a.Effects.Count > 0)
                 {
@@ -213,6 +216,19 @@ namespace Healer.Client
         private void DrawTarget()
         {
             var z = R(Layout.Zones.Band);
+            var cast = _ctl.Battle.GetCast();
+            if (cast != null)
+            {
+                // Incantation en cours : nom du sort, cible et barre de progression.
+                string skillName = _ctl.Skills.FirstOrDefault(s => s.Id == cast.SkillId)?.Name ?? cast.SkillId;
+                string targetName = _ctl.Battle.GetAllies().FirstOrDefault(a => a.Id == cast.TargetId)?.Name;
+                Text(new Rect(z.x, z.y - 4, z.width, 24), targetName != null ? $"{skillName} → {targetName}" : skillName, Layout.Font.Body, Color.white, TextAnchor.MiddleCenter, true);
+                var bar = new Rect(z.x + z.width * 0.2f, z.y + 24, z.width * 0.6f, 16);
+                Fill(bar, new Color(0, 0, 0, 0.6f), 6);
+                Fill(new Rect(bar.x, bar.y, Mathf.Max(6f, bar.width * (float)cast.Progress), bar.height), Palette.Heal, 6);
+                Outline(bar, new Color(1f, 1f, 1f, 0.35f), 1, 6);
+                return;
+            }
             string selectedName = _ctl.Battle.GetAllies().FirstOrDefault(x => x.Id == _ctl.Selection.Selected)?.Name;
             if (_ctl.HintActive) Text(z, "Choisissez d'abord un allié !", Layout.Font.Title, Palette.Danger, TextAnchor.MiddleCenter, true);
             else if (selectedName != null) Text(z, $"Cible : {selectedName}", Layout.Font.Title, Color.white, TextAnchor.MiddleCenter, true);
@@ -371,7 +387,7 @@ namespace Healer.Client
                 int percent = (int)(s.DamageShare(a.Id) * 100); // tronqué, jamais arrondi vers le haut
                 Text(new Rect(barX + barMax + 8, y, valueW - 8, 30), $"{Format.Number(dmg)}  ({percent} %)", Layout.Font.Body, Color.white, TextAnchor.MiddleRight, true);
             }
-            Text(new Rect(p.x + 20, p.yMax - 32, p.width - 40, 26), "Total : " + Format.Number(s.DamageToBoss), Layout.Font.Small, Muted, TextAnchor.MiddleRight);
+            Text(new Rect(p.x + 20, p.yMax - 32, p.width - 40, 26), $"Critiques : {s.Crits}  ·  Esquives : {s.Dodges}  ·  Total : {Format.Number(s.DamageToBoss)}", Layout.Font.Small, Muted, TextAnchor.MiddleRight);
         }
 
         private void DrawEnd()

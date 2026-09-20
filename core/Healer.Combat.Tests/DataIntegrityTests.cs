@@ -56,7 +56,9 @@ namespace Healer.Combat.Tests
             foreach (var s in Content.Skills)
             {
                 Assert.That(s.ManaCost, Is.GreaterThanOrEqualTo(0), s.Id);
-                Assert.That(s.CooldownMs, Is.GreaterThan(0), s.Id);
+                Assert.That(s.CooldownMs > 0 || s.CastMs > 0, Is.True, s.Id + " : ni recharge ni incantation");
+                Assert.That(s.CooldownMs, Is.GreaterThanOrEqualTo(0), s.Id);
+                Assert.That(s.CastMs, Is.GreaterThanOrEqualTo(0), s.Id);
                 bool hasEffect = s.HealAmount > 0 || s.ShieldAmount > 0 || s.Cleanse == true;
                 Assert.That(hasEffect, $"{s.Id} n'a aucun effet");
             }

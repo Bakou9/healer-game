@@ -319,7 +319,8 @@ namespace Healer.Combat.Tests
             var l = new Loadout(); l.Talents[1] = "thrifty"; l.Talents[2] = "swift_purge";
             var (_, sk) = Apply(l, c);
             Assert.That(sk.All(s => s.ManaCost >= 0), Is.True);
-            Assert.That(sk.All(s => s.CooldownMs >= 1), Is.True);
+            var baseSkills = c.Skills.ToDictionary(s => s.Id);
+            Assert.That(sk.All(s => baseSkills[s.Id].CooldownMs == 0 ? s.CooldownMs == 0 : s.CooldownMs >= 1), Is.True);
         }
 
         [Test]
