@@ -460,3 +460,13 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Import** : `ModelFactory.ImportedDruid()` ; couleurs du FBX (linéaires) remises en couleurs d'écran puis éclaircies (×1,7 : la scène est plus sombre que le rendu Blender) ; taille normalisée. Le druide remplace le corps de la Soigneuse à tous les paliers d'équipement (apparence par équipement volontairement ignorée pour elle, comme demandé). Création propre au projet : `Assets/Resources/Parts/`, aucun crédit externe.
 - **Correctif annexe** : le compteur de triangles de la galerie affichait 0 pour les maillages importés (lecture interdite dans l'exécutable) ; il utilise désormais le nombre d'indices.
 - **Question B** : aucune règle ni valeur de jeu modifiée.
+
+## D-067 — Blender piloté par MCP : druide v2 (crâne de cerf)
+
+- **Date** : 2026-09-20 — **Statut** : Livrée ; le druide v1 (`art/blender/druid.py`, `Parts/Druid.fbx`) est gardé de côté comme repli.
+- **Demande** : réessayer la génération de modèle avec le MCP Blender.
+- **Installation** (accord de l'utilisateur) : `uv` (winget), Python 3.12 géré par uv, serveur `blender-mcp` lancé par `uvx` (déclaré dans `.mcp.json`, exclu de git : chemins propres à la machine), add-on « MCP for Blender » 1.7 (ahujasid) dans les add-ons de Blender 5.2. **Télémétrie désactivée** (l'add-on la propose cochée ; elle enverrait prompts, code et captures à un tiers).
+- **Méthode** : `art/blender/druid_mcp.py` s'exécute dans le Blender ouvert via l'outil `execute_blender_code` (rendus de contrôle relus à chaque itération) ; le même script tourne aussi en ligne de commande. Il n'utilise pas `read_factory_settings` (qui coupe le serveur MCP).
+- **Nouveautés** : masque de crâne de cerf (crâne, museau, arcades, orbites aux yeux lumineux), robe plissée (`folds`), bâton à croissant de lune en bois. 3 298 triangles (budget 3 300, contrôlé par le build).
+- **Import** : `ModelFactory.ImportedDruid()` charge `Parts/DruidMcp`, à défaut `Parts/Druid`.
+- **Question B** : aucune règle ni valeur de jeu modifiée.

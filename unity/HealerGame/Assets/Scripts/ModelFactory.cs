@@ -381,13 +381,13 @@ namespace Healer.Client
         }
 
         /// <summary>
-        /// Druide de la Soigneuse, modélisé sous Blender (art/blender/druid.py) et exporté en FBX (Resources/Parts/Druid.fbx). Le fichier contient
+        /// Druide de la Soigneuse, modélisé sous Blender (art/blender/druid_mcp.py, ou druid.py pour la première version) et exporté en FBX (Resources/Parts/Druid.fbx). Le fichier contient
         /// des maillages « Pivot__Pièce » et des objets vides « Pivot_<Pivot> » ; on reconstruit ici la hiérarchie du UnitRig avec des pivots
         /// PROPRES (sans rotation) aux articulations, on y range les pièces, et on normalise la taille. Renvoie null si le fichier est absent.
         /// </summary>
         private static GameObject? ImportedDruid()
         {
-            var prefab = Resources.Load<GameObject>("Parts/Druid");
+            var prefab = Resources.Load<GameObject>("Parts/DruidMcp") ?? Resources.Load<GameObject>("Parts/Druid"); // version 2 (MCP Blender), à défaut la première
             if (prefab == null) return null;
             var src = Object.Instantiate(prefab);
             src.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
