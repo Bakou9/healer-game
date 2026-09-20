@@ -125,13 +125,16 @@ namespace Healer.Combat.Tests
         }
 
         [Test]
-        public void Le_scenario_du_bug_est_bien_reproduit_par_la_geometrie()
+        public void Depuis_la_disposition_en_colonnes_les_boutons_modaux_ne_chevauchent_plus_rien()
         {
-            // Garde-fou du test précédent : si la mise en page change et que plus rien ne se chevauche, ce test
-            // le dira et on saura que la régression n'est plus vérifiée pour la bonne raison.
-            bool overlapsAnything = Layout.TeamCardRects(4).Any(c => c.Overlaps(Layout.StartButton))
-                                    || Layout.SkillButtonRects(4).Any(c => c.Overlaps(Layout.StartButton));
-            Assert.That(overlapsAnything, Is.True, "« Jouer » ne chevauche plus aucune carte : la régression n'est plus exercée");
+            // La cause du bug (un bouton modal posé sur des cartes) a aussi disparu de la géométrie ; InputGate
+            // reste le filet si une future mise en page recommence à chevaucher.
+            foreach (var modal in new[] { Layout.StartButton, Layout.RestartButton })
+            {
+                foreach (var c in Layout.TeamCardRects(5)) Assert.That(c.Overlaps(modal), Is.False);
+                foreach (var b in Layout.SkillButtonRects(6)) Assert.That(b.Overlaps(modal), Is.False);
+                Assert.That(Layout.PauseButton.Overlaps(modal), Is.False);
+            }
         }
     }
 
@@ -220,7 +223,7 @@ namespace Healer.Combat.Tests
         }
     }
 
-    /// <summary>Contrôles de la mise en page paysage (D-042) au-delà des règles UX communes.</summary>
+    /// <summary>Contrôles de la mise en page paysage à deux pouces (D-042, D-046).</summary>
     public class LandscapeLayoutTests
     {
         [Test]
@@ -231,32 +234,87 @@ namespace Healer.Combat.Tests
         }
 
         [Test]
-        public void Cartes_bande_et_sorts_sont_dans_la_colonne_centrale()
+        public void Les_cartes_d_allies_sont_toutes_dans_la_colonne_de_gauche()
         {
-            var center = new Rect(Layout.Zones.CenterX, 0, Layout.Zones.CenterW, Layout.GameH);
-            foreach (var z in new[] { Layout.Zones.Band, Layout.Zones.Team, Layout.Zones.Strip, Layout.Zones.Skills })
-            {
-                Assert.That(z.X, Is.GreaterThanOrEqualTo(center.X));
-                Assert.That(z.Right, Is.LessThanOrEqualTo(center.Right));
-            }
+            foreach (int n in new[] { 3, 4, 5 })
+                foreach (var c in Layout.TeamCardRects(n))
+                {
+                    Assert.That(c.X, Is.GreaterThanOrEqualTo(Layout.Zones.LeftX));
+                    Assert.That(c.Right, Is.LessThanOrEqualTo(Layout.Zones.LeftX + Layout.Zones.SideW + 0.001));
+                }
         }
 
         [Test]
-        public void La_colonne_centrale_est_centree_sur_l_ecran() =>
-            Assert.That(Layout.Zones.CenterX + Layout.Zones.CenterW / 2, Is.EqualTo(Layout.GameW / 2).Within(0.001));
+        public void Les_boutons_de_sorts_sont_tous_dans_la_colonne_de_droite()
+        {
+            foreach (int n in new[] { 3, 4, 5, 6 })
+                foreach (var b in Layout.SkillButtonRects(n))
+                {
+                    Assert.That(b.X, Is.GreaterThanOrEqualTo(Layout.Zones.RightX - 0.001));
+                    Assert.That(b.Right, Is.LessThanOrEqualTo(Layout.GameW - Layout.SafeSide + 0.001));
+                }
+        }
 
         [Test]
-        public void Les_sorts_sont_sous_les_cartes_et_la_bande_cible_mana_entre_les_deux()
+        public void Une_seule_fonction_par_pouce_aucune_carte_a_droite_aucun_sort_a_gauche()
         {
-            Assert.That(Layout.Zones.Team.Bottom, Is.LessThanOrEqualTo(Layout.Zones.Strip.Y));
+            var center = Layout.GameW / 2;
+            foreach (var c in Layout.TeamCardRects(4)) Assert.That(c.Right, Is.LessThan(center));
+            foreach (var b in Layout.SkillButtonRects(4)) Assert.That(b.X, Is.GreaterThan(center));
+            Assert.That(Layout.Zones.Strip.X, Is.GreaterThan(center), "le mana se lit avec les sorts, côté droit");
+        }
+
+        [Test]
+        public void Les_deux_colonnes_sont_symetriques()
+        {
+            Assert.That(Layout.Zones.LeftX, Is.EqualTo(Layout.GameW - (Layout.Zones.RightX + Layout.Zones.SideW)).Within(0.001));
+            Assert.That(Layout.Zones.Team.W, Is.EqualTo(Layout.Zones.Skills.W).Within(0.001));
+        }
+
+        [Test]
+        public void Les_colonnes_sont_atteignables_du_pouce_depuis_le_bord_de_l_ecran()
+        {
+            // Un pouce couvre environ un quart de la largeur d'un téléphone en paysage depuis son bord.
+            Assert.That(Layout.Zones.Team.Right, Is.LessThanOrEqualTo(Layout.GameW * 0.25));
+            Assert.That(Layout.Zones.Skills.X, Is.GreaterThanOrEqualTo(Layout.GameW * 0.75));
+        }
+
+        [Test]
+        public void La_scene_centrale_est_centree_et_large()
+        {
+            Assert.That(Layout.Zones.CenterX + Layout.Zones.CenterW / 2, Is.EqualTo(Layout.GameW / 2).Within(0.001));
+            Assert.That(Layout.Zones.CenterW, Is.GreaterThanOrEqualTo(600));
+            Assert.That(Layout.Zones.Boss.H, Is.GreaterThanOrEqualTo(300));
+        }
+
+        [Test]
+        public void Le_mana_est_au_dessus_des_sorts_dans_la_meme_colonne()
+        {
+            Assert.That(Layout.Zones.Strip.X, Is.EqualTo(Layout.Zones.Skills.X).Within(0.001));
             Assert.That(Layout.Zones.Strip.Bottom, Is.LessThanOrEqualTo(Layout.Zones.Skills.Y));
         }
 
-        [Test]
-        public void Le_boss_a_assez_de_place_pour_etre_grand()
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        public void Les_cartes_d_allies_sont_assez_hautes_et_larges_pour_un_nom_et_des_PV(int count)
         {
-            Assert.That(Layout.Zones.Boss.H, Is.GreaterThanOrEqualTo(200));
-            Assert.That(Layout.Zones.Boss.W, Is.EqualTo(Layout.GameW));
+            foreach (var c in Layout.TeamCardRects(count))
+            {
+                Assert.That(c.H, Is.GreaterThanOrEqualTo(100));
+                Assert.That(c.W, Is.GreaterThanOrEqualTo(200));
+            }
+        }
+
+        [TestCase(4)]
+        [TestCase(6)]
+        public void Les_boutons_de_sorts_sont_assez_grands_pour_le_pouce(int count)
+        {
+            foreach (var b in Layout.SkillButtonRects(count))
+            {
+                Assert.That(b.H, Is.GreaterThanOrEqualTo(72));
+                Assert.That(b.W, Is.GreaterThanOrEqualTo(200));
+            }
         }
 
         [Test]
@@ -267,21 +325,24 @@ namespace Healer.Combat.Tests
         }
 
         [Test]
-        public void La_pause_est_en_haut_a_droite() =>
-            Assert.That(Layout.PauseButton.X + Layout.PauseButton.W, Is.GreaterThan(Layout.GameW - 40));
-
-        [TestCase(4)]
-        [TestCase(5)]
-        public void Les_cartes_d_allies_sont_assez_larges_pour_un_nom_et_des_PV(int count)
-        {
-            foreach (var c in Layout.TeamCardRects(count)) Assert.That(c.W, Is.GreaterThanOrEqualTo(160));
-        }
+        public void La_pause_est_en_haut_a_droite_hors_des_colonnes() =>
+            Assert.That(Layout.PauseButton.Bottom, Is.LessThanOrEqualTo(Layout.Zones.Skills.Y));
 
         [Test]
-        public void Les_boutons_de_sorts_sont_assez_larges_pour_leur_libelle_le_plus_long()
+        public void Les_allies_de_la_scene_sont_alignes_au_centre_sans_se_chevaucher()
         {
-            // « Soin de zone » en 18 px gras tient dans ~120 px ; on exige de la marge.
-            foreach (var b in Layout.SkillButtonRects(4)) Assert.That(b.W, Is.GreaterThanOrEqualTo(160));
+            foreach (int n in new[] { 3, 4, 5 })
+            {
+                double prev = double.NegativeInfinity, sum = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    double x = Layout.AllyStageX(i, n);
+                    Assert.That(x - prev, Is.GreaterThanOrEqualTo(150), $"{n} alliés, allié {i}");
+                    Assert.That(x, Is.GreaterThan(Layout.Zones.CenterX).And.LessThan(Layout.Zones.CenterX + Layout.Zones.CenterW));
+                    prev = x; sum += x;
+                }
+                Assert.That(sum / n, Is.EqualTo(Layout.GameW / 2).Within(0.001), $"{n} alliés centrés");
+            }
         }
     }
 }

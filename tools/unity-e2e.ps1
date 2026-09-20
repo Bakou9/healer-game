@@ -1,8 +1,8 @@
 ﻿# Tests de bout en bout du jeu Windows, avec la VRAIE souris et le VRAI clavier (fenêtre du jeu uniquement).
 # Remplace unity-clicktest.ps1. Vérifie par le journal du jeu (Player.log) que chaque geste atteint le contrôleur.
-#   Scénario A : clic sur « Jouer » à un endroit recouvert par une carte d'allié (régression : le clic était avalé),
+#   Scénario A : clic sur « Jouer », puis cartes à gauche / sorts à droite (D-046),
 #                cibler, lancer un sort, pause / reprise à l'Espace et à Échap.
-#   Scénario B : combat accéléré perdu sans joueur → écran de bilan → clic sur « Recommencer » (recouvre aussi des cartes).
+#   Scénario B : combat accéléré perdu sans joueur → écran de bilan → clic sur « Recommencer ».
 #   Scénario C : Espace démarre, Entrée redémarre après la défaite.
 # À lancer quand personne n'utilise souris ni clavier. Code de sortie 1 si une vérification échoue.
 # Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C]
@@ -73,10 +73,10 @@ function Forbid($lines, $pattern, $label) {
 if ($Scenario -eq "all" -or $Scenario -eq "A") {
 Write-Output "Scénario A : démarrer à la souris, cibler, lancer un sort, pause au clavier"
 Start-Game @()
-# (700,500) est dans le bouton « Jouer » (520..760 x 470..530) ET dans la carte du Mage (x 644..888, y 388..524).
-Tap 700 500 "Jouer (au-dessus de la carte du Mage)"
-Tap 262 456 "carte Garde"
-Tap 262 644 "sort Soin"
+# Disposition à deux pouces (D-046) : cartes à gauche (x 12..276), scène au centre, sorts à droite (x 1004..1268).
+Tap 640 500 "Jouer (bouton central)"
+Tap 144 148 "carte Garde (colonne gauche)"
+Tap 1136 190 "sort Soin (colonne droite)"
 Press 0x39 "Espace (pause)"
 Press 0x39 "Espace (reprise)"
 Press 0x01 "Échap (pause)"
@@ -84,7 +84,8 @@ Press 0x01 "Échap (reprise)"
 Stop-Game
 $a = Log
 Expect $a "état : combat démarré" "le clic sur Jouer démarre le combat"
-Forbid $a "geste : carte dps2" "le clic sur Jouer n'a pas été avalé par la carte du Mage"
+$ha = @($a | Select-String -Pattern "\[Healer\]" | ForEach-Object { $_.Line })
+if ($ha.Count -ge 2 -and $ha[0] -match "état : combat démarré" -and $ha[1] -match "geste : carte tank") { Write-Output "  OK      le clic sur Jouer ne déclenche aucun autre geste (ordre : démarrage, puis carte)" } else { Write-Output "  ÉCHEC   ordre des événements inattendu : $($ha[0..2] -join ' | ')"; $script:failures += "ordre des événements après Jouer" }
 Expect $a "geste : carte tank → cible = tank" "un clic sur une carte cible l'allié"
 Expect $a "geste : sort heal_single → Cast \(cible tank\)" "un clic sur un sort le lance sur la cible"
 Expect $a "état : pause" "Espace met en pause"
@@ -93,14 +94,14 @@ Expect $a "état : reprise" "Espace reprend"
 }
 # ---- Scénarios B et C -----------------------------------------------------------------------
 if ($Scenario -eq "all" -or $Scenario -eq "B") {
-Write-Output "Scénario B : défaite sans joueur, clic sur Recommencer (recouvre des cartes)"
+Write-Output "Scénario B : défaite sans joueur, clic sur Recommencer"
 Start-Game @("-healer-timescale", "40")
-Tap 700 500 "Jouer"
+Tap 640 500 "Jouer"
 Start-Sleep -Seconds 12
 $b = Log
 Expect $b "état : combat terminé \(defeat\)" "le combat sans joueur se termine par une défaite"
-Tap 700 480 "Recommencer (au-dessus de cartes)"
-Tap 262 456 "carte Garde en fin de combat (ne doit rien faire de plus)"
+Tap 640 480 "Recommencer"
+Tap 144 148 "carte Garde en fin de combat (ne doit rien faire de plus)"
 Stop-Game
 $b2 = Log
 Expect $b2 "état : nouveau combat" "le clic sur Recommencer relance un combat"

@@ -85,20 +85,20 @@ namespace Healer.Combat.Tests
         }
 
         [Test]
-        public void Les_zones_ne_se_chevauchent_pas_et_sont_dans_l_ordre_vertical()
+        public void Les_zones_ne_se_chevauchent_pas()
         {
             var zones = Layout.Zones.InOrder;
             for (int i = 0; i < zones.Count; i++)
-            {
                 for (int j = i + 1; j < zones.Count; j++)
                     Assert.That(zones[i].rect.Overlaps(zones[j].rect), Is.False, $"{zones[i].name} / {zones[j].name}");
-                if (i > 0) Assert.That(zones[i].rect.Y, Is.GreaterThanOrEqualTo(zones[i - 1].rect.Bottom));
-            }
         }
 
         [Test]
-        public void Les_sorts_sont_dans_la_moitie_basse_de_l_ecran() =>
-            Assert.That(Layout.Zones.Skills.Y, Is.GreaterThan(Layout.GameH / 2));
+        public void Les_alliés_sont_a_gauche_la_scene_au_centre_et_les_sorts_a_droite()
+        {
+            Assert.That(Layout.Zones.Team.Right, Is.LessThanOrEqualTo(Layout.Zones.Boss.X));
+            Assert.That(Layout.Zones.Boss.Right, Is.LessThanOrEqualTo(Layout.Zones.Skills.X));
+        }
 
         [Test]
         public void La_barre_de_PV_du_boss_ne_chevauche_pas_la_pause_et_reste_dans_la_barre_haute()

@@ -48,6 +48,7 @@ namespace Healer.Client
             DrawBoss();
             DrawTeam();
             DrawStrip();
+            DrawTarget();
             DrawSkills();
             DrawEnd();
             DrawStart();
@@ -158,8 +159,8 @@ namespace Healer.Client
                 Outline(r, selected ? Selected : PanelStroke, selected ? 3 : 1.5f, 8);
                 var role = a.Role == "tank" ? Palette.Tank : a.Role == "healer" ? Palette.Healer : (a.Id == "dps2" ? Palette.Mage : Palette.Archer);
                 Fill(new Rect(r.x + 8, r.y + 8, r.width - 16, 5), new Color(role.r, role.g, role.b, alpha), 3);
-                Text(new Rect(r.x, r.y + 14, r.width, 24), a.Name, Layout.Font.Body, Color.white, TextAnchor.MiddleCenter, true);
-                Text(new Rect(r.x, r.y + 36, r.width, 20), a.Role == "tank" ? "Tank" : a.Role == "healer" ? "Soin" : "Dégâts", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
+                Text(new Rect(r.x + 40, r.y + 14, r.width - 48, 24), a.Name, Layout.Font.Strong, Color.white, TextAnchor.MiddleLeft, true);
+                Text(new Rect(r.x + 40, r.y + 38, r.width - 48, 20), a.Role == "tank" ? "Tank" : a.Role == "healer" ? "Soin" : "Dégâts", Layout.Font.Small, Muted, TextAnchor.MiddleLeft);
 
                 double ratio = a.MaxHp > 0 ? System.Math.Max(0, a.Hp / a.MaxHp) : 0;
                 var bar = new Rect(r.x + 12, r.y + 62, r.width - 24, 20);
@@ -184,20 +185,23 @@ namespace Healer.Client
 
         private void DrawStrip()
         {
-            var z = R(Layout.Zones.Strip);
             var battle = _ctl.Battle;
             var healer = battle.GetAllies().FirstOrDefault(x => x.Id == BattleController.HealerId);
-            string selectedName = battle.GetAllies().FirstOrDefault(x => x.Id == _ctl.Selection.Selected)?.Name;
-            var left = new Rect(z.x, z.y, z.width * 0.4f, z.height);
-            if (_ctl.HintActive) Text(left, "Choisissez d'abord un allié !", Layout.Font.Body, Palette.Danger, TextAnchor.MiddleLeft, true);
-            else if (selectedName != null) Text(left, $"Cible : {selectedName}", Layout.Font.Body, Color.white, TextAnchor.MiddleLeft, true);
-            else Text(left, "Touchez un allié pour le cibler", Layout.Font.Body, Muted, TextAnchor.MiddleLeft);
-
             double mana = healer?.Mana ?? 0, max = healer?.MaxMana ?? 1;
-            var bar = new Rect(z.x + z.width * 0.42f, z.y + 12, z.width * 0.58f, 26);
+            var bar = R(Layout.Zones.Strip);
             Fill(bar, new Color(0, 0, 0, 0.55f), 8);
             if (mana > 0) Fill(new Rect(bar.x, bar.y, Mathf.Max(10f, bar.width * (float)(mana / max)), bar.height), Palette.Hex("4AA8FF"), 8);
-            Text(bar, $"Mana {Format.Ratio(mana, max)}", Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, true);
+            Text(bar, $"Mana {Format.Ratio(mana, max)}", Layout.Font.Body, Color.white, TextAnchor.MiddleCenter, true);
+        }
+
+        /// <summary>Cible courante (ou rappel de choisir un allié), au centre bas de la scène.</summary>
+        private void DrawTarget()
+        {
+            var z = R(Layout.Zones.Band);
+            string selectedName = _ctl.Battle.GetAllies().FirstOrDefault(x => x.Id == _ctl.Selection.Selected)?.Name;
+            if (_ctl.HintActive) Text(z, "Choisissez d'abord un allié !", Layout.Font.Title, Palette.Danger, TextAnchor.MiddleCenter, true);
+            else if (selectedName != null) Text(z, $"Cible : {selectedName}", Layout.Font.Title, Color.white, TextAnchor.MiddleCenter, true);
+            else Text(z, "Touchez un allié (à gauche) pour le cibler", Layout.Font.Body, Muted, TextAnchor.MiddleCenter);
         }
 
         // ---- Sorts -------------------------------------------------------------------------------
@@ -237,7 +241,7 @@ namespace Healer.Client
         private void KeyCap(Rect card, string? label)
         {
             if (label == null) return;
-            var cap = new Rect(card.x + 8, card.y - 12, 24, 24);
+            var cap = new Rect(card.x + 8, card.y + 8, 24, 24);
             Fill(cap, new Color(0f, 0f, 0f, 0.6f), 5);
             Outline(cap, new Color(1f, 1f, 1f, 0.5f), 1, 5);
             Text(cap, label, Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, true);
@@ -271,8 +275,8 @@ namespace Healer.Client
             Outline(panel, PanelStroke, 2, 14);
             string[] tips =
             {
-                "1  Cliquez (ou touchez) un allié pour le cibler",
-                "2  Cliquez (ou touchez) un sort pour le lancer",
+                "1  Touchez un allié à GAUCHE pour le cibler",
+                "2  Touchez un sort à DROITE pour le lancer sur lui",
                 "Soin de zone : sans cible, pour toute l'équipe",
                 "Bouclier : à poser AVANT l'attaque annoncée",
                 "Purge : retire le poison (phase 2)",

@@ -68,19 +68,28 @@ namespace Healer.Ui
         public const double SafeSide = 12;
         public const double Gap = 8;
 
-        /// <summary>Zones verticales de l'écran, de haut en bas (docs/UX.md §4).</summary>
+        /// <summary>Zones de l'écran : colonne gauche (alliés), scène centrale, colonne droite (sorts) (docs/UX.md §4, D-046).</summary>
         public static class Zones
         {
-            /// <summary>Colonne centrale de 1000 px : cartes et sorts y sont regroupés (lecture du regard sans balayer 1280 px).</summary>
-            public const double CenterX = 140;
-            public const double CenterW = 1000;
+            /// <summary>Largeur de chaque colonne latérale (un pouce par colonne, D-046).</summary>
+            public const double SideW = 264;
+
+            /// <summary>Colonne de gauche : cartes d'alliés (barres de vie), pouce gauche.</summary>
+            public const double LeftX = SafeSide;
+
+            /// <summary>Colonne de droite : sorts et mana, pouce droit (symétrique de la gauche).</summary>
+            public const double RightX = GameW - SafeSide - SideW;
+
+            /// <summary>Scène centrale (boss et alliés en 3D), entre les deux colonnes.</summary>
+            public const double CenterX = LeftX + SideW + SafeSide;
+            public const double CenterW = RightX - SafeSide - CenterX;
 
             public static readonly Rect TopBar = new Rect(0, SafeTop, GameW, 52);
-            public static readonly Rect Boss = new Rect(0, 64, GameW, 250);
-            public static readonly Rect Band = new Rect(CenterX, 322, CenterW, 44);
-            public static readonly Rect Team = new Rect(CenterX, 388, CenterW, 136);
-            public static readonly Rect Strip = new Rect(CenterX, 534, CenterW, 48);
-            public static readonly Rect Skills = new Rect(CenterX, 592, CenterW, 104);
+            public static readonly Rect Boss = new Rect(CenterX, 64, CenterW, 420);
+            public static readonly Rect Team = new Rect(LeftX, 72, SideW, 632);
+            public static readonly Rect Strip = new Rect(RightX, 72, SideW, 40);
+            public static readonly Rect Skills = new Rect(RightX, 120, SideW, 584);
+            public static readonly Rect Band = new Rect(CenterX, 660, CenterW, 44);
 
             public static IReadOnlyList<(string name, Rect rect)> InOrder => new[]
             {
@@ -95,7 +104,7 @@ namespace Healer.Ui
         public static readonly Rect StartButton = new Rect(GameW / 2 - 120, 470, 240, 60);
         public static readonly Rect RestartButton = new Rect(GameW / 2 - 120, 450, 240, 56);
         /// <summary>Barre de PV du boss : s'arrête avant le bouton de pause pour ne pas le chevaucher.</summary>
-        public static readonly Rect BossHpBar = new Rect(Zones.CenterX + 100, SafeTop + 34, 800, 14);
+        public static readonly Rect BossHpBar = new Rect(Zones.CenterX + SafeSide, SafeTop + 34, Zones.CenterW - 2 * SafeSide, 14);
 
         /// <summary>Répartit `count` éléments égaux sur la largeur d'une zone, avec Gap entre eux.</summary>
         public static Rect[] SplitRow(Rect zone, int count)
@@ -106,8 +115,20 @@ namespace Healer.Ui
             return result;
         }
 
-        public static Rect[] TeamCardRects(int count) => SplitRow(Zones.Team, count);
-        public static Rect[] SkillButtonRects(int count) => SplitRow(Zones.Skills, count);
+        /// <summary>Répartit `count` éléments égaux sur la hauteur d'une zone, avec Gap entre eux (colonnes latérales).</summary>
+        public static Rect[] SplitColumn(Rect zone, int count)
+        {
+            double height = (zone.H - Gap * (count - 1)) / count;
+            var result = new Rect[count];
+            for (int i = 0; i < count; i++) result[i] = new Rect(zone.X, zone.Y + i * (height + Gap), zone.W, height);
+            return result;
+        }
+
+        public static Rect[] TeamCardRects(int count) => SplitColumn(Zones.Team, count);
+        public static Rect[] SkillButtonRects(int count) => SplitColumn(Zones.Skills, count);
+
+        /// <summary>Position logique (x) du n-ième allié dans la scène 3D : en ligne, centrée, devant le boss.</summary>
+        public static double AllyStageX(int index, int count) => GameW / 2 + (index - (count - 1) / 2.0) * 165;
 
         /// <summary>Bande de la barre de PV selon le ratio (seuils lisibles : > 60 %, > 30 %, sinon bas).</summary>
         public static HpBand HpBandFor(double ratio)

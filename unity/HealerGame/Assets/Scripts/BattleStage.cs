@@ -15,10 +15,10 @@ namespace Healer.Client
     {
         private const float BossDepth = 35f;
         private const float AllyDepth = 33f;
-        private const float BossFeetY = 322f;
-        private const float AllyFeetY = 386f;
-        private const float BossScale = 1.75f;
-        private const float AllyScale = 1.4f;
+        private const float BossFeetY = 452f;
+        private const float AllyFeetY = 640f;
+        private const float BossScale = 2.1f;
+        private const float AllyScale = 1.65f;
 
         private sealed class UnitView
         {
@@ -31,6 +31,7 @@ namespace Healer.Client
             public float HitFlash;
             public float Lunge;
             public GameObject Bubble = null!;
+            public GameObject Ring = null!;
             public float HealGlow;
         }
 
@@ -211,6 +212,22 @@ namespace Healer.Client
             return m;
         }
 
+        /// <summary>Anneau doux (allié ciblé) : bande claire autour du bord d'un disque, centre transparent.</summary>
+        private static Texture2D RingTexture(int size)
+        {
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            float c = (size - 1) * 0.5f;
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float d = Mathf.Sqrt((x - c) * (x - c) + (y - c) * (y - c)) / c;
+                    float a = Mathf.Clamp01(1f - Mathf.Abs(d - 0.86f) / 0.1f);
+                    tex.SetPixel(x, y, new Color(1, 1, 1, a * a));
+                }
+            tex.Apply();
+            return tex;
+        }
+
         private static Texture2D SoftDot(int size)
         {
             var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
@@ -305,6 +322,16 @@ namespace Healer.Client
             var shadowMat = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended")) { mainTexture = SoftDot(64) };
             shadowMat.SetColor("_TintColor", new Color(0f, 0f, 0f, 0.3f));
             shadow.AddComponent<MeshRenderer>().sharedMaterial = shadowMat;
+            var ring = new GameObject("SelectRing");
+            ring.transform.SetParent(model.transform, false);
+            ring.transform.localPosition = new Vector3(0, 0.05f, 0);
+            ring.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            ring.transform.localScale = new Vector3(3.1f, 2.1f, 1f);
+            ring.AddComponent<MeshFilter>().sharedMesh = QuadMesh();
+            var ringMat = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended")) { mainTexture = RingTexture(128) };
+            ringMat.SetColor("_TintColor", new Color(0.88f, 0.75f, 0.42f, 0.95f));
+            ring.AddComponent<MeshRenderer>().sharedMaterial = ringMat;
+            ring.SetActive(false);
             var bubble = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             Destroy(bubble.GetComponent<Collider>());
             bubble.name = "ShieldBubble";
@@ -317,6 +344,7 @@ namespace Healer.Client
             bubble.GetComponent<MeshRenderer>().sharedMaterial = mat;
             bubble.SetActive(false);
             view.Bubble = bubble;
+            view.Ring = ring;
             return view;
         }
 
@@ -327,18 +355,18 @@ namespace Healer.Client
             _bossGlow = golem.GetComponentsInChildren<Renderer>().Where(r => r.name is "Core" or "EyeL" or "EyeR" or "Rune").ToArray();
 
             var allies = _ctl.Battle.GetAllies();
-            var rects = Layout.TeamCardRects(allies.Count);
             for (int i = 0; i < allies.Count; i++)
             {
                 var a = allies[i];
                 var view = MakeView(a.Id, ModelFactory.ForCharacter(a.Id, a.Role), AllyScale);
                 view.Root.name = "Ally_" + a.Id;
                 _units[a.Id] = view;
-                _cardCenters[a.Id] = (float)(rects[i].X + rects[i].W / 2);
+                _stageX[a.Id] = (float)Layout.AllyStageX(i, allies.Count);
             }
         }
 
-        private readonly Dictionary<string, float> _cardCenters = new Dictionary<string, float>();
+        /// <summary>Position logique (x) de chaque allié dans la scène : en ligne devant le boss (les cartes sont dans la colonne gauche).</summary>
+        private readonly Dictionary<string, float> _stageX = new Dictionary<string, float>();
 
         private void ResetVisuals()
         {
@@ -418,13 +446,14 @@ namespace Healer.Client
                 v.HitFlash = Mathf.Max(0f, v.HitFlash - dt * 3.5f);
                 v.Lunge = Mathf.Max(0f, v.Lunge - dt * 4f);
                 v.HealGlow = Mathf.Max(0f, v.HealGlow - dt * 2.5f);
-                Vector3 home = WorldAt(_cardCenters[kv.Key], AllyFeetY, AllyDepth);
+                Vector3 home = WorldAt(_stageX[kv.Key], AllyFeetY, AllyDepth);
                 float bob = st.Alive ? Mathf.Abs(Mathf.Sin(t * 2.4f + v.Phase)) * 0.09f : 0f;
                 var tr = v.Root.transform;
                 tr.position = home + new Vector3(0, bob - v.HitFlash * 0.12f, -v.Lunge * 1.2f);
                 float side = kv.Key == "healer" ? -10f : (kv.Key == "tank" ? 12f : kv.Key == "dps1" ? -6f : 8f);
                 tr.rotation = st.Alive ? Quaternion.Euler(0f, 180f + side, 0f) : Quaternion.Euler(0f, 180f, 78f);
                 v.Bubble.SetActive(st.Alive && st.Shield > 0.5f);
+                v.Ring.SetActive(st.Alive && _ctl.Selection.Selected == kv.Key);
                 bool poisoned = st.Effects.Count > 0;
                 for (int i = 0; i < v.Renderers.Length; i++)
                 {
