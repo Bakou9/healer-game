@@ -470,3 +470,12 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Nouveautés** : masque de crâne de cerf (crâne, museau, arcades, orbites aux yeux lumineux), robe plissée (`folds`), bâton à croissant de lune en bois. 3 298 triangles (budget 3 300, contrôlé par le build).
 - **Import** : `ModelFactory.ImportedDruid()` charge `Parts/DruidMcp`, à défaut `Parts/Druid`.
 - **Question B** : aucune règle ni valeur de jeu modifiée.
+
+## D-068 — Druide v3 : méthode « corps d'abord » avec contrôle automatique des dégagements
+
+- **Date** : 2026-09-20 — **Statut** : Livrée ; v1 (`druid.py`) et v2 (`druid_mcp.py`) gardées comme replis (le jeu charge `Parts/DruidV3`, à défaut `DruidMcp`, à défaut `Druid`).
+- **Retour de l'utilisateur sur la v2** : le bâton rentrait dans la robe (porté de façon peu naturelle) et les mains étaient minuscules. **Cause** : pièces posées à la main par coordonnées, sans vérifier les rapports entre elles ; poing de 10 cm sur un personnage de 2,6 m.
+- **Méthode** : pose imposée d'abord (épaule, coude, poignet, prise du bâton), puis vêtements et ornements autour ; mains à taille de figurine (poing 0,16 m pour une tête de 0,4 m, quatre doigts refermés et pouce) ; bras gauche tendu sur le côté, paume ouverte, visible de face ; robe resserrée. **Contrôle automatique** dans le script : distance minimale entre le bâton (tige et croissant) et toutes les autres pièces, avec refus d'exporter sous 7 cm (arbre BVH de Blender) ; il a déjà détecté deux collisions (racine décorative, feuilles de la mante), résolues en écartant ces éléments. Dégagement obtenu : 11 cm.
+- **Bois de cerf** (idée retenue par l'utilisateur) : agrandis, un broc frontal et quatre cors par côté.
+- **Budget** : 3 298 triangles (limite 3 300, contrôlée par le build) ; feuilles réduites en conséquence.
+- **Question B** : aucune règle ni valeur de jeu modifiée.

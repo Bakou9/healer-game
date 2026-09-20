@@ -387,7 +387,7 @@ namespace Healer.Client
         /// </summary>
         private static GameObject? ImportedDruid()
         {
-            var prefab = Resources.Load<GameObject>("Parts/DruidMcp") ?? Resources.Load<GameObject>("Parts/Druid"); // version 2 (MCP Blender), à défaut la première
+            var prefab = Resources.Load<GameObject>("Parts/DruidV3") ?? Resources.Load<GameObject>("Parts/DruidMcp") ?? Resources.Load<GameObject>("Parts/Druid"); // v3 « corps d'abord », à défaut v2 puis v1 (replis)
             if (prefab == null) return null;
             var src = Object.Instantiate(prefab);
             src.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
