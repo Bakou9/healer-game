@@ -19,6 +19,12 @@ namespace Healer.Combat
         public int Deaths { get; private set; }
         public int Purges { get; private set; }
         public int Casts { get; private set; }
+        /// <summary>Coups et soins critiques (tous camps).</summary>
+        public int Crits { get; private set; }
+        /// <summary>Coups esquivés par les alliés.</summary>
+        public int Dodges { get; private set; }
+        /// <summary>Incantations qui n'ont pas abouti.</summary>
+        public int FailedCasts { get; private set; }
         public string Result { get; private set; } = BattleResults.Ongoing;
         public IReadOnlyDictionary<string, int> CastsBySkill => _castsBySkill;
 
@@ -39,8 +45,15 @@ namespace Healer.Combat
         /// <summary>Prend en compte un événement (utilisé par Attach ; public pour rejouer un enregistrement ou construire un cas de test).</summary>
         public void Apply(BattleEvent e)
         {
+            if (e.Crit) Crits++;
             switch (e.Type)
             {
+                case "unitDodged":
+                    Dodges++;
+                    break;
+                case "castFailed":
+                    FailedCasts++;
+                    break;
                 case "healed":
                     HealingDone += e.Amount;
                     break;

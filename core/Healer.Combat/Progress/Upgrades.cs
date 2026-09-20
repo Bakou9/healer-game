@@ -159,11 +159,13 @@ namespace Healer.Combat.Progress
         private static CharacterDef Clone(CharacterDef c) => new CharacterDef
         {
             Id = c.Id, Name = c.Name, Role = c.Role, MaxHp = c.MaxHp, Atk = c.Atk, Def = c.Def, MaxMana = c.MaxMana, ManaRegenPerSec = c.ManaRegenPerSec,
+            ArmorPct = c.ArmorPct, DodgePct = c.DodgePct, CritPct = c.CritPct, CritMultPct = c.CritMultPct, ThreatMod = c.ThreatMod, DamageType = c.DamageType,
+            Resist = c.Resist == null ? null : new Dictionary<string, int>(c.Resist),
         };
 
         private static SkillDef Clone(SkillDef s) => new SkillDef
         {
-            Id = s.Id, Name = s.Name, Description = s.Description, ManaCost = s.ManaCost, CooldownMs = s.CooldownMs, Target = s.Target,
+            Id = s.Id, Name = s.Name, Description = s.Description, ManaCost = s.ManaCost, CooldownMs = s.CooldownMs, CastMs = s.CastMs, Target = s.Target,
             HealAmount = s.HealAmount, ShieldAmount = s.ShieldAmount, Cleanse = s.Cleanse,
         };
     }

@@ -28,6 +28,13 @@ namespace Healer.Combat
         public double Absorbed { get; set; }
         public int Phase { get; set; }
         public bool HitsAll { get; set; }
+        /// <summary>Coup ou soin critique.</summary>
+        public bool Crit { get; set; }
+        /// <summary>Type des dégâts (« physical » si non précisé).</summary>
+        public string DamageType { get; set; } = "";
+
+        /// <summary>Ajouts au format : présents seulement si la mécanique intervient (les combats sans elle gardent leur texte d'origine).</summary>
+        private string Suffix() => (Crit ? " CRIT" : "") + (!string.IsNullOrEmpty(DamageType) && DamageType != "physical" ? " [" + DamageType + "]" : "");
 
         /// <summary>Représentation texte identique à la version TypeScript (formatEvent).</summary>
         public string Format()
@@ -39,11 +46,17 @@ namespace Healer.Combat
                     return $"{head} {CasterId} {SkillId} -> [{string.Join(",", TargetIds)}]";
                 case "healed":
                 case "shielded":
-                    return $"{head} {UnitId} {Num(Amount)}";
+                    return $"{head} {UnitId} {Num(Amount)}{Suffix()}";
                 case "unitDamaged":
-                    return $"{head} {UnitId} {Num(Amount)} (absorbé {Num(Absorbed)})";
+                    return $"{head} {UnitId} {Num(Amount)} (absorbé {Num(Absorbed)}){Suffix()}";
                 case "bossDamaged":
-                    return $"{head} par {SourceId} {Num(Amount)}";
+                    return $"{head} par {SourceId} {Num(Amount)}{Suffix()}";
+                case "unitDodged":
+                    return $"{head} {UnitId}";
+                case "castStarted":
+                    return $"{head} {CasterId} {SkillId} {Num(Amount)}ms";
+                case "castFailed":
+                    return $"{head} {CasterId} {SkillId} {Reason}";
                 case "unitDied":
                     return $"{head} {UnitId}";
                 case "bossAction":
@@ -51,7 +64,7 @@ namespace Healer.Combat
                 case "effectApplied":
                     return $"{head} {UnitId} {EffectId}";
                 case "effectTick":
-                    return $"{head} {UnitId} {EffectId} {Num(Amount)} (absorbé {Num(Absorbed)})";
+                    return $"{head} {UnitId} {EffectId} {Num(Amount)} (absorbé {Num(Absorbed)}){Suffix()}";
                 case "effectEnded":
                     return $"{head} {UnitId} {EffectId} {Reason}";
                 case "bossEnraged":
