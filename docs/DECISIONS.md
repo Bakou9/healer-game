@@ -422,3 +422,13 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Mécanique** : une entrée d'apparence peut désigner un modèle (`AppearanceModel` : chemin sous Resources, taille voulue, décalage, rotation) qui remplace l'arme dessinée ; racine des ressources importées : `Assets/Resources/Imported/<Dossier>` (chargeables dans le jeu compilé ; ancien chemin Art/Imported abandonné). `ModelFactory` normalise la taille sur les maillages (l'unité FBX/OBJ/glTF ne compte pas), rattache le modèle au pivot d'arme et garde la version dessinée si le fichier manque. Garde-fous testés : un modèle « Imported/X/… » exige une entrée de crédit « X ». 3 tests ajoutés (traversée du catalogue, dossier déduit du chemin, crédit exigé).
 - **Bug trouvé par la vérification** : les pièces dessinées détruites en fin d'image restaient listées comme rendus du héros et faisaient échouer la scène à chaque image ; corrigé par une destruction immédiate.
 - **Question B** : aucune règle ni valeur de jeu modifiée.
+
+## D-063 — Mode développeur
+
+- **Date** : 2026-09-20 — **Statut** : Livré.
+- **Demande** : savoir lancer un mode développeur ; pouvoir monter ou descendre le niveau des équipements et mettre l'or à 99 999.
+- **Lancement** : option `-healer-dev` ; `lancer-le-jeu-dev.bat` (et `lancer-le-jeu.bat` pour le lancement normal) ; `npm run build:unity` construit le jeu en ligne de commande.
+- **Sécurité de la progression** : sauvegarde **séparée** (`dev-profile`), jamais la vraie ; aucun bouton du mode n'existe hors de ce mode.
+- **Atelier** : « Or → 99,9k » (`Workshop.DevSetGold`, par le portefeuille, donc journalisé « mode développeur ») et − / + par piste d'équipement (`Workshop.DevSetEquipmentLevel`, borné à 0..maximum, sans paiement). Le cœur porte ces deux fonctions (testées : bornes, aucun paiement, piste inconnue, or exact depuis 0 / 400 / 500 000, effet sur l'apparence et les statistiques) ; le jeu normal ne les appelle jamais.
+- **Vérification** : scénario e2e L (or à 99 999, trois + puis un −, aucun achat, sauvegarde correcte). 761 tests et 12 scénarios verts.
+- **Question B** : aucune règle ni valeur de jeu modifiée.

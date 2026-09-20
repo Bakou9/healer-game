@@ -205,6 +205,30 @@ namespace Healer.Combat.Progress
             return PurchaseResult.Ok;
         }
 
+        // ---- Mode développeur (D-063) : contourne l'économie pour tester ; jamais appelé par le jeu normal ----
+
+        /// <summary>Or affiché par le bouton du mode développeur.</summary>
+        public const int DevGold = 99_999;
+
+        /// <summary>Fixe le niveau d'une piste d'équipement (borné à 0..maximum) sans payer. Renvoie le niveau obtenu, ou -1 si la piste est inconnue.</summary>
+        public static int DevSetEquipmentLevel(PlayerProfile profile, GameContent content, string trackId, int level)
+        {
+            var track = content.Upgrades.Track(trackId);
+            if (track == null) return -1;
+            level = System.Math.Max(0, System.Math.Min(track.MaxLevel, level));
+            if (level == 0) profile.Loadout.Equipment.Remove(trackId);
+            else profile.Loadout.Equipment[trackId] = level;
+            return level;
+        }
+
+        /// <summary>Amène l'or exactement à `amount` (par le portefeuille, donc inscrit au journal « mode développeur »).</summary>
+        public static void DevSetGold(PlayerProfile profile, int amount)
+        {
+            int balance = profile.Wallet.Balance(Wallet.Gold);
+            if (balance < amount) profile.Wallet.Grant(Wallet.Gold, amount - balance, "mode développeur");
+            else if (balance > amount) profile.Wallet.TrySpend(Wallet.Gold, balance - amount, "mode développeur");
+        }
+
         /// <summary>Un palier est ouvert s'il y a assez d'étoiles ET si le palier précédent est acheté.</summary>
         public static PurchaseResult TierAvailability(PlayerProfile profile, GameContent content, int tier)
         {

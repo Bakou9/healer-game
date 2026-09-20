@@ -8,7 +8,8 @@
     "specs:index": "vite-node tools/specs/specs-index.ts",
     "specs:test": "vitest run --config tools/vitest.config.ts",
     "check": "npm run specs:test && node tools/check-core.mjs",
-    "e2e": "powershell -NoProfile -File tools/unity-e2e.ps1"
+    "e2e": "powershell -NoProfile -File tools/unity-e2e.ps1",
+    "build:unity": "powershell -NoProfile -File tools/unity-build.ps1"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",

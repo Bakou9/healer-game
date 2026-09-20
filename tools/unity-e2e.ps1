@@ -18,7 +18,7 @@
 # Toutes les parties utilisent un dossier de sauvegarde temporaire : la vraie sauvegarde n'est jamais touchée.
 # Code de sortie 1 si une vérification échoue.
 # Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E|F|G|H|I] [-Jobs 4] [-RealInput]
-param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G","H","I","J","K")][string]$Scenario = "all", [int]$Jobs = 4, [switch]$RealInput, [int]$Show = 6)
+param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G","H","I","J","K","L")][string]$Scenario = "all", [int]$Jobs = 4, [switch]$RealInput, [int]$Show = 6)
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Add-Type @"
@@ -75,7 +75,7 @@ if (-not $SkipBuild) {
 
 # ---- Exécution parallèle : un processus par scénario (les gestes sont injectés, aucun ne dispute la souris) ----
 if ($Scenario -eq "all" -and -not $RealInput -and $Jobs -gt 1) {
-  $order = "D","G","F","H","B","C","A","E","I","J","K"  # les plus longs d'abord
+  $order = "D","G","F","H","B","C","A","E","I","J","K","L"  # les plus longs d'abord
   $queue = New-Object System.Collections.Queue; foreach ($s in $order) { $queue.Enqueue($s) }
   $running = @{}; $outs = @{}; $codes = @{}
   while ($queue.Count -gt 0 -or $running.Count -gt 0) {
@@ -468,6 +468,33 @@ Stop-Game
 $k = Log
 Expect $k "écran : crédits" "le bouton Crédits ouvre le générique"
 Expect $k "écran : menu principal" "Échap revient au menu"
+}
+
+# ---- Scénario L -----------------------------------------------------------------------------
+if (Want "L") {
+Write-Output "Scénario L : mode développeur : or à 99 999, niveaux d'équipement + et - sans payer, sauvegarde séparée"
+$dirL = New-ProfileDir "L"
+Start-Game @("-healer-dev", "-healer-profile-dir", $dirL)
+Tap $menuWorkshop[0] $menuWorkshop[1] "Atelier (menu)"
+Tap 890 32 "Or -> 99 999 (développeur)"
+Tap 344 156 "Épée du Garde : + (développeur)"
+Tap 344 156 "Épée du Garde : + (développeur)"
+Tap 344 156 "Épée du Garde : + (développeur)"
+Tap 292 156 "Épée du Garde : - (développeur)"
+Stop-Game
+$l = Log
+Expect $l "mode développeur : sauvegarde dans" "le mode développeur est annoncé"
+Expect $l "atelier \(dev\) : or 99999" "le bouton met l'or à 99 999"
+Expect $l "atelier \(dev\) : tank_weapon niveau 3" "trois + montent l'épée au niveau 3"
+Expect $l "atelier \(dev\) : tank_weapon niveau 2" "un - la redescend au niveau 2"
+Forbid $l "atelier : achat" "aucun achat n'est passé par l'économie du jeu"
+$profileL = Join-Path $dirL "profile.json"
+Check (Test-Path $profileL) "la sauvegarde existe"
+if (Test-Path $profileL) {
+  $jl = Get-Content $profileL -Raw -Encoding UTF8 | ConvertFrom-Json
+  Check ($jl.wallet.gold -eq 99999) "la sauvegarde contient 99 999 or"
+  Check ($jl.equipment.tank_weapon -eq 2) "la sauvegarde contient l'épée au niveau 2"
+}
 }
 
 if ($failures.Count -gt 0) { Write-Output ""; Write-Output "$($failures.Count) vérification(s) en échec."; Write-Output "[e2e-fin] code=1"; exit 1 }

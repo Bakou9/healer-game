@@ -17,6 +17,7 @@ namespace Healer.Client
     ///   -healer-speed 6         accélération du temps pendant les captures
     ///   -healer-timescale 30    accélération du temps en jeu normal (tests de bout en bout : tools/unity-e2e.ps1)
     ///   -healer-notes-dir D     dossier des notes de playtest (F8) ; par défaut playtest/ dans les données du jeu
+    ///   -healer-dev             mode développeur : Atelier avec niveaux d'équipement ± et or à 99 999, sauvegarde séparée (dev-profile)
     ///   -healer-e2e FICHIER     entrées injectées par le script de test (souris et clavier virtuels, sans focus ; voir E2eInput)
     ///   -healer-sound           avec -healer-e2e : laisse le son (par défaut les tests sont silencieux)
     ///   -healer-autoplay        le bot de référence joue le soin (tests de bout en bout)
@@ -36,7 +37,9 @@ namespace Healer.Client
             string? shots = Arg("-healer-shots");
 
             var content = ContentLoader.Load();
-            string profileDir = Arg("-healer-profile-dir") ?? (shots != null ? Path.Combine(Application.temporaryCachePath, "capture-profile") : Application.persistentDataPath);
+            bool dev = args.Contains("-healer-dev");
+            // Mode développeur : sauvegarde SÉPARÉE (dev-profile) pour ne jamais fausser la vraie progression.
+            string profileDir = Arg("-healer-profile-dir") ?? (shots != null ? Path.Combine(Application.temporaryCachePath, "capture-profile") : dev ? Path.Combine(Application.persistentDataPath, "dev-profile") : Application.persistentDataPath);
             var storage = new ProfileStorage(profileDir);
             var profile = shots != null && Arg("-healer-profile-dir") == null ? PlayerProfile.NewGame(content) : storage.Load(content);
             ApplyProgress(profile, content, Arg("-healer-progress"));
@@ -58,6 +61,8 @@ namespace Healer.Client
             var flow = gameObject.AddComponent<GameFlow>();
             flow.Init(content, storage, profile, controller, stage);
             flow.Credits = ContentLoader.LoadCredits();
+            flow.DevMode = dev;
+            if (dev) Debug.Log("[Healer] mode développeur : sauvegarde dans " + profileDir);
             var ui = gameObject.AddComponent<UiRoot>();
             ui.Init(flow);
             gameObject.AddComponent<PlaytestNotes>().Init(ui, flow, Arg("-healer-notes-dir") ?? Path.Combine(Application.persistentDataPath, "playtest"));

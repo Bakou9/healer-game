@@ -94,6 +94,7 @@ namespace Healer.Client
             Btn(Ui.R(Layout.MenuSettings), "Réglages", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuSettings, _flow.OpenSettings);
             Btn(Ui.R(Layout.MenuSound), _flow.Profile.Settings.Muted ? "Son : coupé" : "Son : activé", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuToggleSound, _flow.ToggleMute);
             if (CanQuit) Btn(Ui.R(Layout.MenuQuit), "Quitter", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuQuit, _flow.Quit);
+            if (_flow.DevMode) Txt(new Rect(0, 236, w, 24), "MODE DÉVELOPPEUR · sauvegarde séparée", Layout.Font.Small, Palette.Hex("FFB347"), TextAnchor.MiddleCenter, true);
             Btn(Ui.R(Layout.MenuCredits), "Crédits", Layout.Font.Body, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuCredits, _flow.OpenCredits);
             if (Keyboard.current != null) Txt(new Rect(0, 624, w, 24), "Entrée : jouer · M : son · F8 : noter un retour", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
         }
@@ -226,6 +227,11 @@ namespace Healer.Client
             Txt(new Rect(0, 14, w, 44), "Atelier", 38, Color.white, TextAnchor.MiddleCenter, true);
             Txt(new Rect(w - 300, 14, 288, 44), "Or : " + Format.Number(gold), Layout.Font.Strong, Ui.Gold, TextAnchor.MiddleRight, true);
             BackButton();
+            if (_flow.DevMode)
+            {
+                Txt(new Rect(w / 2 - 200, 60, 400, 20), "MODE DÉVELOPPEUR", Layout.Font.Small, Palette.Hex("FFB347"), TextAnchor.MiddleCenter, true);
+                Btn(new Rect(w - 470, 10, 160, 44), "Or → " + Format.Number(Workshop.DevGold), Layout.Font.Small, Palette.Hex("4A3A12"), Palette.Hex("FFB347"), UiAction.BuyEquipment, _flow.DevSetGold);
+            }
             Txt(new Rect((float)Layout.WorkshopEquipment.X, 58, 300, 24), "Équipement", Layout.Font.Body, Ui.Muted, TextAnchor.MiddleLeft, true);
             Txt(new Rect((float)Layout.WorkshopTalents.X, 58, 400, 24), "Talents du soigneur (un choix par palier)", Layout.Font.Body, Ui.Muted, TextAnchor.MiddleLeft, true);
 
@@ -257,6 +263,12 @@ namespace Healer.Client
                 if (!maxed) Txt(new Rect(r.x + 24, y, r.width - 40, r.yMax - y - 4), perLevel, Layout.Font.Small, Ui.Muted, TextAnchor.UpperLeft, false, true);
 
                 string trackId = track.Id;
+                if (_flow.DevMode)
+                {
+                    var buyRect = Ui.R(Layout.WorkshopBuyButton(cards[i]));
+                    Btn(new Rect(buyRect.x + 10, buyRect.y + 54, 44, 36), "−", Layout.Font.Title, Palette.Hex("4A3A12"), Palette.Hex("FFB347"), UiAction.BuyEquipment, () => _flow.DevAdjustEquipment(trackId, -1));
+                    Btn(new Rect(buyRect.x + 62, buyRect.y + 54, 44, 36), "+", Layout.Font.Title, Palette.Hex("4A3A12"), Palette.Hex("FFB347"), UiAction.BuyEquipment, () => _flow.DevAdjustEquipment(trackId, +1));
+                }
                 Btn(Ui.R(Layout.WorkshopBuyButton(cards[i])), maxed ? "Max" : Format.Number(cost) + " or", Layout.Font.Body,
                     canBuy ? Ui.PrimaryFill : Palette.Hex("1B1E2C"), canBuy ? Ui.PrimaryStroke : Ui.PanelStroke,
                     UiAction.BuyEquipment, () => { if (!maxed) _flow.BuyEquipment(trackId); }, canBuy || maxed);

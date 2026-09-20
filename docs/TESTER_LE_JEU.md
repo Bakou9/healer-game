@@ -51,3 +51,12 @@ Les touches sont physiques (même position sur QWERTY et AZERTY) ; les pastilles
 | `npm run e2e` | le vrai jeu Windows, gestes **injectés** (D-053) : menu, choix du niveau, niveau verrouillé, combat, pause et fiche des sorts, victoire, atelier (achats, talents), maintien des sorts, enrage, réglages, note F8, sauvegarde sur disque, relance. 10 scénarios en parallèle | ~1 min |
 
 Vous pouvez continuer à utiliser votre souris et votre clavier pendant `npm run e2e` : les fenêtres du jeu sont réduites et silencieuses. Pour vérifier la vraie souris de Windows (avant une livraison), `powershell -File tools/unity-e2e.ps1 -RealInput -Scenario A` : ne touchez à rien pendant ce test.
+
+## Mode développeur
+
+Pour tester vite (équipement, apparence, équilibrage), sans toucher à votre vraie progression :
+
+- **Lancer** : double-cliquer `lancer-le-jeu-dev.bat` (à la racine du dépôt), ou lancer `HealerGame.exe -healer-dev`. Le jeu doit être construit : `npm run build:unity` (fermer l'Éditeur Unity avant).
+- **Sauvegarde séparée** : le mode utilise le dossier `dev-profile` des données du jeu (`%USERPROFILE%AppDataLocalLowHealerHealer Gamedev-profile`) ; la vraie sauvegarde n'est jamais lue ni modifiée. Supprimer ce dossier remet le mode développeur à zéro.
+- **Dans l'Atelier** : bouton **« Or → 99,9k »** (met l'or à 99 999 exactement) ; sur chaque carte d'équipement, boutons **− et +** qui descendent ou montent le niveau (0 à 5) **sans payer**. L'aspect des héros (Ordinaire, Raffiné, Légendaire) et leurs statistiques suivent tout de suite.
+- Un texte « MODE DÉVELOPPEUR » s'affiche au menu et dans l'Atelier. Le lancement normal (`lancer-le-jeu.bat`) n'a aucun de ces boutons.

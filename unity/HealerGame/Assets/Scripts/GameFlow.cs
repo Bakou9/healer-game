@@ -79,6 +79,32 @@ namespace Healer.Client
             NoticeUntil = Time.realtimeSinceStartup + 3f;
         }
 
+        /// <summary>Mode développeur (option -healer-dev) : outils de test de l'Atelier, sur une sauvegarde séparée.</summary>
+        public bool DevMode { get; set; }
+
+        /// <summary>Monte ou descend le niveau d'une piste d'équipement sans payer (mode développeur).</summary>
+        public void DevAdjustEquipment(string trackId, int delta)
+        {
+            if (!DevMode) return;
+            int level = Workshop.DevSetEquipmentLevel(Profile, Content, trackId, Profile.Loadout.LevelOf(trackId) + delta);
+            if (level < 0) return;
+            Debug.Log($"[Healer] atelier (dev) : {trackId} niveau {level}");
+            SetNotice($"Développeur : {Content.Upgrades.Track(trackId)?.Name} niveau {level}", false);
+            Sound(Healer.Combat.Presentation.SoundCue.Click);
+            _storage.Save(Profile);
+        }
+
+        /// <summary>Met l'or à 99 999 (mode développeur).</summary>
+        public void DevSetGold()
+        {
+            if (!DevMode) return;
+            Workshop.DevSetGold(Profile, Workshop.DevGold);
+            Debug.Log("[Healer] atelier (dev) : or 99999");
+            SetNotice("Développeur : or à " + Healer.Ui.Format.Number(Workshop.DevGold), false);
+            Sound(Healer.Combat.Presentation.SoundCue.Buy, 0.7);
+            _storage.Save(Profile);
+        }
+
         public void BuyEquipment(string trackId)
         {
             var track = Content.Upgrades.Track(trackId);
