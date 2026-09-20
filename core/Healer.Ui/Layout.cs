@@ -115,6 +115,9 @@ namespace Healer.Ui
         /// <summary>Petit bouton « Crédits » en bas à gauche du menu principal (D-060).</summary>
         public static readonly Rect MenuCredits = new Rect(SafeSide, GameH - SafeBottom - MinTouch, 170, MinTouch);
 
+        /// <summary>Bouton « Galerie de modèles » en bas à droite du menu (mode développeur seulement).</summary>
+        public static readonly Rect MenuGallery = new Rect(GameW - SafeSide - 220, GameH - SafeBottom - MinTouch, 220, MinTouch);
+
         /// <summary>Bouton « retour » en haut à gauche des écrans secondaires.</summary>
         public static readonly Rect BackButton = new Rect(SafeSide, SafeTop, 150, MinTouch);
 

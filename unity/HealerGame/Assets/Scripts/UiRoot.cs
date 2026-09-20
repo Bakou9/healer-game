@@ -83,7 +83,7 @@ namespace Healer.Client
         {
             _app.Refresh();
             _battle.Refresh();
-            SetBackdrop(_app.Active ? AppScreens.BackdropAlpha : _battle.BackdropAlpha);
+            SetBackdrop(_app.Active ? _app.BackdropAlphaNow : _battle.BackdropAlpha);
         }
     }
 }

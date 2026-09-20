@@ -22,6 +22,8 @@ namespace Healer.Ui
         Settings,
         /// <summary>Générique : les auteurs des ressources.</summary>
         Credits,
+        /// <summary>Galerie de modèles (mode développeur).</summary>
+        Gallery,
         Battle,
     }
 
@@ -43,6 +45,9 @@ namespace Healer.Ui
         MenuToggleSound,
         MenuQuit,
         MenuCredits,
+        MenuGallery,
+        /// <summary>Tous les boutons de la galerie de modèles (sélection, paliers, poses, rotation, zoom).</summary>
+        GalleryControl,
         // Choix du niveau
         PickLevel,
         BackToMenu,
@@ -86,11 +91,13 @@ namespace Healer.Ui
             switch (screen)
             {
                 case AppScreen.MainMenu:
-                    return action == UiAction.MenuPlay || action == UiAction.MenuWorkshop || action == UiAction.MenuSettings || action == UiAction.MenuToggleSound || action == UiAction.MenuQuit || action == UiAction.MenuCredits;
+                    return action == UiAction.MenuPlay || action == UiAction.MenuWorkshop || action == UiAction.MenuSettings || action == UiAction.MenuToggleSound || action == UiAction.MenuQuit || action == UiAction.MenuCredits || action == UiAction.MenuGallery;
                 case AppScreen.Settings:
                     return action == UiAction.AdjustSetting || action == UiAction.BackToMenu;
                 case AppScreen.Credits:
                     return action == UiAction.BackToMenu;
+                case AppScreen.Gallery:
+                    return action == UiAction.GalleryControl || action == UiAction.BackToMenu;
                 case AppScreen.Workshop:
                     return action == UiAction.BuyEquipment || action == UiAction.PickTalent || action == UiAction.BackToMenu;
                 case AppScreen.LevelSelect:

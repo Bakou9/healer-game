@@ -441,3 +441,12 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Archère** : le pack ne contient pas d'arc (arbalètes seulement) ; on garde l'arc dessiné par le code plutôt que de changer d'arme selon le palier. À combler avec un autre pack ou une pièce faite sur mesure.
 - **Corps et armures** : toujours dessinés par le code ; les remplacer demande un squelette commun (voir docs/ART_3D.md).
 - **Question B** : aucune règle ni valeur de jeu modifiée ; 761 tests et 12 scénarios e2e verts.
+
+## D-065 — Galerie de modèles (mode développeur)
+
+- **Date** : 2026-09-20 — **Statut** : Livrée.
+- **Demande** : un menu, dans le mode développeur, pour consulter tous les modèles de personnages.
+- **Contenu** : nouvel écran `AppScreen.Gallery`, bouton au menu visible seulement avec `-healer-dev` ; `ModelGallery` affiche seul, au centre, chaque héros (avec l'aspect de son arme et de son armure aux trois paliers, modèles importés compris) et chaque boss (calme ou fureur), en rotation automatique ou manuelle, avec zoom et les poses d'animation du jeu (via `UnitRig`). Ligne d'information : triangles et origine de l'arme. Mêmes fabriques que le combat : ce qu'on voit est ce qui est joué.
+- **Cœur** : navigation (`OpenGallery`, retour, aucun combat depuis la galerie), actions `MenuGallery` et `GalleryControl` (seuls ses boutons et le retour passent), emplacement du bouton ; 4 tests. L'ancien test du menu principal a reçu la nouvelle action (voulu : c'est un nouveau bouton).
+- **Piège rencontré** : masquer « tous les enfants de la scène » masquait aussi le système d'événements de l'interface (enfant du même objet) et coupait les clics ; exclu explicitement. Le scénario e2e M l'a révélé.
+- **Question B** : aucune règle ni valeur de jeu modifiée ; 765 tests et 13 scénarios e2e verts.

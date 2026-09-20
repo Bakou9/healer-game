@@ -19,6 +19,9 @@ namespace Healer.Client
     {
         public const float BackdropAlpha = 0.72f;
 
+        /// <summary>Voile derrière l'écran actuel : presque transparent dans la galerie, pour voir le modèle.</summary>
+        public float BackdropAlphaNow => _flow.Screen == AppScreen.Gallery ? 0.12f : BackdropAlpha;
+
         private readonly UiRoot _root;
         private readonly GameFlow _flow;
         private readonly VisualElement _container;
@@ -51,6 +54,7 @@ namespace Healer.Client
                 case AppScreen.Workshop: BuildWorkshop(); break;
                 case AppScreen.Settings: BuildSettings(); break;
                 case AppScreen.Credits: BuildCredits(); break;
+                case AppScreen.Gallery: BuildGallery(); break;
                 default: BuildLevels(); BuildFooter(); break;
             }
         }
@@ -66,6 +70,7 @@ namespace Healer.Client
             var s = p.Settings;
             sb.Append('|').Append(s.Muted).Append(s.MusicVolume).Append(s.SfxVolume).Append(s.ScreenShake);
             sb.Append('|').Append(Time.realtimeSinceStartup < _flow.NoticeUntil ? _flow.Notice : "");
+            if (_flow.Screen == AppScreen.Gallery && _flow.Gallery != null) sb.Append('|').Append(_flow.Gallery.Signature);
             return sb.ToString();
         }
 
@@ -95,6 +100,7 @@ namespace Healer.Client
             Btn(Ui.R(Layout.MenuSound), _flow.Profile.Settings.Muted ? "Son : coupé" : "Son : activé", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuToggleSound, _flow.ToggleMute);
             if (CanQuit) Btn(Ui.R(Layout.MenuQuit), "Quitter", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuQuit, _flow.Quit);
             if (_flow.DevMode) Txt(new Rect(0, 236, w, 24), "MODE DÉVELOPPEUR · sauvegarde séparée", Layout.Font.Small, Palette.Hex("FFB347"), TextAnchor.MiddleCenter, true);
+            if (_flow.DevMode) Btn(Ui.R(Layout.MenuGallery), "Galerie de modèles", Layout.Font.Body, Palette.Hex("4A3A12"), Palette.Hex("FFB347"), UiAction.MenuGallery, _flow.OpenGallery);
             Btn(Ui.R(Layout.MenuCredits), "Crédits", Layout.Font.Body, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuCredits, _flow.OpenCredits);
             if (Keyboard.current != null) Txt(new Rect(0, 624, w, 24), "Entrée : jouer · M : son · F8 : noter un retour", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
         }
@@ -104,6 +110,60 @@ namespace Healer.Client
 
         private void BackButton() =>
             Btn(Ui.R(Layout.BackButton), "← Menu", Layout.Font.Body, Ui.ButtonFill, Ui.ButtonStroke, UiAction.BackToMenu, _flow.BackToMenu);
+
+        // ---- Galerie de modèles (mode développeur) -----------------------------------------------------
+
+        private void BuildGallery()
+        {
+            var g = _flow.Gallery;
+            BackButton();
+            if (g == null || g.Entries.Count == 0) return;
+            float w = (float)Layout.GameW;
+            Txt(new Rect(0, 14, w, 40), "Galerie de modèles", 30, Color.white, TextAnchor.MiddleCenter, true);
+            Txt(new Rect(0, 50, w, 20), "MODE DÉVELOPPEUR", Layout.Font.Small, Palette.Hex("FFB347"), TextAnchor.MiddleCenter, true);
+            var dark = Palette.Hex("4A3A12"); var amber = Palette.Hex("FFB347");
+
+            // Liste des modèles (à gauche).
+            for (int i = 0; i < g.Entries.Count; i++)
+            {
+                int index = i; var e = g.Entries[i]; bool sel = i == g.Index;
+                Btn(new Rect(12, 80 + i * 50, 240, 44), (e.IsBoss ? "Boss · " : "") + e.Name, Layout.Font.Body, sel ? Ui.PrimaryFill : Ui.ButtonFill, sel ? Ui.PrimaryStroke : Ui.ButtonStroke, UiAction.GalleryControl, () => g.Select(index));
+            }
+
+            // Commandes (à droite).
+            float x = w - 272, y = 80;
+            void Row(string label, string[] names, int selected, System.Action<int> pick)
+            {
+                Txt(new Rect(x, y, 260, 22), label, Layout.Font.Small, Ui.Muted, TextAnchor.MiddleLeft, true);
+                float bw = (260f - 8f * (names.Length - 1)) / names.Length;
+                for (int i = 0; i < names.Length; i++)
+                {
+                    int k = i; bool on = i == selected;
+                    Btn(new Rect(x + i * (bw + 8f), y + 24, bw, 38), names[i], Layout.Font.Small, on ? Ui.PrimaryFill : Ui.ButtonFill, on ? Ui.PrimaryStroke : Ui.ButtonStroke, UiAction.GalleryControl, () => pick(k));
+                }
+                y += 76;
+            }
+            if (g.Current.IsBoss) Row("Phase", new[] { "Calme", "Fureur" }, g.Fury ? 1 : 0, k => g.SetFury(k == 1));
+            else
+            {
+                Row("Arme", ModelGallery.TierLabels, g.WeaponTier, g.SetWeaponTier);
+                Row("Armure", ModelGallery.TierLabels, g.ArmorTier, g.SetArmorTier);
+            }
+            Txt(new Rect(x, y, 240, 22), "Pose", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleLeft, true);
+            for (int i = 0; i < ModelGallery.PoseNames.Length; i++)
+            {
+                int k = i; bool on = i == g.Pose;
+                Btn(new Rect(x, y + 24 + i * 44, 260, 38), ModelGallery.PoseNames[i], Layout.Font.Small, on ? Ui.PrimaryFill : Ui.ButtonFill, on ? Ui.PrimaryStroke : Ui.ButtonStroke, UiAction.GalleryControl, () => g.SetPose(k));
+            }
+            y += 24 + ModelGallery.PoseNames.Length * 44 + 8;
+            Btn(new Rect(x, y, 78, 38), "◀", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.GalleryControl, () => g.Turn(-35f));
+            Btn(new Rect(x + 91, y, 78, 38), g.AutoRotate ? "Auto ✓" : "Auto", Layout.Font.Small, g.AutoRotate ? Ui.PrimaryFill : Ui.ButtonFill, g.AutoRotate ? Ui.PrimaryStroke : Ui.ButtonStroke, UiAction.GalleryControl, g.ToggleAutoRotate);
+            Btn(new Rect(x + 182, y, 78, 38), "▶", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.GalleryControl, () => g.Turn(35f));
+            Btn(new Rect(x, y + 46, 126, 38), "Zoom −", Layout.Font.Small, Ui.ButtonFill, Ui.ButtonStroke, UiAction.GalleryControl, () => g.Zoom(0.85f));
+            Btn(new Rect(x + 134, y + 46, 126, 38), "Zoom +", Layout.Font.Small, Ui.ButtonFill, Ui.ButtonStroke, UiAction.GalleryControl, () => g.Zoom(1.18f));
+
+            Txt(new Rect(270, 672, w - 540, 30), g.Info, Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, false);
+        }
 
         // ---- Générique ---------------------------------------------------------------------------
 

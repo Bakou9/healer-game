@@ -18,7 +18,7 @@
 # Toutes les parties utilisent un dossier de sauvegarde temporaire : la vraie sauvegarde n'est jamais touchée.
 # Code de sortie 1 si une vérification échoue.
 # Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E|F|G|H|I] [-Jobs 4] [-RealInput]
-param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G","H","I","J","K","L")][string]$Scenario = "all", [int]$Jobs = 4, [switch]$RealInput, [int]$Show = 6)
+param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G","H","I","J","K","L","M")][string]$Scenario = "all", [int]$Jobs = 4, [switch]$RealInput, [int]$Show = 6)
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Add-Type @"
@@ -75,7 +75,7 @@ if (-not $SkipBuild) {
 
 # ---- Exécution parallèle : un processus par scénario (les gestes sont injectés, aucun ne dispute la souris) ----
 if ($Scenario -eq "all" -and -not $RealInput -and $Jobs -gt 1) {
-  $order = "D","G","F","H","B","C","A","E","I","J","K","L"  # les plus longs d'abord
+  $order = "D","G","F","H","B","C","A","E","I","J","K","L","M"  # les plus longs d'abord
   $queue = New-Object System.Collections.Queue; foreach ($s in $order) { $queue.Enqueue($s) }
   $running = @{}; $outs = @{}; $codes = @{}
   while ($queue.Count -gt 0 -or $running.Count -gt 0) {
@@ -495,6 +495,25 @@ if (Test-Path $profileL) {
   Check ($jl.wallet.gold -eq 99999) "la sauvegarde contient 99 999 or"
   Check ($jl.equipment.tank_weapon -eq 2) "la sauvegarde contient l'épée au niveau 2"
 }
+}
+
+# ---- Scénario M -----------------------------------------------------------------------------
+if (Want "M") {
+Write-Output "Scénario M : galerie de modèles (mode développeur) : ouverture, choix d'un boss, d'un palier et d'une pose, retour"
+Start-Game @("-healer-dev", "-healer-profile-dir", (New-ProfileDir "M"))
+Tap 1050 684 "Galerie de modèles (menu)"
+Tap 132 352 "Reine des Marais (liste)"
+Tap 132 102 "Garde (liste)"
+Tap 1227 123 "Arme : Légendaire"
+Tap 1138 319 "Pose : Incantation"
+Press 0x01 "Échap (retour au menu)"
+Stop-Game
+$m = Log
+Expect $m "écran : galerie" "le bouton ouvre la galerie"
+Expect $m "galerie : boss2 \d+ triangles" "choisir la Reine affiche son modèle"
+Expect $m "galerie : tank \d+ triangles" "choisir le Garde affiche son modèle"
+Expect $m "écran : menu principal" "Échap revient au menu"
+Forbid $m "Exception" "aucune erreur pendant la visite"
 }
 
 if ($failures.Count -gt 0) { Write-Output ""; Write-Output "$($failures.Count) vérification(s) en échec."; Write-Output "[e2e-fin] code=1"; exit 1 }

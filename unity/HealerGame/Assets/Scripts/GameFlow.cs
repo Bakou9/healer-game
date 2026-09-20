@@ -213,6 +213,18 @@ namespace Healer.Client
             if (Nav.LeaveBattle()) Debug.Log("[Healer] écran : choix du niveau");
         }
 
+        /// <summary>Galerie de modèles (mode développeur).</summary>
+        public ModelGallery? Gallery { get; set; }
+
+        public void OpenGallery()
+        {
+            if (DevMode && Nav.OpenGallery())
+            {
+                Debug.Log("[Healer] écran : galerie");
+                Sound(Healer.Combat.Presentation.SoundCue.Click);
+            }
+        }
+
         public void OpenCredits()
         {
             if (Nav.OpenCredits())

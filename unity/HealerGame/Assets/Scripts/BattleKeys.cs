@@ -53,6 +53,7 @@ namespace Healer.Client
                     return;
                 case AppScreen.Workshop:
                 case AppScreen.Credits:
+                case AppScreen.Gallery:
                 case AppScreen.Settings:
                     if (back) _flow.BackToMenu();
                     return;
