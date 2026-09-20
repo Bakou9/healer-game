@@ -214,6 +214,13 @@ namespace Healer.Client
             return b.ToMesh("Blade");
         });
 
-        public static int TriangleCount(Mesh mesh) => mesh.triangles.Length / 3;
+        public static int TriangleCount(Mesh mesh) => CountIndices(mesh) / 3;
+
+        private static int CountIndices(Mesh mesh) // fonctionne aussi pour les maillages importés, non lisibles dans un exécutable
+        {
+            long n = 0;
+            for (int i = 0; i < mesh.subMeshCount; i++) n += mesh.GetIndexCount(i);
+            return (int)n;
+        }
     }
 }

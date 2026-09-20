@@ -450,3 +450,13 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Cœur** : navigation (`OpenGallery`, retour, aucun combat depuis la galerie), actions `MenuGallery` et `GalleryControl` (seuls ses boutons et le retour passent), emplacement du bouton ; 4 tests. L'ancien test du menu principal a reçu la nouvelle action (voulu : c'est un nouveau bouton).
 - **Piège rencontré** : masquer « tous les enfants de la scène » masquait aussi le système d'événements de l'interface (enfant du même objet) et coupait les clics ; exclu explicitement. Le scénario e2e M l'a révélé.
 - **Question B** : aucune règle ni valeur de jeu modifiée ; 765 tests et 13 scénarios e2e verts.
+
+## D-066 — Druide de la Soigneuse fait avec Blender (chaîne Blender en ligne de commande)
+
+- **Date** : 2026-09-20 — **Statut** : Livrée (version de base unique).
+- **Demande** : suite au problème de prise en main de l'épée, prendre en main la génération de modèles avec Blender et faire « le plus beau druide possible » pour la Soigneuse, **sans** déclinaisons par équipement.
+- **Outil** : Blender 5.2 installé par winget avec l'accord de l'utilisateur. Pas de serveur MCP Blender : scripts Python lancés en ligne de commande (`blender --background --python art/blender/druid.py`), donc reproductibles et versionnés (`art/blender/lib.py` = outils, `druid.py` = le druide). Rendus de contrôle EEVEE dans `art/blender/out/`.
+- **Modèle** : capuche vide aux yeux lumineux, bois de cerf, épaulières de feuilles, robe mousse, cape, racines au pied, bâton de cristal, lucioles. ~3 000 triangles (budget 3 300). Pièces nommées `<Pivot>__<Pièce>` et objets vides `Pivot_<Nom>` : Unity reconstruit les pivots (Torso, Head, ArmL, ArmR, Cape, Weapon) pour que `UnitRig` anime le modèle comme les autres.
+- **Import** : `ModelFactory.ImportedDruid()` ; couleurs du FBX (linéaires) remises en couleurs d'écran puis éclaircies (×1,7 : la scène est plus sombre que le rendu Blender) ; taille normalisée. Le druide remplace le corps de la Soigneuse à tous les paliers d'équipement (apparence par équipement volontairement ignorée pour elle, comme demandé). Création propre au projet : `Assets/Resources/Parts/`, aucun crédit externe.
+- **Correctif annexe** : le compteur de triangles de la galerie affichait 0 pour les maillages importés (lecture interdite dans l'exécutable) ; il utilise désormais le nombre d'indices.
+- **Question B** : aucune règle ni valeur de jeu modifiée.

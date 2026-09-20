@@ -80,3 +80,9 @@ effets qui masquent l'information (docs/UX.md, principe 6).
 **Modularité** : chaque héros = un **corps commun** (jambes, torse, tête, bras, pivots animables du `UnitRig`) + des **pièces d'équipement** par emplacement (`weapon`, `armor`). Le niveau acheté à l'Atelier (`{héros}_{emplacement}`) choisit un **palier** (Ordinaire 0-1, Raffiné 2-3, Légendaire 4-5 ; `core/content/appearance.json`) : forme de la pièce (cornes, halo, ailes, runes, taille de l'arme…) et **palette** (primary, secondary, accent, glow, trim). Le cœur ne fait que résoudre « quelle pièce, quel palier, quelles couleurs » (`AppearanceCatalog.Resolve`, testé) ; le client fabrique la pièce (`ModelFactory`, classe `Look`).
 **Ajouter un emplacement ou un héros** : une piste d'équipement dans `upgrades.json`, une entrée par palier dans `appearance.json`, une fonction de construction ; les tests refusent un héros ou un emplacement sans version pour chaque palier.
 **Remplacer par des pièces importées** : l'identifiant de pièce (`tank.weapon`) et la palette restent le contrat ; seule la fabrication change (mesh importé attaché au même pivot). Toute ressource importée passe par `docs/ASSETS.md` et `credits.json`.
+
+## Chaîne Blender (D-066)
+
+Scripts dans `art/blender/` (`lib.py` outils, `druid.py` exemple complet). Lancer :
+`"C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" --background --python art/blender/druid.py`.
+Conventions : mètres, Z haut, personnage face à -Y, pieds à z = 0 ; maillages `<Pivot>__<Pièce>` (Pivot ∈ Torso, Head, ArmL, ArmR, Cape, Weapon) ; « Glow » dans le nom = matériau lumineux ; objets vides `Pivot_<Nom>` aux articulations. Export FBX dans `Assets/Resources/Parts/` ; chargeur : `ModelFactory.ImportedDruid()`. Piège : couleurs FBX linéaires (`.gamma` côté Unity).

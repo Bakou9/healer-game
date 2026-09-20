@@ -380,9 +380,70 @@ namespace Healer.Client
             return root;
         }
 
+        /// <summary>
+        /// Druide de la Soigneuse, modélisé sous Blender (art/blender/druid.py) et exporté en FBX (Resources/Parts/Druid.fbx). Le fichier contient
+        /// des maillages « Pivot__Pièce » et des objets vides « Pivot_<Pivot> » ; on reconstruit ici la hiérarchie du UnitRig avec des pivots
+        /// PROPRES (sans rotation) aux articulations, on y range les pièces, et on normalise la taille. Renvoie null si le fichier est absent.
+        /// </summary>
+        private static GameObject? ImportedDruid()
+        {
+            var prefab = Resources.Load<GameObject>("Parts/Druid");
+            if (prefab == null) return null;
+            var src = Object.Instantiate(prefab);
+            src.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+            src.transform.localScale = Vector3.one;
+            var joints = new Dictionary<string, Vector3>();
+            foreach (var tr in src.GetComponentsInChildren<Transform>(true))
+                if (tr.name.StartsWith("Pivot_")) joints[tr.name.Substring(6)] = tr.position;
+
+            var root = new GameObject("Healer");
+            var rig = NewRig(root);
+            var body = new GameObject("Body").transform;
+            body.SetParent(root.transform, false);
+            body.localEulerAngles = new Vector3(0f, DruidYaw, 0f);
+            var pivots = new Dictionary<string, Transform>();
+            Transform Joint(string name, Transform parent)
+            {
+                var g = new GameObject(name).transform;
+                g.SetParent(parent, false);
+                g.position = joints.TryGetValue(name, out var p) ? body.TransformPoint(p) : parent.position;
+                pivots[name] = g;
+                return g;
+            }
+            var torso = Joint("Torso", body);
+            Joint("Head", torso); Joint("ArmL", torso); Joint("ArmR", torso); Joint("Cape", torso);
+            Joint("Weapon", pivots["ArmR"]);
+            foreach (var mr in src.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                string[] parts = mr.name.Split(new[] { "__" }, System.StringSplitOptions.None);
+                var target = parts.Length > 1 && pivots.TryGetValue(parts[0], out var pv) ? pv : body;
+                var color = mr.sharedMaterial != null ? mr.sharedMaterial.color.gamma : Color.white; // le FBX porte des couleurs linéaires : on les remet en couleurs d'écran
+                bool glow = mr.name.Contains("Glow_");
+                if (!glow) color = new Color(Mathf.Min(1f, color.r * 1.7f), Mathf.Min(1f, color.g * 1.7f), Mathf.Min(1f, color.b * 1.7f), 1f); // la scène du jeu est plus sombre que le rendu Blender
+                mr.sharedMaterial = glow ? GlowMaterial(color) : LitMaterial(color);
+                mr.transform.SetParent(target, true);
+            }
+            Object.Destroy(src);
+            // Taille : le druide fait la même hauteur que les autres héros, pieds au sol.
+            var bounds = BoundsIn(body, root.transform);
+            float k = bounds.size.y > 0.001f ? DruidHeight / bounds.size.y : 1f;
+            body.localScale = Vector3.one * k;
+            body.localPosition = new Vector3(0f, -bounds.min.y * k, 0f);
+            rig.Torso = pivots["Torso"]; rig.Head = pivots["Head"]; rig.ArmL = pivots["ArmL"]; rig.ArmR = pivots["ArmR"];
+            rig.Cape = pivots["Cape"]; rig.Weapon = pivots["Weapon"];
+            rig.Capture();
+            return root;
+        }
+
+        /// <summary>Hauteur du druide (bois compris) et orientation du fichier importé par rapport au jeu.</summary>
+        private const float DruidHeight = 3.1f;
+        private const float DruidYaw = 0f;
+
         /// <summary>Soigneuse (le joueur) : robe ivoire ; ceinture et mantelet aux paliers supérieurs, puis halo et ailes de lumière ; bâton dont la croix grossit et s'entoure d'un anneau.</summary>
         public static GameObject Healer(Look? look = null)
         {
+            var druid = ImportedDruid();   // modèle sur mesure (Blender) s'il est présent ; sinon la version dessinée par le code ci-dessous
+            if (druid != null) return druid;
             look ??= new Look(null);
             int at = look.ArmorTier, wt = look.WeaponTier;
             var root = new GameObject("Healer");
