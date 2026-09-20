@@ -53,8 +53,16 @@ if (-not $SkipBuild) {
 # Grille logique 1280x720 (Healer.Ui.Layout) -> écran, comme Healer.Ui.ScreenFit.
 function New-ProfileDir($name) { $d = Join-Path $env:TEMP ("healer-e2e-" + $name + "-" + [Guid]::NewGuid().ToString("N").Substring(0, 6)); New-Item -ItemType Directory -Path $d | Out-Null; return $d }
 function Start-Game($extraArgs) {
+  if (Test-Path $plog) { Remove-Item $plog -Force -ErrorAction SilentlyContinue }  # sinon le « jeu prêt » d'une partie précédente ferait croire au démarrage
   $script:p = Start-Process -FilePath $exe -ArgumentList (@("-screen-width", "1280", "-screen-height", "720", "-screen-fullscreen", "0") + $extraArgs) -PassThru
-  Start-Sleep -Seconds 7
+  # On attend le signal « jeu prêt » du journal (le premier lancement après une compilation est bien plus lent qu'un lancement à chaud).
+  Start-Sleep -Seconds 3
+  $deadline = (Get-Date).AddSeconds(60)
+  while ((Get-Date) -lt $deadline) {
+    if ((Test-Path $plog) -and ((Get-Content $plog -Encoding UTF8 -ErrorAction SilentlyContinue | Select-String -Pattern "jeu prêt" -Quiet))) { break }
+    Start-Sleep -Milliseconds 500
+  }
+  Start-Sleep -Seconds 1
   $script:p.Refresh()
   $script:h = $script:p.MainWindowHandle
   if ($script:h -eq 0) { throw "fenêtre du jeu introuvable" }

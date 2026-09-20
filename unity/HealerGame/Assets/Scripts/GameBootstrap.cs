@@ -62,6 +62,7 @@ namespace Healer.Client
             gameObject.AddComponent<BattleMusic>().Init(flow);
             gameObject.AddComponent<BattleKeys>().Init(flow);
 
+            Debug.Log("[Healer] jeu prêt"); // signal lu par les tests de bout en bout (le démarrage à froid est plus long)
             if (float.TryParse(Arg("-healer-timescale"), out var fast)) controller.TimeScale = fast;
             if (args.Contains("-healer-autoplay")) controller.Autoplay = true;
             string? level = Arg("-healer-level");
