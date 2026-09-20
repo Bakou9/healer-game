@@ -202,9 +202,9 @@ namespace Healer.Ui
         }
 
         /// <summary>Menu de pause : Reprendre, Quitter le niveau.</summary>
-        /// <summary>Sous la fiche des sorts (D-054), qui occupe le haut de l'écran de pause.</summary>
-        public static readonly Rect PauseResume = new Rect(GameW / 2 - 140, 380, 280, 56);
-        public static readonly Rect PauseLeave = new Rect(GameW / 2 - 140, 452, 280, 56);
+        /// <summary>Sous les fiches des sorts (D-054) et des personnages (D-059), qui occupent le haut de l'écran de pause.</summary>
+        public static readonly Rect PauseResume = new Rect(GameW / 2 - 140, 530, 280, 56);
+        public static readonly Rect PauseLeave = new Rect(GameW / 2 - 140, 600, 280, 56);
 
         /// <summary>Barre de PV du boss : s'arrête avant le bouton de pause pour ne pas le chevaucher.</summary>
         public static readonly Rect BossHpBar = new Rect(Zones.CenterX + SafeSide, SafeTop + 34, Zones.CenterW - 2 * SafeSide, 14);

@@ -389,3 +389,11 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Limites connues** : modèles procéduraux, sans textures ni animation squelettique fine (pas de marche, pas de mouvement de doigts) ; ombres portées absentes (rendu intégré) ; la Reine reste la moins lisible (jupe de racines peu visible de face). Pistes : ombres douces, éclairage volumétrique, modèles importés si le budget le permet.
 - **Question B** : aucune règle ni valeur modifiée (visuel et statistique d'affichage uniquement) ; golden inchangés.
 
+## D-059 — Statistiques des personnages dans le menu de pause ; dégâts avant boucliers à l'écran de fin
+
+- **Date** : 2026-09-20 — **Statut** : Livrée.
+- **Pause** : sous les fiches de sorts, une carte par personnage : PV du moment et maximum, bouclier actuel, attaque (et type de dégâts), défense, armure, esquive, critique (chance et dégâts), menace, mana et régénération pour le soigneur, résistances. Comme pour les sorts, la valeur de base s'écrit normalement et la valeur modifiée par l'équipement ou les talents **entre parenthèses, en vert**. `CharacterDescriber` (cœur, testé : 5 tests + format décimal tronqué `Format.Decimal`). Le soigneur n'affiche pas d'attaque (il n'attaque pas). `BattleController.Characters` expose les personnages du combat en cours.
+- **Mise en page** : boutons de pause descendus (Reprendre y=530, Quitter y=600), scénarios e2e adaptés.
+- **Écran de fin** : « Dégâts encaissés 2694 (3763) » : PV perdus, puis le total avant boucliers (`CombatStats.DamageBeforeShields`, testé). Les seuils d'étoiles utilisent toujours les PV perdus.
+- **Question B** : aucune règle ni valeur modifiée ; golden inchangés ; 727 tests et 10 scénarios e2e verts.
+

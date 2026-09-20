@@ -27,6 +27,9 @@ namespace Healer.Ui
             return s.Replace('.', ',');
         }
 
+        /// <summary>Nombre à `decimals` décimales tronquées : (6,39 ; 1) → "6,3", (6 ; 1) → "6".</summary>
+        public static string Decimal(double value, int decimals = 1) => WithComma(Truncate(value, decimals));
+
         /// <summary>7000 → "7000", 12399 → "12,3k", 2 500 000 → "2,5M". Tronqué, jamais arrondi.</summary>
         public static string Number(double value)
         {

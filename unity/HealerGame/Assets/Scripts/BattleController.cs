@@ -80,6 +80,8 @@ namespace Healer.Client
         /// <summary>Sorts du combat EN COURS, bonus d'équipement et de talents compris (le catalogue de base est dans GameContent.Skills).</summary>
         public IReadOnlyList<SkillDef> Skills => _encounter?.Skills ?? _content.Skills;
         private EncounterDef? _encounter;
+        /// <summary>Personnages du combat EN COURS, bonus d'équipement et de talents compris.</summary>
+        public IReadOnlyList<CharacterDef> Characters => _encounter?.Allies ?? (IReadOnlyList<CharacterDef>)System.Array.Empty<CharacterDef>();
         public bool HintActive => _battle != null && _battle.GetClock() < _hintUntilMs;
         public string LastAction { get; private set; } = "";
 

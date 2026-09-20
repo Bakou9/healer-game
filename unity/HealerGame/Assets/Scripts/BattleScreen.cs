@@ -457,11 +457,11 @@ namespace Healer.Client
         private void BuildPause()
         {
             float w = (float)Layout.GameW;
-            T(new Rect(0, 14, w, 56), "PAUSE", 44, Color.white, TextAnchor.MiddleCenter, true);
+            T(new Rect(0, 4, w, 44), "PAUSE", 34, Color.white, TextAnchor.MiddleCenter, true);
             var skills = _ctl.Skills;
             var baseSkills = _flow.Content.Skills;
             int n = System.Math.Max(1, skills.Count);
-            const float gap = 8f, top = 76f, height = 226f;
+            const float gap = 8f, top = 50f, height = 196f;
             float cardW = (w - 24f - gap * (n - 1)) / n;
             for (int i = 0; i < skills.Count; i++)
             {
@@ -479,10 +479,40 @@ namespace Healer.Client
                 T(new Rect(x + 12, top + 86, cardW - 24, 22), sheet.Target, Layout.Font.Small, Palette.Hex("C9CDE0"), TextAnchor.MiddleLeft);
                 T(new Rect(x + 12, top + 116, cardW - 24, height - 124), Ui.Rich(sheet.Description), Layout.Font.Body, Color.white, TextAnchor.UpperLeft, false, true);
             }
+            BuildPauseStats(w, gap);
             B(Ui.R(Layout.PauseResume), "Reprendre", Layout.Font.Title, Ui.PrimaryFill, Ui.PrimaryStroke, UiAction.TogglePause, _ctl.TogglePause);
             B(Ui.R(Layout.PauseLeave), "Quitter le niveau", Layout.Font.Body, Ui.ButtonFill, Ui.ButtonStroke, UiAction.BackToMap, _flow.LeaveBattle);
-            T(new Rect(0, 330, w, 24), Ui.Rich(new[] { new SkillSpan("Les valeurs "), new SkillSpan("en vert", true), new SkillSpan(" viennent de votre équipement et de vos talents (Atelier).") }), Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
+            T(new Rect(0, 498, w, 24), Ui.Rich(new[] { new SkillSpan("Les valeurs "), new SkillSpan("en vert", true), new SkillSpan(" viennent de votre équipement et de vos talents (Atelier).") }), Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
             Debug.Log($"[Healer] fiche des sorts : {skills.Count} sorts");
+        }
+
+        /// <summary>Statistiques de chaque personnage (D-059) : PV et bouclier du moment, attaque, défense, armure, esquive, critique, menace, mana ; bonus entre parenthèses en vert.</summary>
+        private void BuildPauseStats(float w, float gap)
+        {
+            var allies = _ctl.Battle.GetAllies();
+            if (allies.Count == 0) return;
+            var current = _ctl.Characters;
+            var baseChars = _flow.Content.Characters;
+            const float top = 254f, height = 238f;
+            float cardW = (w - 24f - gap * (allies.Count - 1)) / allies.Count;
+            for (int i = 0; i < allies.Count; i++)
+            {
+                var ally = allies[i];
+                var cur = current.FirstOrDefault(c => c.Id == ally.Id);
+                if (cur == null) continue;
+                var sheet = CharacterDescriber.Sheet(baseChars.FirstOrDefault(c => c.Id == ally.Id) ?? cur, cur, ally);
+                float x = 12f + i * (cardW + gap);
+                M(new Rect(x, top, cardW, height), new Color(Ui.Panel.r, Ui.Panel.g, Ui.Panel.b, 0.96f), 12, RoleColor(ally), 2);
+                T(new Rect(x + 12, top + 6, cardW - 100, 26), sheet.Name, Layout.Font.Strong, Color.white, TextAnchor.MiddleLeft, true);
+                T(new Rect(x + cardW - 92, top + 6, 80, 26), sheet.Role, Layout.Font.Small, Ui.Muted, TextAnchor.MiddleRight);
+                float y = top + 34f;
+                foreach (var line in sheet.Lines)
+                {
+                    T(new Rect(x + 12, y, 104, 20), line.Label, Layout.Font.Small, Ui.Muted, TextAnchor.MiddleLeft);
+                    T(new Rect(x + 116, y, cardW - 124, 20), Ui.Rich(line.Value), Layout.Font.Small, Color.white, TextAnchor.MiddleLeft);
+                    y += 19f;
+                }
+            }
         }
 
         private void BuildEnd()

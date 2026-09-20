@@ -230,7 +230,7 @@ Tap 522 618 "Recommencer"
 $b2 = Log
 Expect $b2 "état : nouveau combat" "le clic sur Recommencer relance un combat"
 Press 0x01 "Échap (pause)"
-Tap 640 480 "Quitter le niveau"
+Tap 640 628 "Quitter le niveau"
 Stop-Game
 $b3 = Log
 Expect $b3 "écran : choix du niveau" "quitter le niveau ramène au choix du niveau"
@@ -295,7 +295,7 @@ Tap $menuPlay[0] $menuPlay[1] "Jouer (menu)"
 Tap $level1[0] $level1[1] "niveau 1"
 Tap $fightPlay[0] $fightPlay[1] "Jouer (combat)"
 Press 0x01 "Échap (pause)"
-Tap 640 480 "Quitter le niveau"
+Tap 640 628 "Quitter le niveau"
 Tap 87 32 "← Menu"
 Stop-Game
 $e = Log
