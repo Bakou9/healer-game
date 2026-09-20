@@ -602,7 +602,7 @@ namespace Healer.Client
                     if (e.Amount > 0 && _units.TryGetValue(e.UnitId, out var hv))
                     {
                         Burst(_heal, hv.Root.transform.position + Vector3.up * 1.0f, Palette.Heal, 10, 1.6f);
-                        Float(hv, (e.Crit ? "CRITIQUE +" : "+") + Format.Number(e.Amount) + (e.Crit ? "!" : ""), e.Crit ? UiKit.Gold : Palette.Heal, e.Crit ? 1.35f : 1f);
+                        Float(hv, (e.Crit ? "CRITIQUE +" : "+") + Format.Number(e.Amount) + (e.Crit ? "!" : ""), e.Crit ? Ui.Gold : Palette.Heal, e.Crit ? 1.35f : 1f);
                     }
                     break;
                 case "shielded":

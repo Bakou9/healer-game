@@ -315,8 +315,9 @@ namespace Healer.Combat.Tests
         {
             foreach (var b in Layout.SkillButtonRects(count))
             {
-                Assert.That(b.H, Is.GreaterThanOrEqualTo(72));
-                Assert.That(b.W, Is.GreaterThanOrEqualTo(200));
+                // Icônes seules (D-054, demande de l'utilisateur) : carrés d'au moins 96 px, bien au-dessus des 48 px du pouce.
+                Assert.That(b.H, Is.GreaterThanOrEqualTo(96));
+                Assert.That(b.W, Is.GreaterThanOrEqualTo(96));
             }
         }
 

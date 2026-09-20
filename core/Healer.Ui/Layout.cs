@@ -202,8 +202,9 @@ namespace Healer.Ui
         }
 
         /// <summary>Menu de pause : Reprendre, Quitter le niveau.</summary>
-        public static readonly Rect PauseResume = new Rect(GameW / 2 - 140, 330, 280, 56);
-        public static readonly Rect PauseLeave = new Rect(GameW / 2 - 140, 402, 280, 56);
+        /// <summary>Sous la fiche des sorts (D-054), qui occupe le haut de l'écran de pause.</summary>
+        public static readonly Rect PauseResume = new Rect(GameW / 2 - 140, 380, 280, 56);
+        public static readonly Rect PauseLeave = new Rect(GameW / 2 - 140, 452, 280, 56);
 
         /// <summary>Barre de PV du boss : s'arrête avant le bouton de pause pour ne pas le chevaucher.</summary>
         public static readonly Rect BossHpBar = new Rect(Zones.CenterX + SafeSide, SafeTop + 34, Zones.CenterW - 2 * SafeSide, 14);
@@ -227,7 +228,15 @@ namespace Healer.Ui
         }
 
         public static Rect[] TeamCardRects(int count) => SplitColumn(Zones.Team, count);
-        public static Rect[] SkillButtonRects(int count) => SplitColumn(Zones.Skills, count);
+        /// <summary>Sorts en icônes seules (D-054) : grille de 2 colonnes de carrés (icône + pastille de raccourci), comme une barre de sorts.</summary>
+        public static Rect[] SkillButtonRects(int count)
+        {
+            double cell = (Zones.Skills.W - Gap) / 2;
+            var result = new Rect[count];
+            for (int i = 0; i < count; i++)
+                result[i] = new Rect(Zones.Skills.X + (i % 2) * (cell + Gap), Zones.Skills.Y + (i / 2) * (cell + Gap), cell, cell);
+            return result;
+        }
 
         /// <summary>Position logique (x) du n-ième allié dans la scène 3D : en ligne, centrée, devant le boss.</summary>
         public static double AllyStageX(int index, int count) => GameW / 2 + (index - (count - 1) / 2.0) * 165;

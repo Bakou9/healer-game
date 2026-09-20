@@ -39,6 +39,7 @@ Menu **Healer** : synchroniser le contenu, configurer le projet, créer la scèn
 | `Espace` ou `Entrée` | Jouer ; pause / reprise ; rejouer en fin de combat |
 | `Échap` ou `P` | Pause |
 | `M` | Couper / rétablir le son |
+| `F8` | **Noter un retour de playtest** : capture d'écran, pause, saisie d'une remarque (Entrée pour enregistrer, Échap pour annuler). Tout va dans `playtest/notes.md` (dossier des données du jeu : `%USERPROFILE%\AppData\LocalLow\Healer\Healer Game\playtest\`), avec l'état du combat |
 
 Les touches sont physiques (même position sur QWERTY et AZERTY) ; les pastilles sur les cartes affichent la lettre de votre disposition. Elles n'apparaissent pas sur mobile.
 
@@ -46,7 +47,7 @@ Les touches sont physiques (même position sur QWERTY et AZERTY) ; les pastilles
 
 | Commande | Ce qu'elle vérifie | Durée |
 |---|---|---|
-| `npm run check` | cohérence des specs + 691 tests du cœur (règles, golden, équilibrage de chaque boss et de chaque choix, stratégies limitées, enrage, mécaniques de combat, progression, atelier, sauvegarde, navigation, entrées, mise en page, sons, musique, animations, réglages) | ~15 s |
-| `npm run e2e` | le vrai jeu Windows à la souris et au clavier : menu, choix du niveau, niveau verrouillé, combat, pause, victoire, atelier (achats, talents), maintien des sorts, enrage, réglages, sauvegarde sur disque, relance | ~10 min |
+| `npm run check` | cohérence des specs + 701 tests du cœur (règles, golden, équilibrage de chaque boss et de chaque choix, stratégies limitées, enrage, mécaniques de combat, progression, atelier, sauvegarde, navigation, entrées, mise en page, sons, musique, animations, réglages) | ~15 s |
+| `npm run e2e` | le vrai jeu Windows, gestes **injectés** (D-053) : menu, choix du niveau, niveau verrouillé, combat, pause et fiche des sorts, victoire, atelier (achats, talents), maintien des sorts, enrage, réglages, note F8, sauvegarde sur disque, relance. 10 scénarios en parallèle | ~1 min |
 
-Lancer `npm run e2e` sans toucher souris ni clavier.
+Vous pouvez continuer à utiliser votre souris et votre clavier pendant `npm run e2e` : les fenêtres du jeu sont réduites et silencieuses. Pour vérifier la vraie souris de Windows (avant une livraison), `powershell -File tools/unity-e2e.ps1 -RealInput -Scenario A` : ne touchez à rien pendant ce test.

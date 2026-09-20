@@ -1,7 +1,9 @@
 {
   "name": "Healer.Ui",
   "rootNamespace": "Healer.Ui",
-  "references": [],
+  "references": [
+    "Healer.Combat"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

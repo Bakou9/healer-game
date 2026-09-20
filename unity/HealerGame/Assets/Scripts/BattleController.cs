@@ -77,7 +77,9 @@ namespace Healer.Client
         /// <summary>Niveau en cours (boss, récompenses, seuils d'étoiles).</summary>
         public LevelDef? Level { get; private set; }
         public TargetSelection Selection => _selection;
-        public IReadOnlyList<SkillDef> Skills => _content.Skills;
+        /// <summary>Sorts du combat EN COURS, bonus d'équipement et de talents compris (le catalogue de base est dans GameContent.Skills).</summary>
+        public IReadOnlyList<SkillDef> Skills => _encounter?.Skills ?? _content.Skills;
+        private EncounterDef? _encounter;
         public bool HintActive => _battle != null && _battle.GetClock() < _hintUntilMs;
         public string LastAction { get; private set; } = "";
 
@@ -111,7 +113,8 @@ namespace Healer.Client
         private void StartBattle(uint seed)
         {
             _unsubscribe?.Invoke();
-            _battle = new Battle(_content.CreateEncounter(Level!.BossId, seed, _owned, _loadout));
+            _encounter = _content.CreateEncounter(Level!.BossId, seed, _owned, _loadout);
+            _battle = new Battle(_encounter);
             Stats = new CombatStats();
             Stats.Attach(_battle);
             _stepper = new FixedStepper();

@@ -57,7 +57,7 @@ namespace Healer.Client
 
         private void Update()
         {
-            var keyboard = Keyboard.current;
+            var keyboard = PlaytestNotes.Open ? null : Keyboard.current;
             if (keyboard != null && keyboard.mKey.wasPressedThisFrame && _flow != null) _flow.ToggleMute();
             if (_ctl == null || _ctl.Battle == null) return;
             var telegraph = _ctl.Battle.GetTelegraph();

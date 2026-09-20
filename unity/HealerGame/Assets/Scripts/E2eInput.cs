@@ -12,11 +12,12 @@ namespace Healer.Client
     /// <summary>
     /// Entrées injectées pour les tests de bout en bout (option -healer-e2e FICHIER). Le script de test ajoute une
     /// commande par ligne au fichier ; le jeu la joue sur une souris et un clavier VIRTUELS de l'Input System. Le
-    /// geste suit ensuite le même chemin qu'un vrai (PointerInput, BattleKeys, InputGate, Layout) : seule la
+    /// geste suit ensuite le même chemin qu'un vrai (Input System, UI Toolkit, BattleKeys, InputGate, Layout) : seule la
     /// livraison par Windows est sautée. La fenêtre n'a donc pas besoin de focus, et la vraie souris et le vrai
     /// clavier de l'utilisateur restent libres (les vrais périphériques sont désactivés dans ce mode).
     /// Commandes (coordonnées logiques de Healer.Ui.Layout) :
     ///   click X Y · down X Y · up · key NOM · keydown NOM · keyup NOM   (NOM = UnityEngine.InputSystem.Key : Space, Escape, Digit1, Q…)
+    ///   text TEXTE   saisie de texte (champs de saisie ; les espaces sont conservés)
     /// Chaque commande jouée écrit « [Healer] e2e N ok … » dans le journal : le script attend cet accusé.
     /// </summary>
     public sealed class E2eInput : MonoBehaviour
@@ -74,6 +75,9 @@ namespace Healer.Client
                 case "up": Pointer(false); break;
                 case "key":
                     SetKey(t[1], true); yield return new WaitForSecondsRealtime(0.08f); SetKey(t[1], false);
+                    break;
+                case "text":
+                    foreach (char ch in line.Substring(5)) { _keyboard.MakeCurrent(); InputSystem.QueueTextEvent(_keyboard, ch); yield return null; }
                     break;
                 case "keydown": SetKey(t[1], true); break;
                 case "keyup": SetKey(t[1], false); break;

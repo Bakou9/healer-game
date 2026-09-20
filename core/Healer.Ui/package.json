@@ -3,5 +3,8 @@
   "version": "0.1.0",
   "displayName": "Healer UI (logique d'interface pure)",
   "description": "Formatage des valeurs à hauteur humaine, jetons de mise en page et ciblage en un geste, en C# pur.",
-  "unity": "6000.0"
+  "unity": "6000.0",
+  "dependencies": {
+    "com.healer.combat": "0.1.0"
+  }
 }

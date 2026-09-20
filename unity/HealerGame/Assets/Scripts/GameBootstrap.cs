@@ -16,6 +16,7 @@ namespace Healer.Client
     ///   -healer-out DOSSIER     dossier des captures
     ///   -healer-speed 6         accélération du temps pendant les captures
     ///   -healer-timescale 30    accélération du temps en jeu normal (tests de bout en bout : tools/unity-e2e.ps1)
+    ///   -healer-notes-dir D     dossier des notes de playtest (F8) ; par défaut playtest/ dans les données du jeu
     ///   -healer-e2e FICHIER     entrées injectées par le script de test (souris et clavier virtuels, sans focus ; voir E2eInput)
     ///   -healer-sound           avec -healer-e2e : laisse le son (par défaut les tests sont silencieux)
     ///   -healer-autoplay        le bot de référence joue le soin (tests de bout en bout)
@@ -56,8 +57,9 @@ namespace Healer.Client
             stage.Build(cam, controller);
             var flow = gameObject.AddComponent<GameFlow>();
             flow.Init(content, storage, profile, controller, stage);
-            gameObject.AddComponent<BattleHud>().Init(controller, flow);
-            gameObject.AddComponent<AppHud>().Init(flow);
+            var ui = gameObject.AddComponent<UiRoot>();
+            ui.Init(flow);
+            gameObject.AddComponent<PlaytestNotes>().Init(ui, flow, Arg("-healer-notes-dir") ?? Path.Combine(Application.persistentDataPath, "playtest"));
             var audio = gameObject.AddComponent<BattleAudio>();
             audio.Init(controller, flow);
             flow.Audio = audio;

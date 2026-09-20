@@ -40,7 +40,7 @@ namespace Healer.Client
         private void Update()
         {
             var kb = Keyboard.current;
-            if (kb == null || _flow == null || _flow.Ctl.Battle == null) return;
+            if (kb == null || _flow == null || _flow.Ctl.Battle == null || PlaytestNotes.Open) return; // saisie d'une note : pas de raccourcis
             bool confirm = kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame;
             bool back = kb.escapeKey.wasPressedThisFrame || kb.backspaceKey.wasPressedThisFrame;
 

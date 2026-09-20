@@ -10,7 +10,9 @@
       "version": "file:../../../core/Healer.Ui",
       "depth": 0,
       "source": "local",
-      "dependencies": {}
+      "dependencies": {
+        "com.healer.combat": "0.1.0"
+      }
     },
     "com.unity.inputsystem": {
       "version": "1.14.2",
@@ -20,6 +22,15 @@
         "com.unity.modules.uielements": "1.0.0"
       },
       "url": "https://packages.unity.com"
+    },
+    "com.unity.ugui": {
+      "version": "2.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "dependencies": {
+        "com.unity.modules.ui": "1.0.0",
+        "com.unity.modules.imgui": "1.0.0"
+      }
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",

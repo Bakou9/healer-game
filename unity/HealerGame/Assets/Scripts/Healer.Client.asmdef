@@ -4,7 +4,8 @@
   "references": [
     "Healer.Combat",
     "Healer.Ui",
-    "Unity.InputSystem"
+    "Unity.InputSystem",
+    "UnityEngine.UI"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

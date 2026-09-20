@@ -9,4 +9,7 @@
     <AssemblyName>Healer.Ui</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Healer.Combat\Healer.Combat.csproj" />
+  </ItemGroup>
 </Project>

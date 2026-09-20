@@ -13,11 +13,12 @@
 #       sauvegarde sur disque, relance : l'équipement et le talent sont appliqués au combat
 #   H : le Seigneur de Cendre s'enrage si le combat s'éternise (l'enrage est un réglage du boss)
 #   I : réglages (volumes, secousse) : changés à la souris, sauvegardés, rechargés après relance
+#   J : note de playtest (F8) : saisie, fichier de notes, capture, pause puis reprise
 #   G : maintenir un sort (souris puis clavier) l'enchaîne ; re-toucher un allié ne le désélectionne pas
 # Toutes les parties utilisent un dossier de sauvegarde temporaire : la vraie sauvegarde n'est jamais touchée.
 # Code de sortie 1 si une vérification échoue.
 # Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E|F|G|H|I] [-Jobs 4] [-RealInput]
-param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G","H","I")][string]$Scenario = "all", [int]$Jobs = 4, [switch]$RealInput, [int]$Show = 6)
+param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G","H","I","J")][string]$Scenario = "all", [int]$Jobs = 4, [switch]$RealInput, [int]$Show = 6)
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Add-Type @"
@@ -74,7 +75,7 @@ if (-not $SkipBuild) {
 
 # ---- Exécution parallèle : un processus par scénario (les gestes sont injectés, aucun ne dispute la souris) ----
 if ($Scenario -eq "all" -and -not $RealInput -and $Jobs -gt 1) {
-  $order = "D","G","F","H","B","C","A","E","I"  # les plus longs d'abord
+  $order = "D","G","F","H","B","C","A","E","I","J"  # les plus longs d'abord
   $queue = New-Object System.Collections.Queue; foreach ($s in $order) { $queue.Enqueue($s) }
   $running = @{}; $outs = @{}; $codes = @{}
   while ($queue.Count -gt 0 -or $running.Count -gt 0) {
@@ -138,7 +139,7 @@ function Send($command) {
   while ((Get-Date) -lt $deadline) { if ((LogText).Contains($tag)) { return }; Start-Sleep -Milliseconds 30 }
   throw "le jeu n'a pas joué la commande : $command"
 }
-$keyNames = @{ 0x39 = "Space"; 0x01 = "Escape"; 0x1C = "Enter"; 0x02 = "Digit1"; 0x10 = "Q" }
+$keyNames = @{ 0x39 = "Space"; 0x01 = "Escape"; 0x1C = "Enter"; 0x02 = "Digit1"; 0x10 = "Q"; 0x42 = "F8" }
 function Tap($lx, $ly, $label) {
   Write-Output ("  clic {0} : logique ({1},{2})" -f $label, $lx, $ly)
   if ($RealInput) { $sx = [int]($script:origin.X + $script:offX + $lx * $script:scale); $sy = [int]($script:origin.Y + $script:offY + $ly * $script:scale); [Win]::Click($sx, $sy); Start-Sleep -Milliseconds 800 }
@@ -193,7 +194,7 @@ Tap $menuPlay[0] $menuPlay[1] "Jouer (menu)"
 Tap $level1[0] $level1[1] "niveau 1"
 Tap $fightPlay[0] $fightPlay[1] "Jouer (combat)"
 Tap 144 148 "carte Garde (colonne gauche)"
-Tap 1136 190 "sort Soin (colonne droite)"
+Tap 1068 184 "sort Soin (icône, colonne droite)"
 Press 0x39 "Espace (pause)"
 Press 0x39 "Espace (reprise)"
 Press 0x01 "Échap (pause)"
@@ -208,6 +209,7 @@ Check ($ha.Count -ge 2 -and $ha[0] -match "combat démarré" -and $ha[1] -match 
 Expect $a "geste : carte tank → cible = tank" "un clic sur une carte cible l'allié"
 Expect $a "geste : sort heal_single → Cast \(cible tank\)" "un clic sur un sort le lance sur la cible"
 Expect $a "état : pause" "Espace met en pause"
+Expect $a "fiche des sorts : 4 sorts" "la pause affiche la fiche détaillée des 4 sorts"
 Expect $a "état : reprise" "Espace reprend"
 }
 
@@ -228,7 +230,7 @@ Tap 522 618 "Recommencer"
 $b2 = Log
 Expect $b2 "état : nouveau combat" "le clic sur Recommencer relance un combat"
 Press 0x01 "Échap (pause)"
-Tap 640 430 "Quitter le niveau"
+Tap 640 480 "Quitter le niveau"
 Stop-Game
 $b3 = Log
 Expect $b3 "écran : choix du niveau" "quitter le niveau ramène au choix du niveau"
@@ -293,7 +295,7 @@ Tap $menuPlay[0] $menuPlay[1] "Jouer (menu)"
 Tap $level1[0] $level1[1] "niveau 1"
 Tap $fightPlay[0] $fightPlay[1] "Jouer (combat)"
 Press 0x01 "Échap (pause)"
-Tap 640 430 "Quitter le niveau"
+Tap 640 480 "Quitter le niveau"
 Tap 87 32 "← Menu"
 Stop-Game
 $e = Log
@@ -355,7 +357,7 @@ Tap 144 148 "carte Garde"
 Tap 144 148 "carte Garde (encore)"
 Press 0x02 "1 (Garde)"
 Press 0x02 "1 (Garde, encore)"
-HoldMouse 1136 190 5 "le sort Soin (souris)"
+HoldMouse 1068 184 5 "le sort Soin (souris)"
 $g1 = Log
 $mouseCasts = Count $g1 "geste : sort heal_single → Cast"
 HoldKey 0x10 4 "A (Soin, clavier AZERTY)"
@@ -423,6 +425,31 @@ Stop-Game
 $i2 = Log
 Expect $i2 "sauvegarde : chargée" "la sauvegarde est rechargée"
 Expect $i2 "réglage : musique 30" "les réglages rechargés servent de point de départ (40 -> 30)"
+}
+
+# ---- Scénario J -----------------------------------------------------------------------------
+if (Want "J") {
+Write-Output "Scénario J : note de playtest (F8) : saisie, fichier de notes, capture, pause puis reprise"
+$notesDir = Join-Path $env:TEMP ("healer-e2e-notes-" + [Guid]::NewGuid().ToString("N").Substring(0, 6)); New-Item -ItemType Directory -Path $notesDir | Out-Null
+Start-Game @("-healer-notes-dir", $notesDir, "-healer-level", "l1", "-healer-profile-dir", (New-ProfileDir "J"))
+Press 0x39 "Espace (jouer)"
+Press 0x42 "F8 (ouvrir la note)"
+Start-Sleep -Milliseconds 600
+Send "text Le soin est trop lent"
+Press 0x1C "Entrée (enregistrer)"
+Start-Sleep -Milliseconds 400
+$j = Log
+Expect $j "note : Le soin est trop lent" "la note est enregistrée avec son texte"
+$notesFile = Join-Path $notesDir "notes.md"
+Check (Test-Path $notesFile) "le fichier de notes existe"
+if (Test-Path $notesFile) {
+  $md = Get-Content $notesFile -Raw -Encoding UTF8
+  Check ($md -match "Le soin est trop lent") "le fichier contient la remarque"
+  Check ($md -match "Boss :") "le fichier contient l'état du combat"
+}
+Check ((Get-ChildItem $notesDir -Filter "note_*.png" -ErrorAction SilentlyContinue).Count -ge 1) "une capture d'écran est jointe"
+Expect $j "état : reprise" "le combat reprend après la note"
+Stop-Game
 }
 
 if ($failures.Count -gt 0) { Write-Output ""; Write-Output "$($failures.Count) vérification(s) en échec."; Write-Output "[e2e-fin] code=1"; exit 1 }
