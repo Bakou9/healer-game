@@ -118,12 +118,12 @@ namespace Healer.Combat.Tests
         [Test]
         public void Un_modele_importe_traverse_le_catalogue_jusqu_a_la_piece_et_change_la_signature()
         {
-            var json = "{\"tiers\":[{\"minLevel\":0,\"name\":\"A\"}],\"characters\":{\"tank\":{\"weapon\":[{\"part\":\"tank.weapon\",\"palette\":{},\"model\":{\"path\":\"Imported/KayKit/Sword\",\"size\":0.5,\"offset\":[0,0.1,0],\"euler\":[90,0,0]}}]}}}";
+            var json = "{\"tiers\":[{\"minLevel\":0,\"name\":\"A\"}],\"characters\":{\"tank\":{\"weapon\":[{\"part\":\"tank.weapon\",\"palette\":{},\"model\":{\"path\":\"Imported/KayKit/Sword\",\"size\":50,\"offset\":[0,10,0],\"euler\":[90,0,0]}}]}}}";
             var set = AppearanceCatalog.FromJson(json).Resolve("tank", null);
             var model = set.Parts["weapon"].Model!;
             Assert.That(model.Path, Is.EqualTo("Imported/KayKit/Sword"));
-            Assert.That(model.Size, Is.EqualTo(0.5));
-            Assert.That(model.Offset[1], Is.EqualTo(0.1));
+            Assert.That(model.Size, Is.EqualTo(50));
+            Assert.That(model.Offset[1], Is.EqualTo(10));
             Assert.That(model.Euler[0], Is.EqualTo(90));
             Assert.That(model.ImportedFolder, Is.EqualTo("KayKit"));
             Assert.That(set.Signature(), Does.Contain("#Imported/KayKit/Sword"));

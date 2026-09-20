@@ -38,8 +38,8 @@ Recherche du 2026-09-20 (les prix et conditions changent : revérifier avant tou
 1. Déposer les fichiers (FBX ou OBJ ; glTF exige un paquet Unity en plus) dans `unity/HealerGame/Assets/Resources/Imported/<Dossier>/` avec le fichier de licence du pack.
 2. Ajouter l'entrée dans `core/content/credits.json` (auteur, licence SPDX autorisée, URL https, usage, `folder` = <Dossier>).
 3. Dans `core/content/appearance.json`, sur l'entrée voulue (héros, emplacement, palier), ajouter :
-   `"model": { "path": "Imported/<Dossier>/<fichier sans extension>", "size": 1.9, "offset": [0, 0, 0.3], "euler": [90, 0, 0] }`.
-   `size` = plus grande dimension voulue en unités du pivot (le client **normalise** : l'unité du fichier ne compte pas) ; `offset` et `euler` orientent le modèle par rapport à la main.
+   `"model": { "path": "Imported/<Dossier>/<fichier sans extension>", "size": 220, "offset": [0, 0, 30], "euler": [90, 0, 0] }`.
+   `size` = plus grande dimension voulue en **centièmes** d'unité du pivot (220 = 2,2 ; le client **normalise** : l'unité du fichier ne compte pas) ; `offset` en centièmes d'unité et `euler` en degrés orientent le modèle par rapport à la main. Tout est en entiers (règle de toutes les données du jeu).
 4. Aujourd'hui **seul l'emplacement `weapon`** peut être remplacé par un modèle importé (rattaché au pivot d'arme : il suit l'animation) ; l'armure et les corps complets viendront avec un squelette commun (voir docs/ART_3D.md).
 5. Si le fichier est introuvable, le client garde la version dessinée par le code (avertissement dans le journal) : jamais de héros sans arme.
 6. Vérifier : les tests (`npm run check`) refusent un modèle « Imported/… » sans entrée de crédit, et un dossier importé sans entrée ; capture d'écran en jeu (`-healer-shots` avec `-healer-equip` pour forcer le palier).

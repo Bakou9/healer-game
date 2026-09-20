@@ -19,12 +19,12 @@ namespace Healer.Combat.Progress
     public sealed class AppearanceModel
     {
         public string Path { get; set; } = "";
-        /// <summary>Taille voulue du modèle (sa plus grande dimension, en unités locales du pivot). Le client normalise le fichier importé : FBX, glTF et OBJ n'ont pas la même unité.</summary>
-        public double Size { get; set; } = 1;
-        /// <summary>Décalage local (x, y, z) par rapport au pivot de l'emplacement.</summary>
-        public double[] Offset { get; set; } = new double[] { 0, 0, 0 };
-        /// <summary>Rotation locale en degrés (x, y, z).</summary>
-        public double[] Euler { get; set; } = new double[] { 0, 0, 0 };
+        /// <summary>Taille voulue du modèle : sa plus grande dimension en CENTIÈMES d'unité du pivot (220 = 2,2). Le client normalise le fichier importé : FBX, glTF et OBJ n'ont pas la même unité. Entiers, comme toute donnée du jeu.</summary>
+        public int Size { get; set; } = 100;
+        /// <summary>Décalage local (x, y, z) par rapport au pivot de l'emplacement, en centièmes d'unité.</summary>
+        public int[] Offset { get; set; } = new int[] { 0, 0, 0 };
+        /// <summary>Rotation locale en degrés entiers (x, y, z).</summary>
+        public int[] Euler { get; set; } = new int[] { 0, 0, 0 };
 
         /// <summary>Dossier de la ressource externe (« Imported/KayKit/Knight » → « KayKit »), ou null si le modèle est une création de l'équipe.</summary>
         public string? ImportedFolder

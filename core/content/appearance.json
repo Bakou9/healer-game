@@ -47,11 +47,11 @@
           },
           "model": {
             "path": "Imported/KayKitAdventurers/sword_2handed",
-            "size": 2.2,
+            "size": 220,
             "offset": [
               0,
               0,
-              0.3
+              30
             ],
             "euler": [
               90,

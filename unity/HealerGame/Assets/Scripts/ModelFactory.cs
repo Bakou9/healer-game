@@ -173,13 +173,13 @@ namespace Healer.Client
             for (int i = rig.Weapon.childCount - 1; i >= 0; i--) Object.DestroyImmediate(rig.Weapon.GetChild(i).gameObject);
             var instance = Object.Instantiate(prefab, rig.Weapon, false);
             instance.name = "ImportedWeapon";
-            instance.transform.localPosition = new Vector3((float)model.Offset[0], (float)model.Offset[1], (float)model.Offset[2]);
-            instance.transform.localEulerAngles = new Vector3((float)model.Euler[0], (float)model.Euler[1], (float)model.Euler[2]);
+            instance.transform.localPosition = new Vector3(model.Offset[0], model.Offset[1], model.Offset[2]) / 100f;
+            instance.transform.localEulerAngles = new Vector3(model.Euler[0], model.Euler[1], model.Euler[2]);
             foreach (var collider in instance.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(collider);
             // Taille normalisée : l'unité du fichier (mètres, centimètres…) ne compte pas, seule la taille voulue compte.
             instance.transform.localScale = Vector3.one;
             float longest = LongestSide(instance.transform);
-            if (longest > 0.0001f) instance.transform.localScale = Vector3.one * ((float)model.Size / longest);
+            if (longest > 0.0001f) instance.transform.localScale = Vector3.one * (model.Size / 100f / longest);
             Debug.Log("[Healer] modèle importé : " + model.Path);
         }
 
