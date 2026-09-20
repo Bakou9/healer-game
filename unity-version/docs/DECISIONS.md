@@ -230,3 +230,7 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 ## D-040 — Input System adopté ; le projet Unity se travaille dans C:\WhatTheHeal
 - **Décision** : le paquet `com.unity.inputsystem` 1.14.2 remplace l'ancien Input Manager (`activeInputHandler: 1`). Un essai dans `C:\Users\banja\Documents\healer-game` échouait toujours (EPERM au renommage du paquet dans `Library/PackageCache`) ; le même dépôt cloné dans `C:\WhatTheHeal` s'installe sans erreur. Le dossier `Documents` (accès contrôlé aux dossiers ou OneDrive) est donc la cause probable.
 - **Conséquence** : travailler et builder depuis `C:\WhatTheHeal` (clone de https://github.com/Bakou9/healer-game). Ferme D-034 pour l'Input System ; le clic réel n'est pas retesté (`unity-clicktest.ps1` ignore l'écran « Jouer »).
+
+## D-041 — Raccourcis clavier PC
+- **Décision** : `BattleKeys` traduit les touches en gestes du contrôleur (mêmes `TapAlly` / `TapSkill` que le toucher, aucune règle ajoutée) ; pastilles affichées sur les cartes seulement si un clavier est présent. Détail dans `docs/TESTER_LE_JEU.md`.
+- **Équilibrage** : aucune règle ni valeur modifiée ; les gestes sont plus rapides au clavier, mais le bot de référence (500 ms) reste la borne de jeu attentif. Vérifié en jeu réel (Espace, 1, A → soin lancé sur le Garde) ; pas de test automatisé du clavier.

@@ -2,6 +2,7 @@ using System.Linq;
 using Healer.Combat;
 using Healer.Ui;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Rect = UnityEngine.Rect;
 
 namespace Healer.Client
@@ -151,6 +152,7 @@ namespace Healer.Client
                     Text(pill, $"{e.Name} {Format.Seconds(e.MsRemaining)}", Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, true);
                 }
                 if (!_ctl.HasCast && _ctl.Selection.Selected == null && a.Alive && a.Id == GuideAllyId(allies)) Guide(r, "1");
+                KeyCap(r, BattleKeys.AllyLabel(i));
                 if (Hit(r)) _ctl.TapAlly(a.Id);
             }
         }
@@ -198,8 +200,19 @@ namespace Healer.Client
                 Text(new Rect(r.x, r.y + 112, r.width, 20), s.Target == "all" ? "Toute l'équipe" : "1 allié", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
                 if (cd > 0) Text(new Rect(r.x, r.y + 134, r.width, 28), Format.Seconds(cd), Layout.Font.Cooldown, Palette.Hex("FF9D9D"), TextAnchor.MiddleCenter, true);
                 if (!_ctl.HasCast && _ctl.Selection.Selected != null && s.Id == "heal_single") Guide(r, "2");
+                KeyCap(r, BattleKeys.SkillLabel(i));
                 if (Hit(r)) _ctl.TapSkill(s);
             }
+        }
+
+        /// <summary>Pastille de raccourci clavier dans le coin haut-gauche d'une carte (absente sans clavier).</summary>
+        private void KeyCap(Rect card, string? label)
+        {
+            if (label == null) return;
+            var cap = new Rect(card.x + 6, card.y + 6, 24, 24);
+            Fill(cap, new Color(0f, 0f, 0f, 0.6f), 5);
+            Outline(cap, new Color(1f, 1f, 1f, 0.5f), 1, 5);
+            Text(cap, label, Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, true);
         }
 
         /// <summary>Allié à soigner en premier pour le guidage : le plus abîmé, le tank à égalité.</summary>
@@ -243,7 +256,13 @@ namespace Healer.Client
             Fill(btn, Palette.Hex("2F7D57"), 14);
             Outline(btn, Palette.Heal, 3, 14);
             Text(btn, "Jouer", 26, Color.white, TextAnchor.MiddleCenter, true);
-            Text(new Rect(0, 640, w, 24), "M : couper le son", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
+            if (Keyboard.current != null)
+            {
+                string sorts = string.Join(" ", new[] { 0, 1, 2, 3 }.Select(BattleKeys.SkillLabel));
+                Text(new Rect(0, 636, w, 24), "Clavier : 1-4 cibler · " + sorts + " sorts · Tab suivant", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
+                Text(new Rect(0, 660, w, 24), "Espace : jouer / pause · M : son", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
+            }
+            else Text(new Rect(0, 640, w, 24), "M : couper le son", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
             if (Hit(btn)) _ctl.StartFight();
         }
 

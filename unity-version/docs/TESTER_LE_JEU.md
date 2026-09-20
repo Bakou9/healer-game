@@ -28,3 +28,16 @@ Menu **Healer** : synchroniser le contenu, configurer le projet, créer la scèn
 - `npm run check` : specs + tests du cœur (108 tests, dont les 7 combats de référence).
 - `tools/unity-cycle.ps1` : build + captures d'écran (`%TEMP%\\healer-captures`).
 - `tools/unity-clicktest.ps1` : vrais clics dans la fenêtre du jeu (déplace la souris : ne pas y toucher pendant le test).
+
+## Raccourcis clavier (PC)
+
+| Touche | Action |
+|---|---|
+| `1` `2` `3` `4` (ou pavé numérique) | Cibler l'allié n° 1 à 4 |
+| `Tab` / `Maj+Tab` | Allié vivant suivant / précédent |
+| `Q` `W` `E` `R` (`A` `Z` `E` `R` en AZERTY) | Lancer le sort n° 1 à 4 (Soin, Soin de zone, Bouclier, Purge) |
+| `Espace` ou `Entrée` | Jouer ; pause / reprise ; rejouer en fin de combat |
+| `Échap` ou `P` | Pause |
+| `M` | Couper / rétablir le son |
+
+Les touches sont physiques (même position sur QWERTY et AZERTY) ; les pastilles sur les cartes affichent la lettre de votre disposition. Elles n'apparaissent pas sur mobile.
