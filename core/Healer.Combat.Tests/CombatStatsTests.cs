@@ -129,5 +129,16 @@ namespace Healer.Combat.Tests
             Assert.That(stats.Overheal, Is.EqualTo(0));
             Assert.That(stats.OverhealRatio, Is.EqualTo(0));
         }
+
+        [Test]
+        public void Les_degats_avant_boucliers_sont_les_PV_perdus_plus_les_degats_absorbes()
+        {
+            // Le boss frappe les deux alliés à 1000 ms (90 chacun) ; un Bouclier de 260 sur le Garde à 500 ms absorbe son coup.
+            var enc = Arena.Make(boss: Arena.AoePattern);
+            var stats = PlayArena(enc, 1200, new Command { TimeMs = 500, SkillId = "shield", TargetId = "tank" });
+            Assert.That(stats.DamageAbsorbed, Is.EqualTo(90), "le coup de 90 sur le Garde est absorbé");
+            Assert.That(stats.DamageTaken, Is.EqualTo(90), "seul le soigneur perd des PV");
+            Assert.That(stats.DamageBeforeShields, Is.EqualTo(180), "sans bouclier : 90 + 90");
+        }
     }
 }

@@ -18,6 +18,8 @@ namespace Healer.Combat
         public double ShieldGranted { get; private set; }
         public double DamageTaken { get; private set; }
         public double DamageAbsorbed { get; private set; }
+        /// <summary>Dégâts subis avant les boucliers (PV perdus + absorbés) : ce que l'équipe aurait encaissé sans aucun Bouclier.</summary>
+        public double DamageBeforeShields => DamageTaken + DamageAbsorbed;
         public double DamageToBoss { get; private set; }
         public double DurationMs { get; private set; }
         public int Deaths { get; private set; }

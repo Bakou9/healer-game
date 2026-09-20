@@ -502,7 +502,7 @@ namespace Healer.Client
             string[] labels = { "Durée du combat", "Soins effectifs", "Soins gaspillés (excédent)", "Dégâts encaissés", "dont absorbés par boucliers", "Sorts lancés", "Alliés K.O.", "Poisons et brûlures purgés" };
             string[] values =
             {
-                Format.Seconds(s.DurationMs), Format.Number(s.HealingDone), Format.Number(s.Overheal) + " (" + (int)(s.OverhealRatio * 100) + " %)", Format.Number(s.DamageTaken),
+                Format.Seconds(s.DurationMs), Format.Number(s.HealingDone), Format.Number(s.Overheal) + " (" + (int)(s.OverhealRatio * 100) + " %)", Format.Number(s.DamageTaken) + " (" + Format.Number(s.DamageBeforeShields) + ")",
                 Format.Number(s.DamageAbsorbed), s.Casts.ToString(), s.Deaths.ToString(), s.Purges.ToString(),
             };
             for (int i = 0; i < labels.Length; i++)
