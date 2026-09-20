@@ -36,8 +36,20 @@ namespace Healer.Client
         /// <summary>Met le jeu en pause quand la fenêtre perd le focus (on ne perd pas un combat en changeant de fenêtre).</summary>
         private void OnApplicationFocus(bool hasFocus)
         {
-            if (!hasFocus && Started && !Autoplay && _battle != null && _battle.GetResult() == BattleResults.Ongoing) Paused = true;
+            if (Autoplay || !Started || _battle == null) return;
+            if (!hasFocus)
+            {
+                // Ne réactive pas seul une pause voulue par le joueur : on ne reprendra que celle-ci.
+                if (!Paused && _battle.GetResult() == BattleResults.Ongoing) { Paused = true; _pausedByFocus = true; }
+            }
+            else if (_pausedByFocus)
+            {
+                _pausedByFocus = false;
+                Paused = false;
+            }
         }
+
+        private bool _pausedByFocus;
 
         /// <summary>Accélère le temps (captures automatiques uniquement) ; 1 en jeu normal.</summary>
         public float TimeScale { get; set; } = 1f;
@@ -88,7 +100,7 @@ namespace Healer.Client
             Restarted?.Invoke();
         }
 
-        public void TogglePause() => Paused = !Paused;
+        public void TogglePause() { Paused = !Paused; _pausedByFocus = false; }
 
         private void Update()
         {

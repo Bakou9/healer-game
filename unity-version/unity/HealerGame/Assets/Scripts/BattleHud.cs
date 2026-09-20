@@ -17,10 +17,10 @@ namespace Healer.Client
         private BattleController _ctl = null!;
         private GUIStyle _label = null!;
 
-        private static readonly Color Panel = Palette.Hex("252839");
-        private static readonly Color PanelStroke = Palette.Hex("555A70");
-        private static readonly Color Selected = Palette.Hex("FFE066");
-        private static readonly Color Muted = Palette.Hex("A7ADC2");
+        private static readonly Color Panel = Palette.Hex("161926");
+        private static readonly Color PanelStroke = Palette.Hex("3A4058");
+        private static readonly Color Selected = Palette.Hex("E0BE6A");
+        private static readonly Color Muted = Palette.Hex("9A9FB4");
 
         public void Init(BattleController controller) => _ctl = controller;
 
@@ -28,9 +28,9 @@ namespace Healer.Client
 
         private static Color HpColor(double ratio) => Layout.HpBandFor(ratio) switch
         {
-            HpBand.High => Palette.Hex("5FD35F"),
-            HpBand.Mid => Palette.Hex("F0A23A"),
-            _ => Palette.Hex("E0443E"),
+            HpBand.High => Palette.Hex("5DAE6A"),
+            HpBand.Mid => Palette.Hex("D49A3E"),
+            _ => Palette.Hex("C2453F"),
         };
 
         private void OnGUI()
@@ -41,6 +41,7 @@ namespace Healer.Client
                 _label = new GUIStyle(GUI.skin.label) { wordWrap = false, clipping = TextClipping.Overflow };
             }
             ScreenMap.Refresh();
+            DrawCinemaVignette();
             DrawDangerVignette();
             var previous = GUI.matrix;
             GUI.matrix = Matrix4x4.TRS(new Vector3(ScreenMap.OffsetX, ScreenMap.OffsetY, 0), Quaternion.identity, new Vector3(ScreenMap.Scale, ScreenMap.Scale, 1));
@@ -74,6 +75,27 @@ namespace Healer.Client
 
         private static bool Hit(Rect r) => GUI.Button(r, GUIContent.none, GUIStyle.none);
 
+        private Texture2D? _vignette;
+
+        /// <summary>Assombrit doucement les bords de l'écran : concentre le regard au centre, ambiance plus sérieuse.</summary>
+        private void DrawCinemaVignette()
+        {
+            if (_vignette == null)
+            {
+                const int n = 96;
+                _vignette = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+                for (int y = 0; y < n; y++)
+                    for (int x = 0; x < n; x++)
+                    {
+                        float dx = (x / (n - 1f) - 0.5f) * 2f, dy = (y / (n - 1f) - 0.5f) * 2f;
+                        float d = Mathf.Clamp01((Mathf.Sqrt(dx * dx + dy * dy) - 0.55f) / 0.9f);
+                        _vignette.SetPixel(x, y, new Color(0f, 0f, 0.02f, d * d * 0.7f));
+                    }
+                _vignette.Apply();
+            }
+            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _vignette, ScaleMode.StretchToFill);
+        }
+
         private void DrawDangerVignette()
         {
             var tele = _ctl.Battle.GetTelegraph();
@@ -100,8 +122,8 @@ namespace Healer.Client
             Outline(bar, new Color(0, 0, 0, 0.6f), 2, 6);
 
             var pause = R(Layout.PauseButton);
-            Fill(pause, Panel, 12);
-            Outline(pause, PanelStroke, 2, 12);
+            Fill(pause, new Color(Panel.r, Panel.g, Panel.b, 0.85f), 8);
+            Outline(pause, PanelStroke, 1.5f, 8);
             Text(pause, _ctl.Paused ? ">" : "II", Layout.Font.Banner, Color.white, TextAnchor.MiddleCenter, true);
             if (Hit(pause)) _ctl.TogglePause();
 
@@ -131,23 +153,23 @@ namespace Healer.Client
                 bool selected = _ctl.Selection.Selected == a.Id;
                 float alpha = a.Alive ? 1f : 0.5f;
                 if (selected) Outline(new Rect(r.x - 3, r.y - 3, r.width + 6, r.height + 6), new Color(Selected.r, Selected.g, Selected.b, 0.3f), 8, 14);
-                Fill(r, new Color(Panel.r, Panel.g, Panel.b, 0.92f * alpha), 12);
-                Outline(r, selected ? Selected : PanelStroke, selected ? 4 : 2, 12);
+                Fill(r, new Color(Panel.r, Panel.g, Panel.b, 0.88f * alpha), 8);
+                Outline(r, selected ? Selected : PanelStroke, selected ? 3 : 1.5f, 8);
                 var role = a.Role == "tank" ? Palette.Tank : a.Role == "healer" ? Palette.Healer : (a.Id == "dps2" ? Palette.Mage : Palette.Archer);
-                Fill(new Rect(r.x + 8, r.y + 8, r.width - 16, 6), new Color(role.r, role.g, role.b, alpha), 3);
-                Text(new Rect(r.x, r.y + 16, r.width, 24), a.Name, Layout.Font.Body, Color.white, TextAnchor.MiddleCenter, true);
-                Text(new Rect(r.x, r.y + 38, r.width, 20), a.Role == "tank" ? "Tank" : a.Role == "healer" ? "Soin" : "Dégâts", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
+                Fill(new Rect(r.x + 8, r.y + 8, r.width - 16, 5), new Color(role.r, role.g, role.b, alpha), 3);
+                Text(new Rect(r.x, r.y + 14, r.width, 24), a.Name, Layout.Font.Body, Color.white, TextAnchor.MiddleCenter, true);
+                Text(new Rect(r.x, r.y + 36, r.width, 20), a.Role == "tank" ? "Tank" : a.Role == "healer" ? "Soin" : "Dégâts", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
 
                 double ratio = a.MaxHp > 0 ? System.Math.Max(0, a.Hp / a.MaxHp) : 0;
-                var bar = new Rect(r.x + 12, r.y + 84, r.width - 24, 24);
+                var bar = new Rect(r.x + 12, r.y + 62, r.width - 24, 20);
                 Fill(bar, new Color(0, 0, 0, 0.55f), 5);
                 if (ratio > 0) Fill(new Rect(bar.x, bar.y, Mathf.Max(6f, bar.width * (float)ratio), bar.height), HpColor(ratio), 5);
-                Text(new Rect(r.x, r.y + 112, r.width, 28), a.Alive ? Format.Ratio(a.Hp, a.MaxHp) : "K.O.", Layout.Font.Title, Color.white, TextAnchor.MiddleCenter, true);
-                if (a.Shield > 0) Text(new Rect(r.x, r.y + 146, r.width, 20), $"Bouclier {Format.Number(a.Shield)}", Layout.Font.Small, Palette.Shield, TextAnchor.MiddleCenter);
+                Text(new Rect(r.x, r.y + 84, r.width, 26), a.Alive ? Format.Ratio(a.Hp, a.MaxHp) : "K.O.", Layout.Font.Title, Color.white, TextAnchor.MiddleCenter, true);
+                if (a.Shield > 0) Text(new Rect(r.x + 8, r.y + 110, r.width * 0.5f, 20), $"Bouclier {Format.Number(a.Shield)}", Layout.Font.Small, Palette.Shield, TextAnchor.MiddleLeft);
                 if (a.Effects.Count > 0)
                 {
                     var e = a.Effects[0];
-                    var pill = new Rect(r.x + 8, r.y + 170, r.width - 16, 22);
+                    var pill = new Rect(r.x + r.width * 0.5f, r.y + 108, r.width * 0.5f - 8, 22);
                     Fill(pill, Palette.Hex("5B2F86"), 8);
                     Text(pill, $"{e.Name} {Format.Seconds(e.MsRemaining)}", Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, true);
                 }
@@ -165,12 +187,13 @@ namespace Healer.Client
             var battle = _ctl.Battle;
             var healer = battle.GetAllies().FirstOrDefault(x => x.Id == BattleController.HealerId);
             string selectedName = battle.GetAllies().FirstOrDefault(x => x.Id == _ctl.Selection.Selected)?.Name;
-            if (_ctl.HintActive) Text(new Rect(z.x, z.y + 2, z.width, 26), "Choisissez d'abord un allié !", Layout.Font.Body, Palette.Danger, TextAnchor.MiddleLeft, true);
-            else if (selectedName != null) Text(new Rect(z.x, z.y + 2, z.width, 26), $"Cible : {selectedName}", Layout.Font.Body, Color.white, TextAnchor.MiddleLeft, true);
-            else Text(new Rect(z.x, z.y + 2, z.width, 26), "Touchez un allié pour le cibler", Layout.Font.Body, Muted, TextAnchor.MiddleLeft);
+            var left = new Rect(z.x, z.y, z.width * 0.4f, z.height);
+            if (_ctl.HintActive) Text(left, "Choisissez d'abord un allié !", Layout.Font.Body, Palette.Danger, TextAnchor.MiddleLeft, true);
+            else if (selectedName != null) Text(left, $"Cible : {selectedName}", Layout.Font.Body, Color.white, TextAnchor.MiddleLeft, true);
+            else Text(left, "Touchez un allié pour le cibler", Layout.Font.Body, Muted, TextAnchor.MiddleLeft);
 
             double mana = healer?.Mana ?? 0, max = healer?.MaxMana ?? 1;
-            var bar = new Rect(z.x, z.y + 34, z.width, 24);
+            var bar = new Rect(z.x + z.width * 0.42f, z.y + 12, z.width * 0.58f, 26);
             Fill(bar, new Color(0, 0, 0, 0.55f), 8);
             if (mana > 0) Fill(new Rect(bar.x, bar.y, Mathf.Max(10f, bar.width * (float)(mana / max)), bar.height), Palette.Hex("4AA8FF"), 8);
             Text(bar, $"Mana {Format.Ratio(mana, max)}", Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, true);
@@ -192,13 +215,17 @@ namespace Healer.Client
                 double cd = battle.GetCooldownRemaining(BattleController.HealerId, s.Id);
                 bool enoughMana = (healer?.Mana ?? 0) >= s.ManaCost;
                 var accent = s.Id == "shield" ? Palette.Shield : s.Id == "purge" ? Palette.Poison : Palette.Heal;
-                Fill(r, usable ? Palette.Hex("30344A") : Palette.Hex("1E2030"), 12);
-                Outline(r, usable ? Palette.Hex("8A90B4") : PanelStroke, usable ? 3 : 2, 12);
-                Fill(new Rect(r.x + 10, r.y + 10, r.width - 20, 8), new Color(accent.r, accent.g, accent.b, usable ? 1f : 0.4f), 4);
-                Text(new Rect(r.x + 4, r.y + 26, r.width - 8, 60), s.Name, Layout.Font.Body, Color.white, TextAnchor.MiddleCenter, true);
-                Text(new Rect(r.x, r.y + 92, r.width, 20), $"{Format.Number(s.ManaCost)} mana", Layout.Font.Small, enoughMana ? Muted : Palette.Damage, TextAnchor.MiddleCenter);
-                Text(new Rect(r.x, r.y + 112, r.width, 20), s.Target == "all" ? "Toute l'équipe" : "1 allié", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
-                if (cd > 0) Text(new Rect(r.x, r.y + 134, r.width, 28), Format.Seconds(cd), Layout.Font.Cooldown, Palette.Hex("FF9D9D"), TextAnchor.MiddleCenter, true);
+                Fill(r, usable ? Palette.Hex("22273B") : Palette.Hex("141621"), 8);
+                Outline(r, usable ? Palette.Hex("6F7698") : PanelStroke, usable ? 2 : 1.5f, 8);
+                Fill(new Rect(r.x + 10, r.y + 10, r.width - 20, 6), new Color(accent.r, accent.g, accent.b, usable ? 1f : 0.4f), 3);
+                Text(new Rect(r.x + 4, r.y + 20, r.width - 8, 30), s.Name, Layout.Font.Strong, Color.white, TextAnchor.MiddleCenter, true);
+                Text(new Rect(r.x, r.y + 52, r.width, 20), $"{Format.Number(s.ManaCost)} mana", Layout.Font.Small, enoughMana ? Muted : Palette.Damage, TextAnchor.MiddleCenter);
+                Text(new Rect(r.x, r.y + 74, r.width, 20), s.Target == "all" ? "Toute l'équipe" : "1 allié", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
+                if (cd > 0)
+                {
+                    Fill(r, new Color(0, 0, 0, 0.45f), 8);
+                    Text(new Rect(r.x, r.y + 30, r.width, 44), Format.Seconds(cd), Layout.Font.Banner, Palette.Hex("FF9D9D"), TextAnchor.MiddleCenter, true);
+                }
                 if (!_ctl.HasCast && _ctl.Selection.Selected != null && s.Id == "heal_single") Guide(r, "2");
                 KeyCap(r, BattleKeys.SkillLabel(i));
                 if (Hit(r)) _ctl.TapSkill(s);
@@ -209,7 +236,7 @@ namespace Healer.Client
         private void KeyCap(Rect card, string? label)
         {
             if (label == null) return;
-            var cap = new Rect(card.x + 6, card.y + 6, 24, 24);
+            var cap = new Rect(card.x + 8, card.y - 12, 24, 24);
             Fill(cap, new Color(0f, 0f, 0f, 0.6f), 5);
             Outline(cap, new Color(1f, 1f, 1f, 0.5f), 1, 5);
             Text(cap, label, Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, true);
@@ -236,15 +263,15 @@ namespace Healer.Client
             if (_ctl.Started) return;
             Fill(new Rect(-2000, -2000, 5000, 5000), new Color(0.03f, 0.04f, 0.09f, 0.86f), 0);
             float w = (float)Layout.GameW;
-            Text(new Rect(0, 130, w, 56), "Healer Game", 44, Color.white, TextAnchor.MiddleCenter, true);
-            Text(new Rect(0, 190, w, 30), "Soignez votre équipe face au " + _ctl.Battle.GetBossName(), Layout.Font.Body, Muted, TextAnchor.MiddleCenter);
-            var panel = new Rect(36, 250, w - 72, 260);
+            Text(new Rect(0, 70, w, 56), "Healer Game", 48, Color.white, TextAnchor.MiddleCenter, true);
+            Text(new Rect(0, 128, w, 30), "Soignez votre équipe face au " + _ctl.Battle.GetBossName(), Layout.Font.Strong, Muted, TextAnchor.MiddleCenter);
+            var panel = new Rect(w / 2 - 300, 180, 600, 260);
             Fill(panel, new Color(Panel.r, Panel.g, Panel.b, 0.96f), 14);
             Outline(panel, PanelStroke, 2, 14);
             string[] tips =
             {
-                "1  Touchez un allié pour le cibler",
-                "2  Touchez un sort pour le lancer sur lui",
+                "1  Cliquez (ou touchez) un allié pour le cibler",
+                "2  Cliquez (ou touchez) un sort pour le lancer",
                 "Soin de zone : sans cible, pour toute l'équipe",
                 "Bouclier : à poser AVANT l'attaque annoncée",
                 "Purge : retire le poison (phase 2)",
@@ -252,17 +279,17 @@ namespace Healer.Client
             };
             for (int i = 0; i < tips.Length; i++)
                 Text(new Rect(panel.x + 22, panel.y + 14 + i * 38, panel.width - 44, 34), tips[i], Layout.Font.Body, i < 2 ? Selected : Color.white, TextAnchor.MiddleLeft, i < 2);
-            var btn = new Rect(w / 2 - 120, 560, 240, 60);
-            Fill(btn, Palette.Hex("2F7D57"), 14);
-            Outline(btn, Palette.Heal, 3, 14);
+            var btn = new Rect(w / 2 - 120, 470, 240, 60);
+            Fill(btn, Palette.Hex("245C43"), 8);
+            Outline(btn, Palette.Hex("5FB98D"), 2, 8);
             Text(btn, "Jouer", 26, Color.white, TextAnchor.MiddleCenter, true);
             if (Keyboard.current != null)
             {
                 string sorts = string.Join(" ", new[] { 0, 1, 2, 3 }.Select(BattleKeys.SkillLabel));
-                Text(new Rect(0, 636, w, 24), "Clavier : 1-4 cibler · " + sorts + " sorts · Tab suivant", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
-                Text(new Rect(0, 660, w, 24), "Espace : jouer / pause · M : son", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
+                Text(new Rect(0, 556, w, 24), "Clavier : 1-4 cibler · " + sorts + " sorts · Tab suivant", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
+                Text(new Rect(0, 580, w, 24), "Espace : jouer / pause · M : son", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
             }
-            else Text(new Rect(0, 640, w, 24), "M : couper le son", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
+            else Text(new Rect(0, 560, w, 24), "Touchez Jouer pour commencer", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
             if (Hit(btn)) _ctl.StartFight();
         }
 
@@ -280,10 +307,10 @@ namespace Healer.Client
             Fill(full, new Color(0, 0, 0, 0.78f), 0);
             bool win = result == BattleResults.Victory;
             float w = (float)Layout.GameW;
-            Text(new Rect(0, 150, w, 54), win ? "Victoire !" : "Défaite…", 44, win ? Palette.Heal : Palette.Damage, TextAnchor.MiddleCenter, true);
+            Text(new Rect(0, 60, w, 54), win ? "Victoire !" : "Défaite…", 44, win ? Palette.Heal : Palette.Damage, TextAnchor.MiddleCenter, true);
 
             var s = _ctl.Stats;
-            var panel = new Rect(40, 224, w - 80, 236);
+            var panel = new Rect(w / 2 - 300, 130, 600, 236);
             Fill(panel, new Color(Panel.r, Panel.g, Panel.b, 0.96f), 14);
             Outline(panel, PanelStroke, 2, 14);
             string[] labels = { "Durée du combat", "Soins effectifs", "Dégâts encaissés", "dont absorbés par boucliers", "Sorts lancés", "Alliés K.O.", "Poisons purgés" };
@@ -299,9 +326,9 @@ namespace Healer.Client
                 Text(row, values[i], Layout.Font.Body, i == 5 && s.Deaths > 0 ? Palette.Damage : Palette.Heal, TextAnchor.MiddleRight, true);
             }
             if (!win)
-                Text(new Rect(40, 470, w - 80, 60), "Astuce : posez un Bouclier pendant l'annonce de l'attaque de zone,\net Purgez le poison en phase 2.", Layout.Font.Small, Muted, TextAnchor.UpperCenter);
+                Text(new Rect(w / 2 - 300, 376, 600, 50), "Astuce : posez un Bouclier pendant l'annonce de l'attaque de zone,\net Purgez le poison en phase 2.", Layout.Font.Small, Muted, TextAnchor.UpperCenter);
 
-            var btn = new Rect(w / 2 - 120, 560, 240, 56);
+            var btn = new Rect(w / 2 - 120, 450, 240, 56);
             Fill(btn, Palette.Hex("333652"), 12);
             Outline(btn, Palette.Hex("8A90B4"), 3, 12);
             Text(btn, "Recommencer", Layout.Font.Title, Color.white, TextAnchor.MiddleCenter, true);

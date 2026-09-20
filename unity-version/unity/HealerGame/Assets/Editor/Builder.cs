@@ -59,10 +59,10 @@ namespace Healer.EditorTools
         {
             PlayerSettings.companyName = Company;
             PlayerSettings.productName = Product;
-            PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
             PlayerSettings.fullScreenMode = FullScreenMode.Windowed;
-            PlayerSettings.defaultScreenWidth = 540;
-            PlayerSettings.defaultScreenHeight = 960;
+            PlayerSettings.defaultScreenWidth = 1280;
+            PlayerSettings.defaultScreenHeight = 720;
             PlayerSettings.resizableWindow = true;
             PlayerSettings.runInBackground = true;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
@@ -154,7 +154,7 @@ namespace Healer.EditorTools
                 PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
                 PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
                 PlayerSettings.SetManagedStrippingLevel(NamedBuildTarget.Android, ManagedStrippingLevel.Disabled);
-                PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+                PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
                 PlayerSettings.bundleVersion = "0.1.0";
                 EditorUserBuildSettings.buildAppBundle = false;
                 string dir = Path.Combine(ProjectRoot, "Builds", "Android");

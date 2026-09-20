@@ -97,7 +97,7 @@ namespace Healer.Combat.Tests
         }
 
         [Test]
-        public void Les_sorts_sont_dans_la_moitie_basse_de_l_ecran_zone_du_pouce() =>
+        public void Les_sorts_sont_dans_la_moitie_basse_de_l_ecran() =>
             Assert.That(Layout.Zones.Skills.Y, Is.GreaterThan(Layout.GameH / 2));
 
         [Test]

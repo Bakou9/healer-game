@@ -15,10 +15,10 @@ namespace Healer.Client
     {
         private const float BossDepth = 35f;
         private const float AllyDepth = 33f;
-        private const float BossFeetY = 262f;
-        private const float AllyFeetY = 334f;
-        private const float BossScale = 1.35f;
-        private const float AllyScale = 0.98f;
+        private const float BossFeetY = 322f;
+        private const float AllyFeetY = 386f;
+        private const float BossScale = 1.75f;
+        private const float AllyScale = 1.4f;
 
         private sealed class UnitView
         {
@@ -98,13 +98,20 @@ namespace Healer.Client
         private void BuildLights()
         {
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.48f, 0.5f, 0.62f);
+            RenderSettings.ambientLight = new Color(0.40f, 0.42f, 0.54f);
             var sun = new GameObject("Sun").AddComponent<Light>();
             sun.type = LightType.Directional;
-            sun.color = new Color(1f, 0.95f, 0.85f);
-            sun.intensity = 1.05f;
+            sun.color = new Color(1f, 0.9f, 0.78f);
+            sun.intensity = 1.25f;
             sun.transform.rotation = Quaternion.Euler(42f, 205f, 0f);
             sun.shadows = LightShadows.None;
+            // Contre-jour froid : détache les silhouettes du décor sombre.
+            var rim = new GameObject("RimLight").AddComponent<Light>();
+            rim.type = LightType.Directional;
+            rim.color = new Color(0.45f, 0.6f, 1f);
+            rim.intensity = 0.8f;
+            rim.transform.rotation = Quaternion.Euler(28f, 175f, 0f);
+            rim.shadows = LightShadows.None;
             _coreLight = new GameObject("CoreLight").AddComponent<Light>();
             _coreLight.type = LightType.Point;
             _coreLight.range = 9f;
@@ -114,12 +121,7 @@ namespace Healer.Client
 
         private void BuildBackdrop()
         {
-            const int h = 64;
-            var tex = new Texture2D(1, h, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
-            var top = Palette.Hex("090B13");
-            var mid = Palette.Hex("1C1A36");
-            for (int y = 0; y < h; y++) tex.SetPixel(0, y, Color.Lerp(mid, top, y / (float)(h - 1)));
-            tex.Apply();
+            var tex = PaintBackdrop(384, 216);
             var quad = new GameObject("Backdrop");
             quad.AddComponent<MeshFilter>().sharedMesh = QuadMesh();
             var mat = new Material(Shader.Find("Unlit/Texture")) { mainTexture = tex };
@@ -132,8 +134,71 @@ namespace Healer.Client
             halo.transform.localScale = new Vector3(0.7f, 0.5f, 1f);
             halo.AddComponent<MeshFilter>().sharedMesh = QuadMesh();
             var haloMat = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended")) { mainTexture = SoftDot(128) };
-            haloMat.SetColor("_TintColor", new Color(0.2f, 0.16f, 0.4f, 0.16f));
+            haloMat.SetColor("_TintColor", new Color(0.22f, 0.16f, 0.38f, 0.12f));
             halo.AddComponent<MeshRenderer>().sharedMaterial = haloMat;
+        }
+
+        /// <summary>
+        /// Décor peint par code : ruines sombres (piliers en silhouette, brume à l'horizon), sol de dalles en
+        /// perspective légère, lueur froide sous le combat. Aucune image importée (docs/ART_3D.md).
+        /// </summary>
+        private static Texture2D PaintBackdrop(int w, int h)
+        {
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var pixels = new Color[w * h];
+            var skyTop = Palette.Hex("080A12");
+            var skyLow = Palette.Hex("1E1C34");
+            var haze = Palette.Hex("4A3F66");
+            var floorNear = Palette.Hex("07080D");
+            var floorFar = Palette.Hex("17162A");
+            var pillar = Palette.Hex("0C0D18");
+            const float horizon = 0.6f; // fraction depuis le bas
+            float[] pillarX = { 0.09f, 0.26f, 0.74f, 0.91f };
+            float[] pillarW = { 0.03f, 0.022f, 0.022f, 0.03f };
+            for (int y = 0; y < h; y++)
+            {
+                float v = y / (float)(h - 1);
+                for (int x = 0; x < w; x++)
+                {
+                    float u = x / (float)(w - 1);
+                    Color c;
+                    if (v >= horizon)
+                    {
+                        float k = (v - horizon) / (1f - horizon);
+                        c = Color.Lerp(skyLow, skyTop, Mathf.Pow(k, 0.7f));
+                        float glow = Mathf.Exp(-Mathf.Pow((v - horizon) / 0.09f, 2f)) * Mathf.Exp(-Mathf.Pow((u - 0.5f) / 0.55f, 2f));
+                        c = Color.Lerp(c, haze, glow * 0.55f);
+                        for (int p = 0; p < pillarX.Length; p++)
+                        {
+                            float d = Mathf.Abs(u - pillarX[p]);
+                            if (d < pillarW[p])
+                            {
+                                float edge = Mathf.Clamp01((pillarW[p] - d) / 0.008f);
+                                var body = Color.Lerp(pillar, haze, glow * 0.5f);
+                                c = Color.Lerp(c, body, edge);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        float dy = horizon - v; // distance sous l'horizon
+                        float depth = Mathf.Clamp01(dy / horizon);
+                        c = Color.Lerp(floorFar, floorNear, Mathf.Pow(depth, 0.6f));
+                        // lueur froide sous le combat
+                        float sheen = Mathf.Exp(-(Mathf.Pow((u - 0.5f) / 0.42f, 2f) + Mathf.Pow((v - 0.36f) / 0.2f, 2f)));
+                        c = Color.Lerp(c, Palette.Hex("35315A"), sheen * 0.45f);
+                        // joints des dalles en perspective
+                        float dx = (u - 0.5f) * 1.78f / Mathf.Max(0.02f, dy);
+                        float lineA = Mathf.Abs(Mathf.Repeat(dx * 1.6f + 0.5f, 1f) - 0.5f) * dy;
+                        float lineB = Mathf.Abs(Mathf.Repeat(0.05f / Mathf.Max(0.02f, dy) * 4f, 1f) - 0.5f);
+                        if (lineA < 0.0035f || lineB < 0.02f) c = Color.Lerp(c, Palette.Hex("05060A"), 0.5f);
+                    }
+                    pixels[y * w + x] = c;
+                }
+            }
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return tex;
         }
 
         private static Mesh QuadMesh()
@@ -314,7 +379,7 @@ namespace Healer.Client
             bool bigAttack = telegraph != null && telegraph.Type == "bigAttack";
 
             // Boss.
-            var bp = WorldAt(Screen.width > 0 ? 240f : 240f, BossFeetY, BossDepth);
+            var bp = WorldAt((float)Layout.GameW / 2f, BossFeetY, BossDepth);
             float bossShake = bigAttack ? Mathf.Sin(t * 45f) * 0.06f : 0f;
             _bossHit = Mathf.Max(0f, _bossHit - dt * 4f);
             _bossStrike = Mathf.Max(0f, _bossStrike - dt * 3.2f);

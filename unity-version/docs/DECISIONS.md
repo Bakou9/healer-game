@@ -234,3 +234,13 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 ## D-041 — Raccourcis clavier PC
 - **Décision** : `BattleKeys` traduit les touches en gestes du contrôleur (mêmes `TapAlly` / `TapSkill` que le toucher, aucune règle ajoutée) ; pastilles affichées sur les cartes seulement si un clavier est présent. Détail dans `docs/TESTER_LE_JEU.md`.
 - **Équilibrage** : aucune règle ni valeur modifiée ; les gestes sont plus rapides au clavier, mais le bot de référence (500 ms) reste la borne de jeu attentif. Vérifié en jeu réel (Espace, 1, A → soin lancé sur le Garde) ; pas de test automatisé du clavier.
+
+## D-042 — Jeu en paysage, PC d'abord, mobile toujours compatible
+- **Décision (utilisateur)** : le jeu est pensé PC d'abord, en paysage ; il doit rester utilisable sur mobile : pas d'entrées trop complexes. Remplace la grille portrait 480×854 (D-013 / version Phaser) : `Layout` passe à **1280×720** (16:9), colonne centrale de 1000 px (cartes d'alliés, cible et mana, sorts). Fenêtre PC 1280×720 redimensionnable ; orientation mobile paysage.
+- **Garde-fous mobile conservés** : cibles ≥ 48 px, texte ≥ 14 px, tout jouable en un tap ; le clavier (D-041) n'est qu'un bonus, jamais requis. Textes du tutoriel : « cliquez (ou touchez) ».
+- **Tests** : les 114 tests du cœur passent ; seul le nom d'un test de mise en page a changé (« zone du pouce » → « moitié basse de l'écran »), ses assertions sont identiques. Golden inchangés (aucune règle de combat touchée). Équilibrage : aucun impact.
+- **À valider avec l'utilisateur** : `docs/UX.md` et la vision (« Android d'abord ») restent à mettre à jour ; un essai sur téléphone en paysage reste à faire (E11-T01).
+
+## D-043 — Reprise automatique et style graphique plus mature
+- **Reprise** : la pause déclenchée par la perte de focus de la fenêtre se lève seule au retour ; une pause volontaire du joueur n'est jamais levée automatiquement.
+- **Graphismes** : palette plus sourde, proportions adultes (tête plus petite, buste long, bras fins, regard en fente), armure métallique, décor de ruines sombres peint par code (piliers, brume, sol dallé), éclairage clé chaud + contre-jour froid, vignette d'ambiance, interface plus sobre (panneaux sombres, filets fins, or terni). À juger visuellement par l'utilisateur (D-030 « À préciser » : validation du style 3D).

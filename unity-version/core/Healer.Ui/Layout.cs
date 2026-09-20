@@ -32,15 +32,15 @@ namespace Healer.Ui
     }
 
     /// <summary>
-    /// Jetons de design et mise en page portrait de l'écran de combat (docs/UX.md, tickets E04-T02 et
-    /// E04-T03), en pixels LOGIQUES sur une toile de 480×854. Le client Unity adapte cette grille à
-    /// l'écran (Canvas Scaler) ; les règles UX (cibles ≥ 48 px, texte ≥ 14 px, marges de sécurité) sont
-    /// testées ici sans Unity. Port fidèle de src/ui/layout.ts.
+    /// Jetons de design et mise en page PAYSAGE de l'écran de combat (décision D-042 : PC d'abord, mobile
+    /// toujours compatible ; docs/UX.md, tickets E04-T02 et E04-T03), en pixels LOGIQUES sur une toile de
+    /// 1280×720 (16:9). Le client Unity adapte cette grille à l'écran ; les règles UX (cibles ≥ 48 px, texte
+    /// ≥ 14 px, marges de sécurité) sont testées ici sans Unity. La version Phaser gardait la grille portrait 480×854.
     /// </summary>
     public static class Layout
     {
-        public const double GameW = 480;
-        public const double GameH = 854;
+        public const double GameW = 1280;
+        public const double GameH = 720;
 
         /// <summary>Cible tactile minimale : règle UX « ≥ 48 px ».</summary>
         public const double MinTouch = 48;
@@ -64,19 +64,23 @@ namespace Healer.Ui
 
         /// <summary>Marges de sécurité (encoches, barres système) ; à vérifier sur appareil réel (E11-T01).</summary>
         public const double SafeTop = 8;
-        public const double SafeBottom = 40;
+        public const double SafeBottom = 16;
         public const double SafeSide = 12;
         public const double Gap = 8;
 
         /// <summary>Zones verticales de l'écran, de haut en bas (docs/UX.md §4).</summary>
         public static class Zones
         {
+            /// <summary>Colonne centrale de 1000 px : cartes et sorts y sont regroupés (lecture du regard sans balayer 1280 px).</summary>
+            public const double CenterX = 140;
+            public const double CenterW = 1000;
+
             public static readonly Rect TopBar = new Rect(0, SafeTop, GameW, 52);
-            public static readonly Rect Boss = new Rect(0, 64, GameW, 186);
-            public static readonly Rect Band = new Rect(SafeSide, 262, GameW - 2 * SafeSide, 66);
-            public static readonly Rect Team = new Rect(SafeSide, 340, GameW - 2 * SafeSide, 200);
-            public static readonly Rect Strip = new Rect(SafeSide, 552, GameW - 2 * SafeSide, 64);
-            public static readonly Rect Skills = new Rect(SafeSide, 632, GameW - 2 * SafeSide, 164);
+            public static readonly Rect Boss = new Rect(0, 64, GameW, 250);
+            public static readonly Rect Band = new Rect(CenterX, 322, CenterW, 44);
+            public static readonly Rect Team = new Rect(CenterX, 388, CenterW, 136);
+            public static readonly Rect Strip = new Rect(CenterX, 534, CenterW, 48);
+            public static readonly Rect Skills = new Rect(CenterX, 592, CenterW, 104);
 
             public static IReadOnlyList<(string name, Rect rect)> InOrder => new[]
             {
@@ -88,7 +92,7 @@ namespace Healer.Ui
         public static readonly Rect PauseButton = new Rect(GameW - SafeSide - MinTouch, SafeTop, MinTouch, MinTouch);
 
         /// <summary>Barre de PV du boss : s'arrête avant le bouton de pause pour ne pas le chevaucher.</summary>
-        public static readonly Rect BossHpBar = new Rect(SafeSide, SafeTop + 34, PauseButton.X - Gap - SafeSide, 14);
+        public static readonly Rect BossHpBar = new Rect(Zones.CenterX + 100, SafeTop + 34, 800, 14);
 
         /// <summary>Répartit `count` éléments égaux sur la largeur d'une zone, avec Gap entre eux.</summary>
         public static Rect[] SplitRow(Rect zone, int count)
