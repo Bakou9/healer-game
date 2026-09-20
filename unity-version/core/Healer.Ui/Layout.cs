@@ -91,6 +91,9 @@ namespace Healer.Ui
         /// <summary>Bouton de pause : cible tactile ≥ 48 px, en haut à droite.</summary>
         public static readonly Rect PauseButton = new Rect(GameW - SafeSide - MinTouch, SafeTop, MinTouch, MinTouch);
 
+        /// <summary>Boutons des écrans modaux (démarrage, bilan). Volontairement au-dessus de la mise en page : voir InputGate.</summary>
+        public static readonly Rect StartButton = new Rect(GameW / 2 - 120, 470, 240, 60);
+        public static readonly Rect RestartButton = new Rect(GameW / 2 - 120, 450, 240, 56);
         /// <summary>Barre de PV du boss : s'arrête avant le bouton de pause pour ne pas le chevaucher.</summary>
         public static readonly Rect BossHpBar = new Rect(Zones.CenterX + 100, SafeTop + 34, 800, 14);
 

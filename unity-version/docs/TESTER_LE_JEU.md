@@ -41,3 +41,12 @@ Menu **Healer** : synchroniser le contenu, configurer le projet, créer la scèn
 | `M` | Couper / rétablir le son |
 
 Les touches sont physiques (même position sur QWERTY et AZERTY) ; les pastilles sur les cartes affichent la lettre de votre disposition. Elles n'apparaissent pas sur mobile.
+
+## Tests automatisés
+
+| Commande | Ce qu'elle vérifie | Durée |
+|---|---|---|
+| `npm run check` | cohérence des specs + 157 tests du cœur (règles, golden, équilibrage, entrées, mise en page) | ~15 s |
+| `npm run e2e` | le vrai jeu Windows à la souris et au clavier (Jouer, cibler, sorts, pause, bilan, Recommencer) | ~2 min |
+
+Lancer `npm run e2e` sans toucher souris ni clavier.

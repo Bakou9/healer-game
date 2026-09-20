@@ -1,5 +1,6 @@
 using System.Linq;
 using Healer.Combat;
+using Healer.Ui;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -40,29 +41,37 @@ namespace Healer.Client
             if (kb == null || _ctl == null || _ctl.Battle == null) return;
 
             bool confirm = kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame;
-            if (!_ctl.Started)
-            {
-                if (confirm) _ctl.StartFight();
-                return;
-            }
-            if (_ctl.Battle.GetResult() != BattleResults.Ongoing)
-            {
-                if (confirm) _ctl.Restart();
-                return;
-            }
+            var state = _ctl.State;
 
-            if (kb.escapeKey.wasPressedThisFrame || kb.pKey.wasPressedThisFrame || confirm) _ctl.TogglePause();
-            if (_ctl.Paused) return;
+            // Toutes les touches passent par la même règle que la souris et le toucher (InputGate).
+            if (confirm) Run(InputGate.ConfirmAction(state));
+            if ((kb.escapeKey.wasPressedThisFrame || kb.pKey.wasPressedThisFrame) && InputGate.Allows(state, UiAction.TogglePause)) Run(UiAction.TogglePause);
 
+            state = _ctl.State;
             var allies = _ctl.Battle.GetAllies();
-            for (int i = 0; i < AllyKeys.Length && i < allies.Count; i++)
-                if (kb[AllyKeys[i]].wasPressedThisFrame || kb[NumpadKeys[i]].wasPressedThisFrame) _ctl.TapAlly(allies[i].Id);
+            if (InputGate.Allows(state, UiAction.TapAlly))
+            {
+                for (int i = 0; i < AllyKeys.Length && i < allies.Count; i++)
+                    if (kb[AllyKeys[i]].wasPressedThisFrame || kb[NumpadKeys[i]].wasPressedThisFrame) _ctl.TapAlly(allies[i].Id);
+                if (kb.tabKey.wasPressedThisFrame) CycleTarget(allies.ToList(), kb.shiftKey.isPressed ? -1 : 1);
+            }
 
-            if (kb.tabKey.wasPressedThisFrame) CycleTarget(allies.ToList(), kb.shiftKey.isPressed ? -1 : 1);
+            if (InputGate.Allows(state, UiAction.TapSkill))
+            {
+                var skills = _ctl.Skills;
+                for (int i = 0; i < SkillKeys.Length && i < skills.Count; i++)
+                    if (kb[SkillKeys[i]].wasPressedThisFrame) _ctl.TapSkill(skills[i]);
+            }
+        }
 
-            var skills = _ctl.Skills;
-            for (int i = 0; i < SkillKeys.Length && i < skills.Count; i++)
-                if (kb[SkillKeys[i]].wasPressedThisFrame) _ctl.TapSkill(skills[i]);
+        private void Run(UiAction action)
+        {
+            switch (action)
+            {
+                case UiAction.StartFight: _ctl.StartFight(); break;
+                case UiAction.TogglePause: _ctl.TogglePause(); break;
+                case UiAction.Restart: _ctl.Restart(); break;
+            }
         }
 
         private void CycleTarget(System.Collections.Generic.List<UnitState> allies, int step)

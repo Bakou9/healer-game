@@ -31,7 +31,14 @@ namespace Healer.Client
         /// <summary>Faux tant que le joueur n'a pas touché « Jouer » : la simulation ne tourne pas.</summary>
         public bool Started { get; private set; }
 
-        public void StartFight() => Started = true;
+        public void StartFight()
+        {
+            Started = true;
+            Debug.Log("[Healer] état : combat démarré");
+        }
+
+        /// <summary>État de l'écran pour les entrées (voir Healer.Ui.InputGate) : souris, toucher et clavier s'y plient.</summary>
+        public ScreenState State => InputGate.StateOf(Started, Paused, _battle != null && _battle.GetResult() != BattleResults.Ongoing);
 
         /// <summary>Met le jeu en pause quand la fenêtre perd le focus (on ne perd pas un combat en changeant de fenêtre).</summary>
         private void OnApplicationFocus(bool hasFocus)
@@ -95,12 +102,18 @@ namespace Healer.Client
 
         public void Restart()
         {
+            Debug.Log("[Healer] état : nouveau combat");
             StartBattle((uint)(Environment.TickCount & 0x7fffffff));
             Started = true;
             Restarted?.Invoke();
         }
 
-        public void TogglePause() { Paused = !Paused; _pausedByFocus = false; }
+        public void TogglePause()
+        {
+            Paused = !Paused;
+            _pausedByFocus = false;
+            Debug.Log(Paused ? "[Healer] état : pause" : "[Healer] état : reprise");
+        }
 
         private void Update()
         {
@@ -163,6 +176,9 @@ namespace Healer.Client
                     var skill = _content.Skills.FirstOrDefault(s => s.Id == e.SkillId);
                     string targets = e.TargetIds.Count > 1 ? "toute l'équipe" : AllyName(e.TargetIds.FirstOrDefault() ?? e.CasterId);
                     LastAction = $"{time}  {skill?.Name ?? e.SkillId} → {targets}";
+                    break;
+                case "battleEnded":
+                    Debug.Log("[Healer] état : combat terminé (" + e.Result + ")");
                     break;
                 case "bossAction":
                     LastAction = $"{time}  Le boss : {(e.Action == "bigAttack" ? "attaque de zone" : e.Action == "poison" ? "poison" : "attaque")}";

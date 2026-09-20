@@ -73,7 +73,8 @@ namespace Healer.Client
             GUI.Label(r, s, _label);
         }
 
-        private static bool Hit(Rect r) => GUI.Button(r, GUIContent.none, GUIStyle.none);
+        /// <summary>Zone cliquable. Passe par InputGate : hors de son état, un élément ne capte AUCUN clic (un écran modal recouvre les cartes).</summary>
+        private bool Hit(Rect r, UiAction action) => InputGate.Allows(_ctl.State, action) && GUI.Button(r, GUIContent.none, GUIStyle.none);
 
         private Texture2D? _vignette;
 
@@ -125,7 +126,7 @@ namespace Healer.Client
             Fill(pause, new Color(Panel.r, Panel.g, Panel.b, 0.85f), 8);
             Outline(pause, PanelStroke, 1.5f, 8);
             Text(pause, _ctl.Paused ? ">" : "II", Layout.Font.Banner, Color.white, TextAnchor.MiddleCenter, true);
-            if (Hit(pause)) _ctl.TogglePause();
+            if (Hit(pause, UiAction.TogglePause)) _ctl.TogglePause();
 
             var tele = b.GetTelegraph();
             var line = new Rect(0, (float)Layout.Zones.Boss.Y + 2, (float)Layout.GameW, 26);
@@ -175,7 +176,7 @@ namespace Healer.Client
                 }
                 if (!_ctl.HasCast && _ctl.Selection.Selected == null && a.Alive && a.Id == GuideAllyId(allies)) Guide(r, "1");
                 KeyCap(r, BattleKeys.AllyLabel(i));
-                if (Hit(r)) _ctl.TapAlly(a.Id);
+                if (Hit(r, UiAction.TapAlly)) _ctl.TapAlly(a.Id);
             }
         }
 
@@ -228,7 +229,7 @@ namespace Healer.Client
                 }
                 if (!_ctl.HasCast && _ctl.Selection.Selected != null && s.Id == "heal_single") Guide(r, "2");
                 KeyCap(r, BattleKeys.SkillLabel(i));
-                if (Hit(r)) _ctl.TapSkill(s);
+                if (Hit(r, UiAction.TapSkill)) _ctl.TapSkill(s);
             }
         }
 
@@ -279,7 +280,7 @@ namespace Healer.Client
             };
             for (int i = 0; i < tips.Length; i++)
                 Text(new Rect(panel.x + 22, panel.y + 14 + i * 38, panel.width - 44, 34), tips[i], Layout.Font.Body, i < 2 ? Selected : Color.white, TextAnchor.MiddleLeft, i < 2);
-            var btn = new Rect(w / 2 - 120, 470, 240, 60);
+            var btn = R(Layout.StartButton);
             Fill(btn, Palette.Hex("245C43"), 8);
             Outline(btn, Palette.Hex("5FB98D"), 2, 8);
             Text(btn, "Jouer", 26, Color.white, TextAnchor.MiddleCenter, true);
@@ -290,7 +291,7 @@ namespace Healer.Client
                 Text(new Rect(0, 580, w, 24), "Espace : jouer / pause · M : son", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
             }
             else Text(new Rect(0, 560, w, 24), "Touchez Jouer pour commencer", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
-            if (Hit(btn)) _ctl.StartFight();
+            if (Hit(btn, UiAction.StartFight)) _ctl.StartFight();
         }
 
         // ---- Fin de combat -----------------------------------------------------------------------
@@ -328,11 +329,11 @@ namespace Healer.Client
             if (!win)
                 Text(new Rect(w / 2 - 300, 376, 600, 50), "Astuce : posez un Bouclier pendant l'annonce de l'attaque de zone,\net Purgez le poison en phase 2.", Layout.Font.Small, Muted, TextAnchor.UpperCenter);
 
-            var btn = new Rect(w / 2 - 120, 450, 240, 56);
+            var btn = R(Layout.RestartButton);
             Fill(btn, Palette.Hex("333652"), 12);
             Outline(btn, Palette.Hex("8A90B4"), 3, 12);
             Text(btn, "Recommencer", Layout.Font.Title, Color.white, TextAnchor.MiddleCenter, true);
-            if (Hit(btn)) _ctl.Restart();
+            if (Hit(btn, UiAction.Restart)) _ctl.Restart();
         }
     }
 }

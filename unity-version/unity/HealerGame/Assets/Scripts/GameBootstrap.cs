@@ -12,6 +12,7 @@ namespace Healer.Client
     ///   -healer-shots 8,30,46   captures d'écran à ces secondes de combat (le bot de référence joue)
     ///   -healer-out DOSSIER     dossier des captures (défaut : Documents/…/captures)
     ///   -healer-speed 6         accélération du temps pendant les captures
+    ///   -healer-timescale 30    accélération du temps en jeu normal (tests de bout en bout : tools/unity-e2e.ps1)
     /// </summary>
     public sealed class GameBootstrap : MonoBehaviour
     {
@@ -37,6 +38,8 @@ namespace Healer.Client
 
             string[] args = Environment.GetCommandLineArgs();
             string Arg(string name) { int i = Array.IndexOf(args, name); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }
+            // Tests de bout en bout : accélère le temps sans faire jouer le bot (le combat se perd seul, sans joueur).
+            if (float.TryParse(Arg("-healer-timescale"), out var fast)) controller.TimeScale = fast;
             string shots = Arg("-healer-shots");
             if (shots != null)
             {

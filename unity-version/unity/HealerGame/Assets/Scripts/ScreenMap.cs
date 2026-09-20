@@ -4,24 +4,24 @@ using UnityEngine;
 namespace Healer.Client
 {
     /// <summary>
-    /// Correspondance entre la grille logique de l'interface (480×854, Healer.Ui.Layout) et l'écran réel,
-    /// avec bandes noires si le rapport d'aspect diffère. Sert à aligner la scène 3D sur les cartes de l'interface.
+    /// Correspondance entre la grille logique de l'interface (Healer.Ui.Layout) et l'écran réel, avec bandes
+    /// noires si le rapport d'aspect diffère. Le calcul est dans Healer.Ui.ScreenFit (pur, testé) ; ici on ne
+    /// fait que lire la taille de l'écran. Sert aussi à aligner la scène 3D sur les cartes de l'interface.
     /// </summary>
     public static class ScreenMap
     {
-        public static float Scale { get; private set; } = 1f;
-        public static float OffsetX { get; private set; }
-        public static float OffsetY { get; private set; }
+        private static ScreenFit _fit = new ScreenFit(Layout.GameW, Layout.GameH);
+        public static float Scale => (float)_fit.Scale;
+        public static float OffsetX => (float)_fit.OffsetX;
+        public static float OffsetY => (float)_fit.OffsetY;
 
-        public static void Refresh()
-        {
-            Scale = Mathf.Min(Screen.width / (float)Layout.GameW, Screen.height / (float)Layout.GameH);
-            OffsetX = (Screen.width - (float)Layout.GameW * Scale) * 0.5f;
-            OffsetY = (Screen.height - (float)Layout.GameH * Scale) * 0.5f;
-        }
+        public static void Refresh() => _fit = new ScreenFit(Screen.width, Screen.height);
 
         /// <summary>Point logique (y compté depuis le haut) vers coordonnées de viewport Unity (0..1, y depuis le bas).</summary>
-        public static Vector2 LogicalToViewport(float x, float y) =>
-            new Vector2((OffsetX + x * Scale) / Screen.width, 1f - (OffsetY + y * Scale) / Screen.height);
+        public static Vector2 LogicalToViewport(float x, float y)
+        {
+            var (sx, sy) = _fit.ToScreen(x, y);
+            return new Vector2((float)sx / Screen.width, 1f - (float)sy / Screen.height);
+        }
     }
 }
