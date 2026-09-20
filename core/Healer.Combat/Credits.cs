@@ -15,7 +15,7 @@ namespace Healer.Combat
         public string Url { get; set; } = "";
         /// <summary>À quoi la ressource sert dans le jeu (« Modèles des personnages »).</summary>
         public string UsedFor { get; set; } = "";
-        /// <summary>Dossier des fichiers sous Assets/Art/Imported (ressources seulement) : une ressource importée sans entrée est refusée par les tests.</summary>
+        /// <summary>Dossier des fichiers sous Assets/Resources/Imported (ressources seulement) : une ressource importée sans entrée est refusée par les tests.</summary>
         public string? Folder { get; set; }
         /// <summary>Vrai si nous avons modifié la ressource (à indiquer avec une licence CC-BY).</summary>
         public bool Modified { get; set; }
@@ -53,7 +53,7 @@ namespace Healer.Combat
             if (string.IsNullOrWhiteSpace(e.UsedFor)) list.Add("usage manquant");
             var allowed = isAsset ? AllowedLicenses : ToolLicenses;
             if (!allowed.Contains(e.License)) list.Add($"licence « {e.License} » non autorisée (autorisées : {string.Join(", ", allowed)})");
-            if (isAsset && string.IsNullOrWhiteSpace(e.Folder)) list.Add("dossier sous Assets/Art/Imported manquant");
+            if (isAsset && string.IsNullOrWhiteSpace(e.Folder)) list.Add("dossier sous Assets/Resources/Imported manquant");
             return list;
         }
     }

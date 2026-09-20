@@ -115,7 +115,7 @@ adopte un.
 ## Ressources externes et crédits (OBLIGATOIRE)
 
 Toute ressource externe (modèle, texture, son, police, plugin…) suit **`docs/ASSETS.md`** : licence libre autorisant l'usage commercial (CC0 de préférence),
-dossier `unity/HealerGame/Assets/Art/Imported/<Dossier>/`, fichier de licence conservé, et **une entrée dans `core/content/credits.json`** (auteur, licence
+dossier `unity/HealerGame/Assets/Resources/Imported/<Dossier>/`, fichier de licence conservé, et **une entrée dans `core/content/credits.json`** (auteur, licence
 SPDX, URL https, usage) : elle alimente l'écran « Crédits » du menu, et un test échoue si un dossier importé n'a pas d'entrée. Ne télécharger qu'avec l'accord
 explicite de l'utilisateur (nom, source, taille) ; ne jamais créer de compte ni saisir de mot de passe.
 

@@ -50,7 +50,7 @@ namespace Healer.Combat.Tests
         public void Chaque_dossier_importe_a_son_entree_dans_le_generique()
         {
             // Garde-fou : aucune ressource ne peut entrer dans le dépôt sans que son auteur soit remercié.
-            string imported = Path.GetFullPath(Path.Combine(Fixtures.CoreDir, "..", "unity", "HealerGame", "Assets", "Art", "Imported"));
+            string imported = Path.GetFullPath(Path.Combine(Fixtures.CoreDir, "..", "unity", "HealerGame", "Assets", "Resources", "Imported"));
             if (!Directory.Exists(imported)) { Assert.Pass("aucune ressource importée"); return; }
             var credited = Data().Assets.Select(a => a.Folder).ToHashSet();
             foreach (var dir in Directory.GetDirectories(imported).Select(Path.GetFileName))

@@ -134,13 +134,15 @@ namespace Healer.Client
         public sealed class Look
         {
             public readonly int WeaponTier, ArmorTier;
+            /// <summary>Modèle importé de l'arme, ou null (pièce dessinée par le code).</summary>
+            public readonly Healer.Combat.Progress.AppearanceModel? WeaponModel;
             private readonly IReadOnlyDictionary<string, string>? _weapon, _armor;
 
             public Look(Healer.Combat.Progress.AppearanceSet? set)
             {
                 WeaponTier = set?.TierOf("weapon") ?? 0;
                 ArmorTier = set?.TierOf("armor") ?? 0;
-                if (set != null && set.Parts.TryGetValue("weapon", out var w)) _weapon = w.Palette;
+                if (set != null && set.Parts.TryGetValue("weapon", out var w)) { _weapon = w.Palette; WeaponModel = w.Model; }
                 if (set != null && set.Parts.TryGetValue("armor", out var a)) _armor = a.Palette;
             }
 
@@ -151,6 +153,56 @@ namespace Healer.Client
 
             private static Color Pick(IReadOnlyDictionary<string, string>? palette, string role, string fallback) =>
                 Palette.Hex(palette != null && palette.TryGetValue(role, out var hex) ? hex : fallback);
+        }
+
+        /// <summary>
+        /// Remplace l'arme dessinée par le code par un modèle importé (D-062) si les données en désignent un et qu'il existe ; sinon la
+        /// version dessinée reste (jamais de héros sans arme). Le modèle est rattaché au pivot d'arme : il suit donc l'animation.
+        /// </summary>
+        private static void ApplyImportedWeapon(UnitRig rig, Look look)
+        {
+            var model = look.WeaponModel;
+            if (model == null || rig.Weapon == null) return;
+            var prefab = Resources.Load<GameObject>(model.Path);
+            if (prefab == null)
+            {
+                Debug.LogWarning("[Healer] modèle introuvable, version dessinée conservée : " + model.Path);
+                return;
+            }
+            // Destruction IMMÉDIATE : la scène liste ensuite les rendus du héros, elle ne doit pas y trouver des objets détruits en fin d'image.
+            for (int i = rig.Weapon.childCount - 1; i >= 0; i--) Object.DestroyImmediate(rig.Weapon.GetChild(i).gameObject);
+            var instance = Object.Instantiate(prefab, rig.Weapon, false);
+            instance.name = "ImportedWeapon";
+            instance.transform.localPosition = new Vector3((float)model.Offset[0], (float)model.Offset[1], (float)model.Offset[2]);
+            instance.transform.localEulerAngles = new Vector3((float)model.Euler[0], (float)model.Euler[1], (float)model.Euler[2]);
+            foreach (var collider in instance.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(collider);
+            // Taille normalisée : l'unité du fichier (mètres, centimètres…) ne compte pas, seule la taille voulue compte.
+            instance.transform.localScale = Vector3.one;
+            float longest = LongestSide(instance.transform);
+            if (longest > 0.0001f) instance.transform.localScale = Vector3.one * ((float)model.Size / longest);
+            Debug.Log("[Healer] modèle importé : " + model.Path);
+        }
+
+        /// <summary>Plus grande dimension d'un modèle dans son propre repère (mesures des maillages, sans dépendre de l'échelle des parents ni de l'unité du fichier).</summary>
+        private static float LongestSide(Transform root)
+        {
+            bool any = false;
+            var bounds = new Bounds();
+            void Add(Mesh? mesh, Transform node)
+            {
+                if (mesh == null) return;
+                var toRoot = root.worldToLocalMatrix * node.localToWorldMatrix;
+                var b = mesh.bounds;
+                for (int i = 0; i < 8; i++)
+                {
+                    var corner = b.center + Vector3.Scale(b.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                    var p = toRoot.MultiplyPoint3x4(corner);
+                    if (!any) { bounds = new Bounds(p, Vector3.zero); any = true; } else bounds.Encapsulate(p);
+                }
+            }
+            foreach (var mf in root.GetComponentsInChildren<MeshFilter>()) Add(mf.sharedMesh, mf.transform);
+            foreach (var sk in root.GetComponentsInChildren<SkinnedMeshRenderer>()) Add(sk.sharedMesh, sk.transform);
+            return any ? Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z)) : 0f;
         }
 
         /// <summary>Garde : armure de plaques noircies ; corne, crête et cape sang aux paliers supérieurs ; épée et bouclier runiques.</summary>
@@ -211,6 +263,7 @@ namespace Healer.Client
             var cape = Pivot(torso, "Cape", V(0, 0.42f, -0.36f)); rig.Cape = cape;
             Part(cape, "Cloth", MeshKit.Prism(4, 1.5f, 45f), at >= 1 ? red : cloth, V(0, -0.5f - 0.2f * at, -0.04f), S(0.95f, 1.0f + 0.35f * at, 0.06f));
             if (at >= 2) for (int i = -1; i <= 1; i++) Part(cape, "Tatter", MeshKit.Blade(), red, V(i * 0.32f, -1.55f, -0.05f), S(0.3f, 0.5f, 0.2f), V(180, 0, 0));
+            ApplyImportedWeapon(rig, look);
             rig.Capture();
             return root;
         }
@@ -261,6 +314,7 @@ namespace Healer.Client
                 if (wt >= 2) Part(bow, "Tip", MeshKit.Crystal(4), stringGlow, V(0, s * limb * 1.12f, 0.05f), S(0.1f, 0.24f, 0.1f));
             }
             Part(bow, "String", MeshKit.Cube(), wt >= 1 ? stringGlow : LitMaterial(H("D9D2C0")), V(0, 0, -0.14f), S(0.015f + 0.008f * wt, 2.0f + 0.4f * wt, 0.015f));
+            ApplyImportedWeapon(rig, look);
             rig.Capture();
             return root;
         }
@@ -313,6 +367,7 @@ namespace Healer.Client
             Part(armL, "Page", MeshKit.Cube(), runeGlow, V(-0.02f, -0.8f, 0.25f), S(0.2f, 0.26f, 0.02f));
             var cape = Pivot(torso, "Cape", V(0, 0.3f, -0.34f)); rig.Cape = cape;
             Part(cape, "Drape", MeshKit.Prism(4, 1.3f, 45f), trim, V(0, -0.8f, -0.03f), S(0.8f, 1.6f, 0.05f));
+            ApplyImportedWeapon(rig, look);
             rig.Capture();
             return root;
         }
@@ -361,6 +416,7 @@ namespace Healer.Client
             Part(armL, "Hand", MeshKit.Sphere(4, 5), skin, V(0, -0.78f, 0.04f), S(0.15f, 0.15f, 0.15f));
             var cape = Pivot(torso, "Cape", V(0, 0.3f, -0.34f)); rig.Cape = cape;
             Part(cape, "Drape", MeshKit.Prism(4, 1.4f, 45f), green, V(0, -0.8f, -0.03f), S(0.86f, 1.6f, 0.05f));
+            ApplyImportedWeapon(rig, look);
             rig.Capture();
             return root;
         }

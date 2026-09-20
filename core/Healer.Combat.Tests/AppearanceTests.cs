@@ -114,5 +114,38 @@ namespace Healer.Combat.Tests
                     for (int i = 1; i < slot.Value.Count; i++)
                         Assert.That(slot.Value[i].Palette.Values.SequenceEqual(slot.Value[i - 1].Palette.Values), Is.False, $"{ch.Key}/{slot.Key} : palier {i} identique au précédent");
         }
+
+        [Test]
+        public void Un_modele_importe_traverse_le_catalogue_jusqu_a_la_piece_et_change_la_signature()
+        {
+            var json = "{\"tiers\":[{\"minLevel\":0,\"name\":\"A\"}],\"characters\":{\"tank\":{\"weapon\":[{\"part\":\"tank.weapon\",\"palette\":{},\"model\":{\"path\":\"Imported/KayKit/Sword\",\"size\":0.5,\"offset\":[0,0.1,0],\"euler\":[90,0,0]}}]}}}";
+            var set = AppearanceCatalog.FromJson(json).Resolve("tank", null);
+            var model = set.Parts["weapon"].Model!;
+            Assert.That(model.Path, Is.EqualTo("Imported/KayKit/Sword"));
+            Assert.That(model.Size, Is.EqualTo(0.5));
+            Assert.That(model.Offset[1], Is.EqualTo(0.1));
+            Assert.That(model.Euler[0], Is.EqualTo(90));
+            Assert.That(model.ImportedFolder, Is.EqualTo("KayKit"));
+            Assert.That(set.Signature(), Does.Contain("#Imported/KayKit/Sword"));
+        }
+
+        [TestCase("Imported/KayKit/Sword", "KayKit")]
+        [TestCase("Imported/Quaternius/Monsters/Golem", "Quaternius")]
+        [TestCase("Parts/Blade", null)]
+        [TestCase("Blade", null)]
+        public void Le_dossier_importe_se_deduit_du_chemin_et_une_creation_de_l_equipe_n_en_a_pas(string path, string? folder) =>
+            Assert.That(new AppearanceModel { Path = path }.ImportedFolder, Is.EqualTo(folder));
+
+        [Test]
+        public void Chaque_modele_importe_du_catalogue_a_son_entree_dans_le_generique()
+        {
+            // Garde-fou : un modèle externe désigné par les données doit être crédité, même si les fichiers ne sont pas encore là.
+            var credited = CreditsData.FromJson(File.ReadAllText(Path.Combine(Fixtures.ContentDir, "credits.json"))).Assets.Select(a => a.Folder).ToHashSet();
+            foreach (var ch in Catalog().Characters)
+                foreach (var slot in ch.Value)
+                    foreach (var entry in slot.Value)
+                        if (entry.Model?.ImportedFolder is string folder)
+                            Assert.That(credited, Does.Contain(folder), $"{ch.Key}/{slot.Key} utilise « {entry.Model.Path} » sans entrée « {folder} » dans credits.json");
+        }
     }
 }

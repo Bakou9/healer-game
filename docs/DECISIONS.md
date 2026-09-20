@@ -401,7 +401,7 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 
 - **Date** : 2026-09-20 — **Statut** : Livrée (le mécanisme) ; aucune ressource externe importée pour l'instant.
 - **Demande** : un générique qui remercie tous les auteurs de toutes les ressources ajoutées à l'avenir.
-- **Mécanisme** : `core/content/credits.json` (ressources et outils : nom, auteur, licence SPDX, URL, usage, dossier, modifié) ; écran « Crédits » (bouton en bas à gauche du menu, défilement automatique en boucle, Échap pour revenir) ; `CreditsRoll` (lignes du générique) et `CreditPolicy` (licences autorisées, champs obligatoires) dans le cœur, testés (9 tests) ; **garde-fou** : un dossier sous `Assets/Art/Imported` sans entrée fait échouer les tests. Outils déjà remerciés : Unity, Json.NET. Règle ajoutée à `CLAUDE.md`. Scénario e2e K.
+- **Mécanisme** : `core/content/credits.json` (ressources et outils : nom, auteur, licence SPDX, URL, usage, dossier, modifié) ; écran « Crédits » (bouton en bas à gauche du menu, défilement automatique en boucle, Échap pour revenir) ; `CreditsRoll` (lignes du générique) et `CreditPolicy` (licences autorisées, champs obligatoires) dans le cœur, testés (9 tests) ; **garde-fou** : un dossier sous `Assets/Resources/Imported` sans entrée fait échouer les tests. Outils déjà remerciés : Unity, Json.NET. Règle ajoutée à `CLAUDE.md`. Scénario e2e K.
 - **Ressources** : voir `docs/ASSETS.md` (règles, candidats vérifiés, comparaison des voies de création sur mesure et de leurs coûts).
 - **À préciser avec l'utilisateur** : le nom à afficher pour la conception du jeu (« Créé par … ») : je n'invente aucun nom.
 - **Question B** : aucune règle ni valeur de jeu modifiée.
@@ -415,3 +415,10 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Charte artistique** : ajoutée à `docs/ART_3D.md` (formes, palette, budgets, modularité, comment ajouter un emplacement ou un héros, comment remplacer par des pièces importées).
 - **Limites** : trois paliers seulement ; pas de skins « cosmétiques » indépendants de l'équipement ni d'aperçu 3D dans l'Atelier (à faire) ; les talents ne changent pas l'apparence ; les pièces restent procédurales.
 - **Question B** : aucune règle ni valeur de jeu modifiée ; 748 tests et 11 scénarios e2e verts.
+
+## D-062 — Modèles importés : chaîne d'import de l'arme
+
+- **Date** : 2026-09-20 — **Statut** : Livrée et validée avec une pièce de test ; aucune ressource externe importée (téléchargement en attente d'accord).
+- **Mécanique** : une entrée d'apparence peut désigner un modèle (`AppearanceModel` : chemin sous Resources, taille voulue, décalage, rotation) qui remplace l'arme dessinée ; racine des ressources importées : `Assets/Resources/Imported/<Dossier>` (chargeables dans le jeu compilé ; ancien chemin Art/Imported abandonné). `ModelFactory` normalise la taille sur les maillages (l'unité FBX/OBJ/glTF ne compte pas), rattache le modèle au pivot d'arme et garde la version dessinée si le fichier manque. Garde-fous testés : un modèle « Imported/X/… » exige une entrée de crédit « X ». 3 tests ajoutés (traversée du catalogue, dossier déduit du chemin, crédit exigé).
+- **Bug trouvé par la vérification** : les pièces dessinées détruites en fin d'image restaient listées comme rendus du héros et faisaient échouer la scène à chaque image ; corrigé par une destruction immédiate.
+- **Question B** : aucune règle ni valeur de jeu modifiée.

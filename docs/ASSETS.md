@@ -5,7 +5,7 @@ Recherche du 2026-09-20 (les prix et conditions changent : revérifier avant tou
 ## Règles (obligatoires)
 
 1. **Licence** : CC0 de préférence ; CC-BY, MIT, OFL-1.1 et Apache-2.0 acceptées (voir `CreditPolicy.AllowedLicenses`). Jamais de licence « non commercial » (CC-BY-NC), ni « usage personnel », ni GPL : le jeu est prévu payant. Autre licence = accord de l'utilisateur d'abord.
-2. **Aucun fichier sans crédit** : une ressource importée dans `unity/HealerGame/Assets/Art/Imported/<Dossier>/` exige une entrée dans `core/content/credits.json` (nom, auteur, licence SPDX, URL https, usage, dossier, « modifié » si retouchée). Un test échoue sinon.
+2. **Aucun fichier sans crédit** : une ressource importée dans `unity/HealerGame/Assets/Resources/Imported/<Dossier>/` exige une entrée dans `core/content/credits.json` (nom, auteur, licence SPDX, URL https, usage, dossier, « modifié » si retouchée). Un test échoue sinon.
 3. **Générique** : l'écran « Crédits » du menu remercie chaque auteur, licence et source comprises. Il se met à jour tout seul avec `credits.json`.
 4. **Téléchargement** : uniquement après l'accord de l'utilisateur (nom, source, taille). Jamais de compte créé ni de mot de passe saisi par l'agent.
 5. **Conserver la preuve** : copier le fichier de licence du pack à côté des fichiers importés.
@@ -32,3 +32,16 @@ Recherche du 2026-09-20 (les prix et conditions changent : revérifier avant tou
 | **Générateurs IA 3D** (Meshy, Tripo, Rodin) | Meshy : gratuit (100 crédits/mois) mais sortie sous **CC BY 4.0** (attribution → nous la mettrions au générique), **20 $/mois** Pro (1 000 crédits, vous possédez les modèles) ; Tripo : gratuit non commercial, payant **≈ 20 $/mois** | Un modèle depuis un texte ou une image, en minutes | Maillage à nettoyer, pas de squelette (à passer par Mixamo), style difficile à garder cohérent d'un modèle à l'autre |
 | Générateurs de Unity AI | crédits Unity AI | Modèles, matériaux, sons « de remplacement » | Unity recommande de les traiter en **placeholders** à remplacer avant sortie |
 | Artiste (commande) | variable (non vérifié ici) | Qualité et cohérence | Coût et délai les plus élevés |
+
+## Importer une pièce : procédure (D-062)
+
+1. Déposer les fichiers (FBX ou OBJ ; glTF exige un paquet Unity en plus) dans `unity/HealerGame/Assets/Resources/Imported/<Dossier>/` avec le fichier de licence du pack.
+2. Ajouter l'entrée dans `core/content/credits.json` (auteur, licence SPDX autorisée, URL https, usage, `folder` = <Dossier>).
+3. Dans `core/content/appearance.json`, sur l'entrée voulue (héros, emplacement, palier), ajouter :
+   `"model": { "path": "Imported/<Dossier>/<fichier sans extension>", "size": 1.9, "offset": [0, 0, 0.3], "euler": [90, 0, 0] }`.
+   `size` = plus grande dimension voulue en unités du pivot (le client **normalise** : l'unité du fichier ne compte pas) ; `offset` et `euler` orientent le modèle par rapport à la main.
+4. Aujourd'hui **seul l'emplacement `weapon`** peut être remplacé par un modèle importé (rattaché au pivot d'arme : il suit l'animation) ; l'armure et les corps complets viendront avec un squelette commun (voir docs/ART_3D.md).
+5. Si le fichier est introuvable, le client garde la version dessinée par le code (avertissement dans le journal) : jamais de héros sans arme.
+6. Vérifier : les tests (`npm run check`) refusent un modèle « Imported/… » sans entrée de crédit, et un dossier importé sans entrée ; capture d'écran en jeu (`-healer-shots` avec `-healer-equip` pour forcer le palier).
+
+Chaîne validée le 2026-09-20 avec une lame OBJ créée par l'équipe (retirée ensuite) : chargement, normalisation de la taille, rattachement au pivot, animation.

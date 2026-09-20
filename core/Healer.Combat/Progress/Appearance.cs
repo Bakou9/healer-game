@@ -11,11 +11,39 @@ namespace Healer.Combat.Progress
         public string Name { get; set; } = "";
     }
 
-    /// <summary>Une version d'une pièce : quelle pièce 3D (identifiant pour le client) et quelle palette (rôle → couleur hexadécimale).</summary>
+    /// <summary>
+    /// Modèle 3D importé qui remplace la pièce dessinée par le code (D-062). Path = chemin sous Assets/Resources sans extension.
+    /// Un chemin « Imported/&lt;Dossier&gt;/… » désigne une ressource externe : son dossier doit être crédité dans credits.json.
+    /// Un chemin « Parts/… » désigne une création de l'équipe (pas de crédit).
+    /// </summary>
+    public sealed class AppearanceModel
+    {
+        public string Path { get; set; } = "";
+        /// <summary>Taille voulue du modèle (sa plus grande dimension, en unités locales du pivot). Le client normalise le fichier importé : FBX, glTF et OBJ n'ont pas la même unité.</summary>
+        public double Size { get; set; } = 1;
+        /// <summary>Décalage local (x, y, z) par rapport au pivot de l'emplacement.</summary>
+        public double[] Offset { get; set; } = new double[] { 0, 0, 0 };
+        /// <summary>Rotation locale en degrés (x, y, z).</summary>
+        public double[] Euler { get; set; } = new double[] { 0, 0, 0 };
+
+        /// <summary>Dossier de la ressource externe (« Imported/KayKit/Knight » → « KayKit »), ou null si le modèle est une création de l'équipe.</summary>
+        public string? ImportedFolder
+        {
+            get
+            {
+                var parts = Path.Split('/');
+                return parts.Length >= 3 && parts[0] == "Imported" ? parts[1] : null;
+            }
+        }
+    }
+
+    /// <summary>Une version d'une pièce : quelle pièce 3D (identifiant pour le client), quelle palette (rôle → couleur hexadécimale) et, facultativement, un modèle importé.</summary>
     public sealed class AppearanceEntry
     {
         public string Part { get; set; } = "";
         public Dictionary<string, string> Palette { get; set; } = new Dictionary<string, string>();
+        /// <summary>Si présent, ce modèle remplace la pièce dessinée par le code ; s'il est introuvable, le client garde la version dessinée.</summary>
+        public AppearanceModel? Model { get; set; }
     }
 
     /// <summary>
@@ -54,7 +82,7 @@ namespace Healer.Combat.Progress
                 int level = loadout?.LevelOf(characterId + "_" + slot) ?? 0;
                 int tier = TierOf(level);
                 var entry = versions[System.Math.Min(tier, versions.Count - 1)];
-                set.Parts[slot] = new AppearancePart(entry.Part, tier, TierName(level), entry.Palette);
+                set.Parts[slot] = new AppearancePart(entry.Part, tier, TierName(level), entry.Palette, entry.Model);
             }
             return set;
         }
@@ -67,9 +95,10 @@ namespace Healer.Combat.Progress
         public int Tier { get; }
         public string TierName { get; }
         public IReadOnlyDictionary<string, string> Palette { get; }
-        public AppearancePart(string part, int tier, string tierName, IReadOnlyDictionary<string, string> palette)
+        public AppearanceModel? Model { get; }
+        public AppearancePart(string part, int tier, string tierName, IReadOnlyDictionary<string, string> palette, AppearanceModel? model = null)
         {
-            Part = part; Tier = tier; TierName = tierName; Palette = palette;
+            Part = part; Tier = tier; TierName = tierName; Palette = palette; Model = model;
         }
     }
 
@@ -83,6 +112,6 @@ namespace Healer.Combat.Progress
         public int TierOf(string slot) => Parts.TryGetValue(slot, out var p) ? p.Tier : 0;
 
         /// <summary>Signature stable (personnage, pièces et paliers) : change si et seulement si l'apparence change.</summary>
-        public string Signature() => CharacterId + ":" + string.Join(",", Parts.OrderBy(k => k.Key).Select(k => k.Key + "=" + k.Value.Part + "@" + k.Value.Tier));
+        public string Signature() => CharacterId + ":" + string.Join(",", Parts.OrderBy(k => k.Key).Select(k => k.Key + "=" + k.Value.Part + "@" + k.Value.Tier + (k.Value.Model != null ? "#" + k.Value.Model.Path : "")));
     }
 }
