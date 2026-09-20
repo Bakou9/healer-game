@@ -1,15 +1,18 @@
+500ms focusMarked dps1
+500ms skillUsed healer shield -> [dps1]
+500ms shielded dps1 260
 1600ms bossDamaged par tank 23
 1600ms bossDamaged par dps1 138 CRIT
-1600ms bossDamaged par dps2 120 CRIT [magic]
-2000ms bossAction attack
-2000ms unitDamaged dps2 29 (absorbé 0)
+1600ms bossDamaged par dps2 52 [magic]
+2000ms bossAction focusAttack
+2000ms unitDamaged dps1 0 (absorbé 110)
 3200ms bossDamaged par tank 23
 3200ms bossDamaged par dps1 61
 3200ms bossDamaged par dps2 52 [magic]
 4000ms bossAction poison
-4000ms effectApplied dps1 venom
-4000ms skillUsed healer purge -> [dps1]
-4000ms effectEnded dps1 venom cleansed
+4000ms effectApplied tank venom
+4000ms skillUsed healer purge -> [tank]
+4000ms effectEnded tank venom cleansed
 4800ms bossDamaged par tank 23
 4800ms bossDamaged par dps1 61
 4800ms bossDamaged par dps2 52 [magic]
@@ -24,26 +27,24 @@
 8000ms bossAction poison
 8000ms effectApplied tank venom
 9000ms effectTick tank venom 30 (absorbé 0) [poison]
-9000ms skillUsed healer shield -> [dps2]
-9000ms shielded dps2 260
+9000ms skillUsed healer shield -> [tank]
+9000ms shielded tank 260
 9500ms skillUsed healer purge -> [tank]
 9500ms effectEnded tank venom cleansed
 9600ms bossDamaged par tank 23
 9600ms bossDamaged par dps1 61
 9600ms bossDamaged par dps2 52 [magic]
 10000ms bossAction bigAttack zone
-10000ms unitDamaged tank 28 (absorbé 0)
-10000ms unitDamaged dps1 64 (absorbé 0)
-10000ms unitDamaged dps2 0 (absorbé 66)
-10000ms unitDamaged healer 60 (absorbé 0)
-10000ms castStarted healer heal_single 1000ms
-11000ms skillUsed healer heal_single -> [dps1]
-11000ms healed dps1 64
+10000ms unitDamaged tank 0 (absorbé 8)
+10000ms unitDamaged dps1 0 (absorbé 38)
+10000ms unitDamaged dps2 40 (absorbé 0)
+10000ms unitDamaged healer 34 (absorbé 0)
+10500ms focusMarked dps1
 11200ms bossDamaged par tank 23
 11200ms bossDamaged par dps1 61
 11200ms bossDamaged par dps2 52 [magic]
-12000ms bossAction attack
-12000ms unitDamaged tank 1 (absorbé 0)
+12000ms bossAction focusAttack
+12000ms unitDodged dps1
 12800ms bossDamaged par tank 23
 12800ms bossDamaged par dps1 61
 12800ms bossDamaged par dps2 52 [magic]
@@ -56,82 +57,75 @@
 14500ms effectEnded dps1 venom cleansed
 16000ms bossDamaged par tank 23
 16000ms bossDamaged par dps1 61
-16000ms bossDamaged par dps2 120 CRIT [magic]
+16000ms bossDamaged par dps2 52 [magic]
 16000ms bossAction attack
-16000ms unitDamaged tank 1 (absorbé 0)
+16000ms unitDamaged tank 0 (absorbé 1)
 17600ms bossDamaged par tank 23
 17600ms bossDamaged par dps1 61
-17600ms bossDamaged par dps2 120 CRIT [magic]
+17600ms bossDamaged par dps2 52 [magic]
 18000ms bossAction poison
 18000ms effectApplied tank venom
-19000ms effectTick tank venom 30 (absorbé 0) [poison]
-19000ms skillUsed healer shield -> [healer]
-19000ms shielded healer 260
+19000ms effectTick tank venom 0 (absorbé 30) [poison]
+19000ms skillUsed healer shield -> [dps2]
+19000ms shielded dps2 260
 19200ms bossDamaged par tank 23
-19200ms bossDamaged par dps1 61
+19200ms bossDamaged par dps1 138 CRIT
 19200ms bossDamaged par dps2 52 [magic]
 19500ms skillUsed healer purge -> [tank]
 19500ms effectEnded tank venom cleansed
 20000ms bossAction bigAttack zone
-20000ms unitDamaged tank 28 (absorbé 0)
-20000ms unitDamaged dps1 64 (absorbé 0)
-20000ms unitDamaged dps2 0 (absorbé 66)
-20000ms unitDamaged healer 0 (absorbé 60)
-20000ms castStarted healer heal_single 1000ms
+20000ms unitDamaged tank 0 (absorbé 8)
+20000ms unitDamaged dps1 0 (absorbé 38)
+20000ms unitDamaged dps2 0 (absorbé 40)
+20000ms unitDamaged healer 34 (absorbé 0)
+20500ms focusMarked dps1
 20800ms bossDamaged par tank 23
 20800ms bossDamaged par dps1 61
 20800ms bossDamaged par dps2 52 [magic]
-21000ms skillUsed healer heal_single -> [dps1]
-21000ms healed dps1 64
-22000ms bossAction attack
-22000ms unitDamaged dps2 0 (absorbé 29)
+22000ms bossAction focusAttack
+22000ms unitDodged dps1
 22400ms bossDamaged par tank 23
-22400ms bossDamaged par dps1 138 CRIT
+22400ms bossDamaged par dps1 61
 22400ms bossDamaged par dps2 52 [magic]
 24000ms bossDamaged par tank 23
-24000ms bossDamaged par dps1 61
-24000ms bossDamaged par dps2 120 CRIT [magic]
+24000ms bossDamaged par dps1 138 CRIT
+24000ms bossDamaged par dps2 52 [magic]
 24000ms bossAction poison
-24000ms effectApplied dps1 venom
-24500ms skillUsed healer purge -> [dps1]
-24500ms effectEnded dps1 venom cleansed
+24000ms effectApplied tank venom
+24500ms skillUsed healer purge -> [tank]
+24500ms effectEnded tank venom cleansed
 25600ms bossDamaged par tank 23
-25600ms bossDamaged par dps1 61
+25600ms bossDamaged par dps1 138 CRIT
 25600ms bossDamaged par dps2 52 [magic]
 26000ms bossAction attack
-26000ms unitDamaged dps1 27 (absorbé 0)
+26000ms unitDamaged dps2 0 (absorbé 16)
 27200ms bossDamaged par tank 23
 27200ms bossDamaged par dps1 61
 27200ms bossDamaged par dps2 52 [magic]
 28000ms bossAction poison
 28000ms effectApplied dps2 venom
 28800ms bossDamaged par tank 23
-28800ms bossDamaged par dps1 61
+28800ms bossDamaged par dps1 138 CRIT
 28800ms bossDamaged par dps2 52 [magic]
 29000ms effectTick dps2 venom 0 (absorbé 30) [poison]
-29000ms skillUsed healer shield -> [tank]
-29000ms shielded tank 260
+29000ms skillUsed healer shield -> [healer]
+29000ms shielded healer 260
 29500ms skillUsed healer purge -> [dps2]
 29500ms effectEnded dps2 venom cleansed
 30000ms bossAction bigAttack zone
-30000ms unitDamaged tank 0 (absorbé 28)
-30000ms unitDamaged dps1 64 (absorbé 0)
-30000ms unitDamaged dps2 0 (absorbé 66)
-30000ms unitDamaged healer 0 (absorbé 97) CRIT
-30000ms castStarted healer heal_single 1000ms
+30000ms unitDamaged tank 0 (absorbé 8)
+30000ms unitDamaged dps1 0 (absorbé 38)
+30000ms unitDamaged dps2 0 (absorbé 40)
+30000ms unitDamaged healer 0 (absorbé 34)
 30400ms bossDamaged par tank 23
 30400ms bossDamaged par dps1 61
 30400ms bossDamaged par dps2 52 [magic]
-31000ms skillUsed healer heal_single -> [dps1]
-31000ms healed dps1 91
+30500ms focusMarked healer
 32000ms bossDamaged par tank 23
-32000ms bossDamaged par dps1 61
+32000ms bossDamaged par dps1 138 CRIT
 32000ms bossDamaged par dps2 52 [magic]
-32000ms bossAction attack
-32000ms unitDamaged dps2 26 (absorbé 3)
-32000ms castStarted healer heal_single 1000ms
-33000ms skillUsed healer heal_single -> [dps2]
-33000ms healed dps2 55
+32000ms bossAction focusAttack
+32000ms unitDamaged healer 0 (absorbé 106)
 33600ms bossDamaged par tank 23
 33600ms bossDamaged par dps1 61
 33600ms bossDamaged par dps2 52 [magic]
@@ -143,259 +137,276 @@
 35200ms bossDamaged par dps1 61
 35200ms bossDamaged par dps2 52 [magic]
 36000ms bossAction attack
-36000ms unitDamaged tank 0 (absorbé 14) CRIT
+36000ms unitDamaged tank 0 (absorbé 1)
 36800ms bossDamaged par tank 23
-36800ms bossDamaged par dps1 138 CRIT
+36800ms bossDamaged par dps1 61
 36800ms bossDamaged par dps2 52 [magic]
 38000ms bossAction poison
-38000ms effectApplied dps2 venom
+38000ms effectApplied tank venom
 38400ms bossDamaged par tank 23
 38400ms bossDamaged par dps1 61
 38400ms bossDamaged par dps2 120 CRIT [magic]
-39000ms effectTick dps2 venom 30 (absorbé 0) [poison]
-39000ms skillUsed healer shield -> [tank]
-39000ms shielded tank 260
-39500ms skillUsed healer purge -> [dps2]
-39500ms effectEnded dps2 venom cleansed
+39000ms effectTick tank venom 0 (absorbé 30) [poison]
+39000ms skillUsed healer shield -> [healer]
+39000ms shielded healer 260
+39500ms skillUsed healer purge -> [tank]
+39500ms effectEnded tank venom cleansed
 40000ms bossDamaged par tank 23
-40000ms bossDamaged par dps1 61
+40000ms bossDamaged par dps1 138 CRIT
 40000ms bossDamaged par dps2 52 [magic]
 40000ms bossAction bigAttack zone
-40000ms unitDamaged tank 0 (absorbé 28)
-40000ms unitDamaged dps1 64 (absorbé 0)
-40000ms unitDamaged dps2 66 (absorbé 0)
-40000ms unitDamaged healer 0 (absorbé 60)
-40500ms castStarted healer heal_single 1000ms
-41500ms skillUsed healer heal_single -> [dps2]
-41500ms healed dps2 96
+40000ms unitDamaged tank 0 (absorbé 8)
+40000ms unitDamaged dps1 26 (absorbé 36) CRIT
+40000ms unitDamaged dps2 0 (absorbé 40)
+40000ms unitDamaged healer 0 (absorbé 34)
+40500ms focusMarked healer
 41600ms bossDamaged par tank 23
 41600ms bossDamaged par dps1 61
 41600ms bossDamaged par dps2 52 [magic]
-42000ms bossAction attack
-42000ms unitDamaged healer 0 (absorbé 23)
+42000ms bossAction focusAttack
+42000ms unitDamaged healer 0 (absorbé 106)
 43200ms bossDamaged par tank 23
-43200ms bossDamaged par dps1 138 CRIT
+43200ms bossDamaged par dps1 61
 43200ms bossDamaged par dps2 52 [magic]
 43200ms bossPhaseChanged 1 Marée toxique
-43500ms castStarted healer heal_single 1000ms
-44500ms skillUsed healer heal_single -> [dps1]
-44500ms healed dps1 64
 44800ms bossDamaged par tank 23
-44800ms bossDamaged par dps1 61
+44800ms bossDamaged par dps1 138 CRIT
 44800ms bossDamaged par dps2 52 [magic]
 45000ms bossAction poison
 45000ms effectApplied dps1 venom
-45500ms skillUsed healer purge -> [dps1]
-45500ms effectEnded dps1 venom cleansed
+45000ms skillUsed healer purge -> [dps1]
+45000ms effectEnded dps1 venom cleansed
 46400ms bossDamaged par tank 23
-46400ms bossDamaged par dps1 61
+46400ms bossDamaged par dps1 138 CRIT
 46400ms bossDamaged par dps2 52 [magic]
 46800ms bossAction poison
-46800ms effectApplied dps1 venom
-47800ms effectTick dps1 venom 30 (absorbé 0) [poison]
+46800ms effectApplied tank venom
+47100ms focusMarked healer
+47800ms effectTick tank venom 0 (absorbé 30) [poison]
 48000ms bossDamaged par tank 23
 48000ms bossDamaged par dps1 61
 48000ms bossDamaged par dps2 52 [magic]
-48600ms bossAction attack
-48600ms unitDamaged dps1 27 (absorbé 0)
-48800ms effectTick dps1 venom 30 (absorbé 0) [poison]
-49000ms castStarted healer heal_single 1000ms
+48600ms bossAction focusAttack
+48600ms unitDamaged healer 0 (absorbé 106)
+48800ms effectTick tank venom 0 (absorbé 30) [poison]
+49000ms skillUsed healer shield -> [healer]
+49000ms shielded healer 260
 49600ms bossDamaged par tank 23
-49600ms bossDamaged par dps1 138 CRIT
+49600ms bossDamaged par dps1 61
 49600ms bossDamaged par dps2 52 [magic]
-49800ms effectTick dps1 venom 30 (absorbé 0) [poison]
-50000ms skillUsed healer heal_single -> [dps1]
-50000ms healed dps1 117
+49800ms effectTick tank venom 0 (absorbé 30) [poison]
+50000ms skillUsed healer purge -> [tank]
+50000ms effectEnded tank venom cleansed
 50400ms bossAction bigAttack zone
-50400ms unitDamaged tank 0 (absorbé 28)
-50400ms unitDamaged dps1 64 (absorbé 0)
-50400ms unitDamaged dps2 66 (absorbé 0)
-50400ms unitDamaged healer 40 (absorbé 20)
-50500ms skillUsed healer purge -> [dps1]
-50500ms effectEnded dps1 venom cleansed
+50400ms unitDamaged tank 0 (absorbé 8)
+50400ms unitDamaged dps1 38 (absorbé 0)
+50400ms unitDamaged dps2 0 (absorbé 40)
+50400ms unitDamaged healer 0 (absorbé 34)
+50500ms castStarted healer heal_single 1000ms
 51200ms bossDamaged par tank 23
 51200ms bossDamaged par dps1 138 CRIT
 51200ms bossDamaged par dps2 52 [magic]
+51500ms skillUsed healer heal_single -> [dps1]
+51500ms healed dps1 64
 52200ms bossAction poison
-52200ms effectApplied tank venom
+52200ms effectApplied dps1 venom
 52800ms bossDamaged par tank 23
-52800ms bossDamaged par dps1 138 CRIT
+52800ms bossDamaged par dps1 61
 52800ms bossDamaged par dps2 52 [magic]
-53200ms effectTick tank venom 0 (absorbé 30) [poison]
-53500ms castStarted healer heal_single 1000ms
+53200ms effectTick dps1 venom 30 (absorbé 0) [poison]
 54000ms bossAction poison
-54000ms effectApplied dps2 venom
-54200ms effectTick tank venom 0 (absorbé 30) [poison]
+54000ms effectApplied dps1 venom
 54400ms bossDamaged par tank 23
 54400ms bossDamaged par dps1 138 CRIT
 54400ms bossDamaged par dps2 52 [magic]
-54500ms skillUsed healer heal_single -> [healer]
-54500ms healed healer 100
-55000ms effectTick dps2 venom 30 (absorbé 0) [poison]
-55200ms effectTick tank venom 0 (absorbé 30) [poison]
-55500ms skillUsed healer purge -> [tank]
-55500ms effectEnded tank venom cleansed
+55000ms effectTick dps1 venom 30 (absorbé 0) [poison]
+55000ms skillUsed healer purge -> [dps1]
+55000ms effectEnded dps1 venom cleansed
 55800ms bossAction poison
-55800ms effectApplied dps1 venom
-56000ms effectTick dps2 venom 30 (absorbé 0) [poison]
+55800ms effectApplied tank venom
 56000ms bossDamaged par tank 23
-56000ms bossDamaged par dps1 61
+56000ms bossDamaged par dps1 138 CRIT
 56000ms bossDamaged par dps2 52 [magic]
-56800ms effectTick dps1 venom 30 (absorbé 0) [poison]
-57000ms effectTick dps2 venom 30 (absorbé 0) [poison]
+56100ms focusMarked healer
+56800ms effectTick tank venom 0 (absorbé 30) [poison]
 57600ms bossDamaged par tank 23
-57600ms bossDamaged par dps1 61
+57600ms bossDamaged par dps1 138 CRIT
 57600ms bossDamaged par dps2 52 [magic]
-57600ms bossAction attack
-57600ms unitDamaged dps2 29 (absorbé 0)
-57800ms effectTick dps1 venom 30 (absorbé 0) [poison]
-58000ms effectTick dps2 venom 30 (absorbé 0) [poison]
-58500ms castStarted healer heal_single 1000ms
-58800ms effectTick dps1 venom 30 (absorbé 0) [poison]
-59000ms effectTick dps2 venom 30 (absorbé 0) [poison]
+57600ms bossAction focusAttack
+57600ms unitDamaged healer 0 (absorbé 106)
+57800ms effectTick tank venom 0 (absorbé 30) [poison]
+58000ms skillUsed healer shield -> [dps1]
+58000ms shielded dps1 260
+58800ms effectTick tank venom 22 (absorbé 8) [poison]
 59200ms bossDamaged par tank 23
 59200ms bossDamaged par dps1 61
 59200ms bossDamaged par dps2 52 [magic]
 59400ms bossAction bigAttack zone
-59400ms unitDamaged tank 0 (absorbé 28)
-59400ms unitDamaged dps1 64 (absorbé 0)
-59400ms unitDamaged dps2 66 (absorbé 0)
-59400ms unitDamaged healer 60 (absorbé 0)
-59500ms skillUsed healer heal_single -> [dps2]
-59500ms healed dps2 170
-59800ms effectTick dps1 venom 30 (absorbé 0) [poison]
-60000ms effectTick dps2 venom 30 (absorbé 0) [poison]
-60500ms skillUsed healer purge -> [dps1]
-60500ms effectEnded dps1 venom cleansed
+59400ms unitDamaged tank 8 (absorbé 0)
+59400ms unitDamaged dps1 0 (absorbé 38)
+59400ms unitDamaged dps2 0 (absorbé 40)
+59400ms unitDamaged healer 0 (absorbé 34)
+59800ms effectTick tank venom 30 (absorbé 0) [poison]
+60000ms skillUsed healer purge -> [tank]
+60000ms effectEnded tank venom cleansed
 60800ms bossDamaged par tank 23
 60800ms bossDamaged par dps1 61
 60800ms bossDamaged par dps2 52 [magic]
-61000ms effectTick dps2 venom 30 (absorbé 0) [poison]
 61200ms bossAction poison
 61200ms effectApplied tank venom
-62000ms effectTick dps2 venom 30 (absorbé 0) [poison]
-62200ms effectTick tank venom 0 (absorbé 30) [poison]
+62200ms effectTick tank venom 30 (absorbé 0) [poison]
 62400ms bossDamaged par tank 23
 62400ms bossDamaged par dps1 61
 62400ms bossDamaged par dps2 52 [magic]
-63000ms effectTick dps2 venom 30 (absorbé 0) [poison]
-63000ms effectEnded dps2 venom expired
 63000ms bossAction poison
 63000ms effectApplied tank venom
-63500ms castStarted healer heal_single 1000ms
-64000ms effectTick tank venom 0 (absorbé 30) [poison]
+64000ms effectTick tank venom 30 (absorbé 0) [poison]
 64000ms bossDamaged par tank 23
 64000ms bossDamaged par dps1 61
 64000ms bossDamaged par dps2 52 [magic]
-64500ms skillUsed healer heal_single -> [dps2]
-64500ms healed dps2 170
+64000ms castStarted healer heal_single 1000ms
 64800ms bossAction poison
-64800ms effectApplied tank venom
-65500ms skillUsed healer purge -> [tank]
-65500ms effectEnded tank venom cleansed
+64800ms effectApplied dps2 venom
+65000ms skillUsed healer heal_single -> [tank]
+65000ms healed tank 151
+65000ms effectTick tank venom 30 (absorbé 0) [poison]
+65000ms skillUsed healer purge -> [tank]
+65000ms effectEnded tank venom cleansed
+65100ms focusMarked dps2
 65600ms bossDamaged par tank 23
 65600ms bossDamaged par dps1 61
 65600ms bossDamaged par dps2 52 [magic]
-66600ms bossAction attack
-66600ms unitDamaged tank 0 (absorbé 1)
+65800ms effectTick dps2 venom 16 (absorbé 14) [poison]
+66000ms skillUsed healer shield -> [dps2]
+66000ms shielded dps2 260
+66500ms castStarted healer heal_single 1000ms
+66600ms bossAction focusAttack
+66600ms unitDamaged dps2 0 (absorbé 112)
+66800ms effectTick dps2 venom 0 (absorbé 30) [poison]
 67200ms bossDamaged par tank 23
 67200ms bossDamaged par dps1 61
 67200ms bossDamaged par dps2 52 [magic]
+67500ms skillUsed healer heal_single -> [dps2]
+67500ms healed dps2 56
+67800ms effectTick dps2 venom 0 (absorbé 30) [poison]
 68400ms bossAction bigAttack zone
-68400ms unitDamaged tank 0 (absorbé 28)
-68400ms unitDamaged dps1 64 (absorbé 0)
-68400ms unitDamaged dps2 66 (absorbé 0)
-68400ms unitDamaged healer 60 (absorbé 0)
-68500ms castStarted healer heal_single 1000ms
+68400ms unitDamaged tank 8 (absorbé 0)
+68400ms unitDamaged dps1 0 (absorbé 38)
+68400ms unitDamaged dps2 0 (absorbé 40)
+68400ms unitDamaged healer 0 (absorbé 34)
+68800ms effectTick dps2 venom 0 (absorbé 30) [poison]
 68800ms bossDamaged par tank 23
 68800ms bossDamaged par dps1 61
 68800ms bossDamaged par dps2 52 [magic]
-69500ms skillUsed healer heal_single -> [dps1]
-69500ms healed dps1 170
+69800ms effectTick dps2 venom 12 (absorbé 18) [poison]
+70000ms skillUsed healer purge -> [dps2]
+70000ms effectEnded dps2 venom cleansed
 70200ms bossAction poison
 70200ms effectApplied dps1 venom
 70400ms bossDamaged par tank 23
 70400ms bossDamaged par dps1 61
 70400ms bossDamaged par dps2 52 [magic]
-70500ms skillUsed healer purge -> [dps1]
-70500ms effectEnded dps1 venom cleansed
+71200ms effectTick dps1 venom 0 (absorbé 30) [poison]
 72000ms bossDamaged par tank 23
 72000ms bossDamaged par dps1 61
 72000ms bossDamaged par dps2 52 [magic]
 72000ms bossAction poison
-72000ms effectApplied tank venom
-73000ms effectTick tank venom 0 (absorbé 30) [poison]
-73500ms castStarted healer heal_single 1000ms
+72000ms effectApplied dps2 venom
+72200ms effectTick dps1 venom 0 (absorbé 30) [poison]
+73000ms effectTick dps2 venom 30 (absorbé 0) [poison]
+73200ms effectTick dps1 venom 0 (absorbé 30) [poison]
 73600ms bossDamaged par tank 23
 73600ms bossDamaged par dps1 61
-73600ms bossDamaged par dps2 120 CRIT [magic]
+73600ms bossDamaged par dps2 52 [magic]
 73800ms bossAction poison
-73800ms effectApplied dps1 venom
-74000ms effectTick tank venom 0 (absorbé 30) [poison]
-74500ms skillUsed healer heal_single -> [dps2]
-74500ms healed dps2 157
-74800ms effectTick dps1 venom 30 (absorbé 0) [poison]
-75000ms effectTick tank venom 0 (absorbé 30) [poison]
+73800ms effectApplied tank venom
+74000ms effectTick dps2 venom 30 (absorbé 0) [poison]
+74000ms castStarted healer heal_single 1000ms
+74100ms focusMarked healer
+74200ms effectTick dps1 venom 0 (absorbé 30) [poison]
+74800ms effectTick tank venom 30 (absorbé 0) [poison]
+75000ms skillUsed healer heal_single -> [dps2]
+75000ms healed dps2 72
+75000ms effectTick dps2 venom 30 (absorbé 0) [poison]
+75000ms skillUsed healer purge -> [tank]
+75000ms effectEnded tank venom cleansed
+75200ms effectTick dps1 venom 0 (absorbé 30) [poison]
 75200ms bossDamaged par tank 23
 75200ms bossDamaged par dps1 61
 75200ms bossDamaged par dps2 52 [magic]
-75500ms skillUsed healer purge -> [tank]
-75500ms effectEnded tank venom cleansed
-75600ms bossAction attack
-75600ms unitDamaged tank 0 (absorbé 1)
-75800ms effectTick dps1 venom 30 (absorbé 0) [poison]
-76800ms effectTick dps1 venom 30 (absorbé 0) [poison]
+75600ms bossAction focusAttack
+75600ms unitDamaged healer 0 (absorbé 106)
+76000ms effectTick dps2 venom 30 (absorbé 0) [poison]
+76000ms skillUsed healer shield -> [dps2]
+76000ms shielded dps2 260
+76200ms effectTick dps1 venom 0 (absorbé 30) [poison]
 76800ms bossDamaged par tank 23
-76800ms bossDamaged par dps1 61
+76800ms bossDamaged par dps1 138 CRIT
 76800ms bossDamaged par dps2 52 [magic]
+77000ms effectTick dps2 venom 0 (absorbé 30) [poison]
+77200ms effectTick dps1 venom 26 (absorbé 4) [poison]
 77400ms bossAction bigAttack zone
-77400ms unitDamaged tank 0 (absorbé 28)
-77400ms unitDamaged dps1 64 (absorbé 0)
-77400ms unitDamaged dps2 66 (absorbé 0)
-77400ms unitDamaged healer 60 (absorbé 0)
-77800ms effectTick dps1 venom 30 (absorbé 0) [poison]
+77400ms unitDamaged tank 8 (absorbé 0)
+77400ms unitDamaged dps1 38 (absorbé 0)
+77400ms unitDamaged dps2 0 (absorbé 40)
+77400ms unitDodged healer
+78000ms effectTick dps2 venom 0 (absorbé 30) [poison]
+78200ms effectTick dps1 venom 30 (absorbé 0) [poison]
 78400ms bossDamaged par tank 23
 78400ms bossDamaged par dps1 61
 78400ms bossDamaged par dps2 52 [magic]
 78500ms castStarted healer heal_single 1000ms
-78800ms effectTick dps1 venom 30 (absorbé 0) [poison]
+79000ms effectTick dps2 venom 0 (absorbé 30) [poison]
+79200ms effectTick dps1 venom 30 (absorbé 0) [poison]
+79200ms effectEnded dps1 venom expired
 79200ms bossAction poison
-79200ms effectApplied dps2 venom
+79200ms effectApplied dps1 venom
 79500ms skillUsed healer heal_single -> [dps1]
 79500ms healed dps1 170
-79800ms effectTick dps1 venom 30 (absorbé 0) [poison]
+80000ms effectTick dps2 venom 0 (absorbé 30) [poison]
 80000ms bossDamaged par tank 23
 80000ms bossDamaged par dps1 61
 80000ms bossDamaged par dps2 52 [magic]
-80200ms effectTick dps2 venom 30 (absorbé 0) [poison]
+80200ms effectTick dps1 venom 30 (absorbé 0) [poison]
 80500ms skillUsed healer purge -> [dps1]
 80500ms effectEnded dps1 venom cleansed
+81000ms effectTick dps2 venom 0 (absorbé 30) [poison]
+81000ms effectEnded dps2 venom expired
 81000ms bossAction poison
-81000ms effectApplied dps1 venom
-81200ms effectTick dps2 venom 30 (absorbé 0) [poison]
+81000ms effectApplied tank venom
 81600ms bossDamaged par tank 23
 81600ms bossDamaged par dps1 61
 81600ms bossDamaged par dps2 52 [magic]
-82000ms effectTick dps1 venom 30 (absorbé 0) [poison]
-82200ms effectTick dps2 venom 30 (absorbé 0) [poison]
+82000ms effectTick tank venom 30 (absorbé 0) [poison]
 82800ms bossAction poison
-82800ms effectApplied tank venom
-83000ms effectTick dps1 venom 30 (absorbé 0) [poison]
-83200ms effectTick dps2 venom 30 (absorbé 0) [poison]
+82800ms effectApplied dps1 venom
+83000ms effectTick tank venom 30 (absorbé 0) [poison]
+83100ms focusMarked dps2
 83200ms bossDamaged par tank 23
 83200ms bossDamaged par dps1 61
 83200ms bossDamaged par dps2 52 [magic]
 83500ms castStarted healer heal_single 1000ms
-83800ms effectTick tank venom 0 (absorbé 30) [poison]
-84000ms effectTick dps1 venom 30 (absorbé 0) [poison]
-84200ms effectTick dps2 venom 30 (absorbé 0) [poison]
-84500ms skillUsed healer heal_single -> [dps1]
-84500ms healed dps1 170
-84600ms bossAction attack
-84600ms unitDamaged dps1 27 (absorbé 0)
-84800ms effectTick tank venom 0 (absorbé 30) [poison]
+83800ms effectTick dps1 venom 30 (absorbé 0) [poison]
+84000ms effectTick tank venom 30 (absorbé 0) [poison]
+84500ms skillUsed healer heal_single -> [dps2]
+84500ms healed dps2 60
+84600ms bossAction focusAttack
+84600ms unitDamaged dps2 42 (absorbé 70)
+84800ms effectTick dps1 venom 30 (absorbé 0) [poison]
 84800ms bossDamaged par tank 23
-84800ms bossDamaged par dps1 138 CRIT
-84800ms bossDamaged par dps2 120 CRIT [magic]
-84800ms battleEnded victory
-FINAL victory t=84800 boss=0 tank:781/36/0 dps1:257/0/0 dps2:144/0/0 healer:300/0/11
+84800ms bossDamaged par dps1 61
+84800ms bossDamaged par dps2 52 [magic]
+85000ms effectTick tank venom 30 (absorbé 0) [poison]
+85500ms skillUsed healer purge -> [tank]
+85500ms effectEnded tank venom cleansed
+85800ms effectTick dps1 venom 30 (absorbé 0) [poison]
+86400ms bossDamaged par tank 23
+86400ms bossDamaged par dps1 138 CRIT
+86400ms bossDamaged par dps2 52 [magic]
+86400ms bossAction bigAttack zone
+86400ms unitDamaged tank 8 (absorbé 0)
+86400ms unitDamaged dps1 38 (absorbé 0)
+86400ms unitDamaged dps2 40 (absorbé 0)
+86400ms unitDamaged healer 0 (absorbé 34)
+86400ms battleEnded victory
+FINAL victory t=86400 boss=0 tank:696/0/0 dps1:248/0/0 dps2:278/0/0 healer:412/46/8

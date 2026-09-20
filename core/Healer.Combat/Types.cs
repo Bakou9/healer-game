@@ -65,7 +65,7 @@ namespace Healer.Combat
 
     public class BossActionDef
     {
-        /// <summary>"attack", "bigAttack" ou "poison".</summary>
+        /// <summary>"attack", "bigAttack" (zone), "focusAttack" (un allié fragile, annoncé avec sa cible) ou "poison".</summary>
         public string Type { get; set; } = "";
         public double TelegraphMs { get; set; }
         /// <summary>ATK du boss × Multiplier. 0 = aucun dégât, seulement l'effet.</summary>
@@ -177,6 +177,8 @@ namespace Healer.Combat
         public double MsRemaining { get; set; }
         /// <summary>Durée totale du télégraphe (pour une jauge qui se vide : MsRemaining / TotalMs).</summary>
         public double TotalMs { get; set; }
+        /// <summary>Allié visé par une attaque ciblée (« focusAttack »), connu dès le début du télégraphe ; null pour les autres attaques.</summary>
+        public string? TargetId { get; set; }
     }
 
     public static class BattleResults

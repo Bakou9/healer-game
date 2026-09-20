@@ -52,6 +52,7 @@ namespace Healer.Combat
                 case "bossDamaged":
                     return $"{head} par {SourceId} {Num(Amount)}{Suffix()}";
                 case "unitDodged":
+                case "focusMarked":
                     return $"{head} {UnitId}";
                 case "castStarted":
                     return $"{head} {CasterId} {SkillId} {Num(Amount)}ms";

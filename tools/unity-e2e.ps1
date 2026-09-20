@@ -384,6 +384,7 @@ WaitLog "boss enragé palier 1" 40
 Stop-Game
 $h1 = Log
 Expect $h1 "état : boss enragé palier 1 .\+5 %." "le palier 1 d'enrage arrive (+5 %)"
+Expect $h1 "attaque ciblée annoncée sur" "le Seigneur de Cendre annonce une attaque ciblée sur un allié"
 Start-Game @("-healer-autoplay", "-healer-timescale", "40", "-healer-level", "l1", "-healer-profile-dir", (New-ProfileDir "H2"))
 Press 0x39 "Espace (jouer)"
 WaitLog "combat terminé" 40

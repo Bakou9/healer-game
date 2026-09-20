@@ -13,6 +13,8 @@ namespace Healer.Combat
         public double DecisionEveryMs { get; set; } = 500;
         /// <summary>false = joueur qui ignore le poison (vérifie que la Purge compte vraiment).</summary>
         public bool Purge { get; set; } = true;
+        /// <summary>false = joueur qui ne protège pas la victime annoncée d'une attaque ciblée (vérifie que l'annonce compte vraiment).</summary>
+        public bool ProtectFocusTarget { get; set; } = true;
     }
 
     /// <summary>
@@ -32,7 +34,7 @@ namespace Healer.Combat
                 if (sinceDecisionMs >= options.DecisionEveryMs)
                 {
                     sinceDecisionMs = 0;
-                    Decide(battle, t, options.Purge);
+                    Decide(battle, t, options.Purge, options.ProtectFocusTarget);
                 }
                 sinceDecisionMs += options.StepMs;
                 battle.Step(options.StepMs);
@@ -40,7 +42,7 @@ namespace Healer.Combat
         }
 
         /// <summary>Une décision du bot (appelée à intervalle régulier par le client pour la démonstration et les captures).</summary>
-        public static void Decide(Battle battle, double t, bool purge)
+        public static void Decide(Battle battle, double t, bool purge, bool protectFocusTarget = true)
         {
             var allies = battle.GetAllies().Where(a => a.Alive).ToList();
             var healer = allies.FirstOrDefault(a => a.Role == "healer");
@@ -52,7 +54,10 @@ namespace Healer.Combat
             var poisoned = purge ? allies.FirstOrDefault(a => a.Effects.Count > 0) : null;
             var telegraph = battle.GetTelegraph();
 
-            if (telegraph?.Type == "bigAttack" && battle.CanUseSkillNow("healer", "shield"))
+            var victim = protectFocusTarget && telegraph?.Type == "focusAttack" && telegraph.TargetId != null ? allies.FirstOrDefault(a => a.Id == telegraph.TargetId) : null;
+            if (victim != null && victim.Shield <= 0 && battle.CanUseSkillNow("healer", "shield"))
+                battle.IssueCommand(new Command { TimeMs = t, SkillId = "shield", TargetId = victim.Id }); // attaque ciblée : bouclier sur la victime annoncée
+            else if (telegraph?.Type == "bigAttack" && battle.CanUseSkillNow("healer", "shield"))
                 battle.IssueCommand(new Command { TimeMs = t, SkillId = "shield", TargetId = lowest.Id });
             else if (poisoned != null && battle.CanUseSkillNow("healer", "purge"))
                 battle.IssueCommand(new Command { TimeMs = t, SkillId = "purge", TargetId = poisoned.Id });

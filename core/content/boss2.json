@@ -2,13 +2,14 @@
   "id": "boss2",
   "name": "Reine des Marais",
   "maxHp": 8450,
-  "atk": 37,
+  "atk": 24,
   "def": 16,
   "tickMs": 2000,
   "pattern": [
     {
-      "type": "attack",
-      "telegraphMs": 0
+      "type": "focusAttack",
+      "telegraphMs": 1500,
+      "multiplier": 5
     },
     {
       "type": "poison",
@@ -52,8 +53,9 @@
           "effectId": "venom"
         },
         {
-          "type": "attack",
-          "telegraphMs": 0
+          "type": "focusAttack",
+          "telegraphMs": 1500,
+          "multiplier": 5
         },
         {
           "type": "bigAttack",

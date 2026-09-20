@@ -40,7 +40,7 @@ namespace Healer.Client
         {
             public string Id = "";
             public VisualElement Glow = null!, Panel = null!, RoleBar = null!, HpFill = null!, PillBox = null!;
-            public Label HpText = null!, Threat = null!, Shield = null!, Pill = null!;
+            public Label HpText = null!, Threat = null!, Shield = null!, Pill = null!, Marked = null!;
             public VisualElement Guide = null!;
             public Rect Rect;
         }
@@ -169,6 +169,7 @@ namespace Healer.Client
                 v.HpFill = Ui.Box(v.Panel, hpBar, Color.green, 5);
                 v.HpText = Ui.Text(v.Panel, new Rect(0, 84, r.width, 26), "", Layout.Font.Title, Color.white, TextAnchor.MiddleCenter, true);
                 v.Threat = Ui.Text(v.Panel, new Rect(r.width - 74, 10, 66, 20), "Menace", Layout.Font.Small, Palette.Danger, TextAnchor.MiddleRight, true);
+                v.Marked = Ui.Text(v.Panel, new Rect(r.width - 92, 10, 84, 20), "CIBLÉ !", Layout.Font.Small, Palette.Danger, TextAnchor.MiddleRight, true);
                 v.Shield = Ui.Text(v.Panel, new Rect(8, 110, r.width * 0.5f, 20), "", Layout.Font.Small, Palette.Shield, TextAnchor.MiddleLeft);
                 v.PillBox = Ui.Box(v.Panel, new Rect(r.width * 0.5f, 108, r.width * 0.5f - 8, 22), Palette.Hex("5B2F86"), 8);
                 v.Pill = Ui.Text(v.PillBox, new Rect(0, 0, r.width * 0.5f - 8, 22), "", Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, true);
@@ -279,14 +280,18 @@ namespace Healer.Client
             _pauseLabel.text = _ctl.Paused ? ">" : "II";
 
             var tele = b.GetTelegraph();
-            bool big = tele != null && tele.Type == "bigAttack";
+            bool big = tele != null && (tele.Type == "bigAttack" || tele.Type == "focusAttack");
+            string? focusId = tele != null && tele.Type == "focusAttack" ? tele.TargetId : null;
             _telegraph.style.display = big ? DisplayStyle.Flex : DisplayStyle.None;
             _gaugeBg.style.display = big ? DisplayStyle.Flex : DisplayStyle.None;
             _gaugeFill.style.display = big ? DisplayStyle.Flex : DisplayStyle.None;
             _lastAction.style.display = !big && !string.IsNullOrEmpty(_ctl.LastAction) ? DisplayStyle.Flex : DisplayStyle.None;
             if (big)
             {
-                _telegraph.text = $"ATTAQUE DE ZONE dans {Format.Seconds(tele!.MsRemaining)}";
+                string focusName = focusId == null ? "" : allies.FirstOrDefault(a => a.Id == focusId)?.Name ?? "";
+                _telegraph.text = focusId != null
+                    ? $"ATTAQUE CIBLÉE sur {focusName} dans {Format.Seconds(tele!.MsRemaining)}"
+                    : $"ATTAQUE DE ZONE dans {Format.Seconds(tele!.MsRemaining)}";
                 Width(_gaugeFill, Mathf.Max(6f, 260f * (float)(tele.MsRemaining / System.Math.Max(1.0, tele.TotalMs))));
             }
             else _lastAction.text = _ctl.LastAction;
@@ -302,13 +307,15 @@ namespace Healer.Client
                 bool selected = _ctl.Selection.Selected == a.Id;
                 v.Panel.style.opacity = a.Alive ? 1f : 0.5f;
                 v.Glow.style.display = selected ? DisplayStyle.Flex : DisplayStyle.None;
-                Ui.Stroke(v.Panel, selected ? Ui.Selected : Ui.PanelStroke, selected ? 3 : 1.5f);
+                bool marked = a.Alive && a.Id == focusId;
+                Ui.Stroke(v.Panel, marked ? Palette.Danger : selected ? Ui.Selected : Ui.PanelStroke, marked || selected ? 3 : 1.5f);
+                v.Marked.style.display = marked ? DisplayStyle.Flex : DisplayStyle.None;
                 double ratio = a.MaxHp > 0 ? System.Math.Max(0, a.Hp / a.MaxHp) : 0;
                 v.HpFill.style.display = ratio > 0 ? DisplayStyle.Flex : DisplayStyle.None;
                 Width(v.HpFill, Mathf.Max(6f, (v.Rect.width - 24) * (float)ratio));
                 v.HpFill.style.backgroundColor = HpColor(ratio);
                 v.HpText.text = a.Alive ? Format.Ratio(a.Hp, a.MaxHp) : "K.O.";
-                v.Threat.style.display = a.Alive && a.Id == threatId && a.Role != "healer" ? DisplayStyle.Flex : DisplayStyle.None;
+                v.Threat.style.display = a.Alive && a.Id == threatId && a.Role != "healer" && !marked ? DisplayStyle.Flex : DisplayStyle.None;
                 v.Shield.style.display = a.Shield > 0 ? DisplayStyle.Flex : DisplayStyle.None;
                 if (a.Shield > 0) v.Shield.text = $"Bouclier {Format.Number(a.Shield)}";
                 bool hasEffect = a.Effects.Count > 0;

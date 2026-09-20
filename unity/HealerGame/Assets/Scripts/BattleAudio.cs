@@ -61,7 +61,7 @@ namespace Healer.Client
             if (keyboard != null && keyboard.mKey.wasPressedThisFrame && _flow != null) _flow.ToggleMute();
             if (_ctl == null || _ctl.Battle == null) return;
             var telegraph = _ctl.Battle.GetTelegraph();
-            bool telegraphing = telegraph != null && telegraph.Type == "bigAttack";
+            bool telegraphing = telegraph != null && (telegraph.Type == "bigAttack" || telegraph.Type == "focusAttack");
             if (telegraphing && !_wasTelegraphing) Play(SoundCue.Warning, 0.5f);
             _wasTelegraphing = telegraphing;
         }

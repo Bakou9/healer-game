@@ -240,6 +240,16 @@ namespace Healer.Combat.Tests
             Assert.That(spam.win, Is.LessThanOrEqualTo(0.60), $"{boss} : le soin de zone en boucle avec purges gagne {spam.win:0%} des combats");
         }
 
+        // Attaque ciblée (D-056) : l'annonce de la victime doit compter. Ne pas protéger la victime annoncée coûte des alliés.
+        [TestCaseSource(nameof(AdvancedBosses))]
+        public void Ne_pas_proteger_la_victime_annoncee_d_une_attaque_ciblee_n_est_jamais_avantageux(string boss)
+        {
+            var attentive = Play(boss, "attentif", b => ReferenceHealerBot.Run(b, 150000));
+            var ignoring = Play(boss, "ignore-cible", b => ReferenceHealerBot.Run(b, 150000, new ReferenceHealerOptions { ProtectFocusTarget = false }));
+            // Borne modeste, mesurée : +2 à +3 points (seuil 1 point contre les erreurs d arrondi) de morts (7 % → 9 % Reine, 5 % → 8 % Seigneur). Le levier est faible dans cette première version (D-056).
+            Assert.That(ignoring.death - attentive.death, Is.GreaterThanOrEqualTo(0.01), $"{boss} : attentif {attentive.death:0%} de morts, sans protéger la cible {ignoring.death:0%}");
+        }
+
         [Test]
         public void Le_dernier_boss_punit_nettement_le_soin_de_zone_en_boucle_avec_purges()
         {

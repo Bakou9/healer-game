@@ -282,3 +282,23 @@ valeurs finales sont dans un intervalle étroit. Reine des Marais : 10 % d'alli�
 | attentif Reine / Seigneur | inchangé | inchangé (0,29 / 0,30 ; K.O. 10 % / 6-7 %) |
 
 **Limite** : la Reine des Marais reste à ~50 % pour ce profil quel que soit le chiffre (son poison se règle à la purge). Durcir davantage demande des mécaniques (D-056, suite) : attaques qui visent un allié précis, effets qu'un soin de zone ne règle pas.
+
+## 14. Attaque ciblée (D-056, suite)
+
+**But** : que « Soin de zone en boucle » ne suffise plus, en ajoutant une menace à laquelle il ne répond pas : un coup fort sur **un** allié, annoncé (§2 critère 5).
+
+**Méthode** : `ZMesureFocus.Balayer_l_attaque_ciblee` (100 combats par ligne : attentif, lent, sans protéger la cible, zone en boucle + purge, paresseux) en variant le multiplicateur de l'attaque ciblée et l'ATK du boss. Constat : sans baisse de l'ATK, la moindre attaque ciblée fait exploser les morts du joueur attentif (Reine : 10 % → 29 % dès ×2), car le jeu de base est déjà à la borne de 10 %.
+
+**Retenu** (parmi ~40 combinaisons) : Reine **×5, ATK 24** ; Seigneur **×7, ATK 19**.
+
+| 100 combats | Reine avant → après | Seigneur avant → après |
+|---|---|---|
+| attentif : victoires ; allié K.O. ; PV min. | 100 % ; 10 % ; 0,29 → 100 % ; 7 % ; 0,41 | 100 % ; 5 % ; 0,30 → 100 % ; 5 % ; 0,36 |
+| lent : allié K.O. | 36 % → 28 % | 34 % → 16 % |
+| zone en boucle + purge : victoires | 51 % → 33 % | 24 % → 18 % |
+| paresseux (sans bouclier ni purge) : allié K.O. | 72 % → 76 % | 39 % → 51 % |
+| sans protéger la cible annoncée : allié K.O. | – → 9 % | – → 8 % |
+
+Recalibrations imposées par les bornes : seuils de 3 étoiles (Reine 2000 → 1500, Seigneur 3000 → 2000 dégâts encaissés) ; talent **Rempart** (Bouclier +70 % → **+55 %**) : avec des attaques ciblées le bouclier valait davantage et l'option dominait « Purge vive » (`UpgradeBalanceTests`).
+
+**Limite honnête (à corriger)** : le levier est **faible**. Ne pas protéger la victime n'ajoute que 2-3 points de morts (7 → 9 %, 5 → 8 %) : à ces valeurs, un allié à PV pleins survit au coup (≈ 110-125 dégâts pour 360-480 PV). Des coups plus forts (×10 et plus) font exploser aussi les morts du bot attentif (23-64 %) car le bot n'a qu'un Bouclier toutes les 7 s, partagé avec l'attaque de zone : ce n'est pas un défaut du réglage mais de la **mécanique de réponse** (une seule parade, à recharge longue). Pistes : deuxième parade (soin instantané ciblé, bouclier plus court), bot plus fin, ou attaque ciblée dont le danger dépend de l'état de la victime.

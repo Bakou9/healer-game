@@ -17,7 +17,7 @@
     "rewardGold": 150,
     "repeatGold": 80,
     "starBonusGold": 30,
-    "threeStarMaxDamageTaken": 2000
+    "threeStarMaxDamageTaken": 1500
   },
   {
     "id": "l3",
@@ -27,6 +27,6 @@
     "rewardGold": 220,
     "repeatGold": 120,
     "starBonusGold": 40,
-    "threeStarMaxDamageTaken": 3000
+    "threeStarMaxDamageTaken": 2000
   }
 ]

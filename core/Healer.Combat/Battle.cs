@@ -58,6 +58,8 @@ namespace Healer.Combat
             public int PhaseIndex;
             public int PatternIndex;
             public double NextTickAt;
+            /// <summary>Cible annoncée de la prochaine attaque « focusAttack » (choisie au début du télégraphe).</summary>
+            public string? FocusTargetId;
         }
 
         private sealed class CastRuntime
@@ -220,7 +222,7 @@ namespace Healer.Combat
             if (action.TelegraphMs == 0) return null;
             double msUntilTick = _boss.NextTickAt - _clock;
             if (msUntilTick <= action.TelegraphMs)
-                return new Telegraph { Type = action.Type, MsRemaining = Math.Max(0, msUntilTick), TotalMs = action.TelegraphMs };
+                return new Telegraph { Type = action.Type, MsRemaining = Math.Max(0, msUntilTick), TotalMs = action.TelegraphMs, TargetId = action.Type == "focusAttack" ? _boss.FocusTargetId : null };
             return null;
         }
 
@@ -462,6 +464,7 @@ namespace Healer.Combat
             _boss.Pattern = next.Pattern;
             _boss.TickMs = next.TickMs;
             _boss.PatternIndex = 0;
+            _boss.FocusTargetId = null;
             _boss.NextTickAt = now + next.TickMs;
             Emit(new BattleEvent { Type = "bossPhaseChanged", TimeMs = now, Phase = _boss.PhaseIndex, Name = next.Name });
         }
@@ -508,6 +511,26 @@ namespace Healer.Combat
             return alive[alive.Count - 1];
         }
 
+        /// <summary>
+        /// Attaque ciblée (« focusAttack ») : la victime est choisie au HASARD parmi les alliés fragiles (tout sauf le tank, sauf s'il
+        /// ne reste que lui) DÈS le début du télégraphe, puis annoncée (événement focusMarked, Telegraph.TargetId) : le joueur a le
+        /// temps de la protéger, un soin de zone ne suffit pas à la sauver. Si la victime meurt avant le coup, une autre est choisie.
+        /// </summary>
+        private void MarkFocusTarget(double now)
+        {
+            var action = _boss.Pattern[_boss.PatternIndex % _boss.Pattern.Count];
+            if (action.Type != "focusAttack") { _boss.FocusTargetId = null; return; }
+            if (_boss.NextTickAt - now > action.TelegraphMs) return; // pas encore annoncée
+            var current = _boss.FocusTargetId == null ? null : FindUnit(_boss.FocusTargetId);
+            if (current != null && current.Alive) return;
+            var alive = AliveAllies();
+            if (alive.Count == 0) return;
+            var fragile = alive.Where(u => u.Role != "tank").ToList();
+            var pick = _rng.PickRandom(fragile.Count > 0 ? fragile : alive);
+            _boss.FocusTargetId = pick.Id;
+            Emit(new BattleEvent { Type = "focusMarked", TimeMs = now, UnitId = pick.Id });
+        }
+
         private void RunBossTick(double now)
         {
             if (now < _boss.NextTickAt) return;
@@ -515,6 +538,12 @@ namespace Healer.Combat
             var alive = AliveAllies();
             List<Unit> targets;
             if (action.HitsAll == true) targets = alive;
+            else if (action.Type == "focusAttack" && alive.Count > 0)
+            {
+                var marked = _boss.FocusTargetId == null ? null : alive.FirstOrDefault(u => u.Id == _boss.FocusTargetId);
+                targets = new List<Unit> { marked ?? PickTarget(alive) };
+                _boss.FocusTargetId = null;
+            }
             else targets = alive.Count > 0 ? new List<Unit> { PickTarget(alive) } : new List<Unit>();
             // Arrondi « demi vers le haut » comme Math.round en JavaScript (et non l'arrondi bancaire de C#).
             double baseDmg = _boss.Def.Atk * (action.Multiplier ?? 1) * (1 + EnrageLevelAt(now) * (_boss.Def.Enrage?.Pct ?? 0) / 100.0);
@@ -577,6 +606,7 @@ namespace Healer.Combat
             RunAllyAttacks(_clock);
             CheckBossPhase(_clock);
             CheckEnrage(_clock);
+            MarkFocusTarget(_clock);
             RunBossTick(_clock);
             CheckEnd();
         }

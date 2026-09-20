@@ -220,12 +220,12 @@
         {
           "id": "strong_shield",
           "name": "Rempart",
-          "description": "Le Bouclier absorbe 70 % de dégâts en plus.",
+          "description": "Le Bouclier absorbe 55 % de dégâts en plus.",
           "effects": [
             {
               "skill": "shield",
               "field": "shieldAmount",
-              "pct": 70
+              "pct": 55
             }
           ]
         },

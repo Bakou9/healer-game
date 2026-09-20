@@ -248,7 +248,10 @@ namespace Healer.Client
                     Debug.Log("[Healer] état : combat terminé (" + e.Result + ")");
                     break;
                 case "bossAction":
-                    LastAction = $"{time}  Le boss : {(e.Action == "bigAttack" ? "attaque de zone" : e.Action == "poison" ? "poison" : "attaque")}";
+                    LastAction = $"{time}  Le boss : {(e.Action == "bigAttack" ? "attaque de zone" : e.Action == "focusAttack" ? "attaque ciblée" : e.Action == "poison" ? "poison" : "attaque")}";
+                    break;
+                case "focusMarked":
+                    Debug.Log($"[Healer] état : attaque ciblée annoncée sur {AllyName(e.UnitId)}");
                     break;
                 case "unitDied":
                     LastAction = $"{time}  {AllyName(e.UnitId)} est K.O.";

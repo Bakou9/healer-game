@@ -478,6 +478,7 @@ namespace Healer.Client
             var phase = battle.GetBossPhase();
             var telegraph = battle.GetTelegraph();
             bool bigAttack = telegraph != null && telegraph.Type == "bigAttack";
+            string? focusId = telegraph != null && telegraph.Type == "focusAttack" ? telegraph.TargetId : null; // victime annoncée d'une attaque ciblée
 
             // Boss.
             var bp = WorldAt((float)Layout.GameW / 2f, BossFeetY, BossDepth);
@@ -531,6 +532,7 @@ namespace Healer.Client
                 v.Bubble.SetActive(st.Alive && st.Shield > 0.5f);
                 v.Ring.SetActive(st.Alive && _ctl.Selection.Selected == kv.Key);
                 bool poisoned = st.Effects.Count > 0;
+                bool marked = st.Alive && kv.Key == focusId;
                 for (int i = 0; i < v.Renderers.Length; i++)
                 {
                     var r = v.Renderers[i];
@@ -540,6 +542,7 @@ namespace Healer.Client
                     else
                     {
                         if (poisoned) c = Color.Lerp(c, Palette.Poison, 0.35f + 0.1f * Mathf.Sin(t * 6f));
+                        if (marked) c = Color.Lerp(c, Palette.Danger, 0.4f + 0.3f * Mathf.Sin(t * 12f)); // victime annoncée : rouge pulsant
                         if (v.HealGlow > 0f) c = Color.Lerp(c, Palette.Heal, v.HealGlow * 0.6f);
                         if (v.HitFlash > 0f) c = Color.Lerp(c, Palette.Damage, v.HitFlash * 0.85f);
                     }

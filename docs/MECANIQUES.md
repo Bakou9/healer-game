@@ -162,7 +162,8 @@ Un boss est entièrement décrit en données : PV, attaque, défense, cadence (`
 et désormais **type de dégâts**, **critique**, **résistances** et **ciblage**.
 
 - **Cadence** : à chaque `tickMs`, le boss exécute l'action suivante de son motif.
-- **Actions** : `attack` (1 cible), `bigAttack` (toutes les cibles vivantes, **télégraphiée**), `poison` (multiplicateur 0 : n'inflige que l'effet indiqué).
+- **Actions** : `attack` (1 cible), `bigAttack` (toutes les cibles vivantes, **télégraphiée**), `poison` (multiplicateur 0 : n'inflige que l'effet indiqué),
+  **`focusAttack`** (une seule victime, **annoncée**, voir ci-dessous).
 - **Télégraphe** : une action avec `telegraphMs > 0` est **annoncée** cette durée avant son tick (jauge « ATTAQUE DE ZONE dans X s ») : la fenêtre pour
   poser un Bouclier. Toujours plus court que la cadence (testé).
 - **Phases** : sous `atHpRatio` de PV, le boss change de motif et de cadence.
@@ -173,12 +174,19 @@ et désormais **type de dégâts**, **critique**, **résistances** et **ciblage*
 | Boss | PV | Att. | Déf. | Cadence | Type | Critique | Résistances | Ciblage | Enrage |
 |---|---|---|---|---|---|---|---|---|---|
 | Golem Ancestral | 7 700 | 58 | 18 | 2,2 s | physique | – | physique 15 %, **magie -25 %** | menace | non |
-| Reine des Marais | 8 450 | 37 | 16 | 2,0 s | physique + venin | 8 % | physique -10 %, magie 20 % | menace | non |
-| Seigneur de Cendre | 9 020 | 34 | 20 | 1,9 s | **feu** | 12 %, × 1,75 | physique 10 %, magie -10 % | menace | 65 s, +5 % / 10 s |
+| Reine des Marais | 8 450 | **24** | 16 | 2,0 s | physique + venin | 8 % | physique -10 %, magie 20 % | menace | non |
+| Seigneur de Cendre | 9 020 | **19** | 20 | 1,9 s | **feu** | 12 %, × 1,75 | physique 10 %, magie -10 % | menace | 65 s, +5 % / 10 s |
 
 Motifs et phases (inchangés) : Golem : 3 attaques + 1 attaque de zone ×2,5 (1,4 s), « Fureur » à 50 % (2,0 s, + poison) ; Reine : 2 attaques, 2 venins,
 1 attaque de zone ×2,0 (1,4 s), « Marée toxique » à 50 % (1,8 s) ; Seigneur : 3 attaques + 1 attaque de zone ×2,4 (1,0 s), « Braise » à 66 % puis « Brasier »
 à 33 % (brûlures).
+
+**Attaque ciblée (`focusAttack`, D-056)** : au début de son télégraphe (1,5 s), le boss **choisit au hasard une victime parmi les alliés fragiles**
+(tout sauf le Garde, sauf s'il ne reste que lui) et l'**annonce** : « ATTAQUE CIBLÉE sur Vous dans 1,1 s », étiquette « CIBLÉ ! » et bordure rouge sur sa carte, figurine
+rouge pulsante. Le coup tombe sur elle et personne d'autre, avec le calcul de dégâts habituel (esquive, critique, résistance, armure, défense, bouclier). Si la victime
+meurt avant, une autre est choisie. Réponse : **Bouclier** (260) sur la victime, ou la soigner à temps ; un Soin de zone ne suffit pas à lui seul.
+Multiplicateur : **Reine ×5, Seigneur ×7** (Golem : aucun, tutoriel) ; une par cycle du motif, à la place d'une attaque simple. L'attaque de base des deux boss a été
+abaissée (37 → 24, 34 → 19) pour que le total reste dans les bornes : le danger passe des petits coups constants aux pointes qu'il faut anticiper.
 
 **Ce que cela change à jouer** : le Mage est l'atout contre le Golem (faible à la magie) ; le Garde y fait peu de dégâts mais protège ; contre le Seigneur
 (feu), l'armure du Garde ne sert à rien (seule sa résistance au feu de 15 % compte) et ses coups critiques font mal.

@@ -368,3 +368,13 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Décision** : Soin de zone **140 PV / 60 mana / 5 s** (avant : 160 / 45 / 5 s), choisi parmi 4 options mesurées (voir EQUILIBRAGE.md §13) ; nouvelles bornes de test ; golden des combats du Golem régénérés (4 fichiers : bot-seed7, bot-seed42, bot-lent-seed7, bot-sans-purge-seed7 ; les autres inchangés).
 - **Effets secondaires acceptés** : le tutoriel est un peu plus tendu (attentif : PV minimum 0,32 → 0,28) ; un joueur lent y perd un allié dans 25 % des combats. Toutes les bornes du §2 tiennent.
 - **Suite décidée par l'utilisateur** : durcir aussi par de nouvelles mécaniques de boss, **avant** la direction artistique dark fantasy (jalon suivant). Piste : attaque qui vise un allié précis (télégraphiée, cible visible) pour que le Soin de zone ne suffise plus.
+
+## D-057 — Attaque ciblée du boss (première version)
+
+- **Date** : 2026-09-20 — **Statut** : Livrée, à valider au playtest (levier faible mesuré, voir EQUILIBRAGE.md §14).
+- **Demande** : durcir le jeu par de nouvelles mécaniques de boss avant la direction artistique (réponse de l'utilisateur à D-056).
+- **Mécanique** : action de boss `focusAttack` (données : `telegraphMs`, `multiplier`), victime tirée au hasard parmi les alliés fragiles au début du télégraphe, annoncée (`Telegraph.TargetId`, événement `focusMarked`, trace de golden), coup sur elle seule. Bot de référence : Bouclier sur la victime annoncée (`ProtectFocusTarget`, désactivable pour mesurer). Interface : texte « ATTAQUE CIBLÉE sur X dans Ys », « CIBLÉ ! » et bordure rouge sur la carte, figurine rouge pulsante, son d'avertissement ; journal `attaque ciblée annoncée sur X` (e2e, scénario H).
+- **Données** : Reine ×5 (ATK 37 → 24), Seigneur ×7 (ATK 34 → 19), Golem inchangé (tutoriel). Seuils d'étoiles l2 1500, l3 2000 ; talent Rempart +55 % (au lieu de +70 %).
+- **Golden** : `boss2-bot-seed7` et `boss3-bot-seed7` régénérés (voulu) ; les autres inchangés. 715 tests verts, 10 scénarios e2e verts.
+- **Question B** : l'équilibre a été mesuré avant/après (EQUILIBRAGE.md §14) ; toutes les bornes tiennent, y compris zone en boucle + purge ≤ 60 % (≤ 40 % dernier boss). **À valider avec l'utilisateur** : le levier de la mécanique est faible ; faut-il durcir la réponse (deuxième parade) ou accepter cette première version ?
+

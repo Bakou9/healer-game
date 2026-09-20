@@ -2,13 +2,14 @@
   "id": "boss3",
   "name": "Seigneur de Cendre",
   "maxHp": 9020,
-  "atk": 34,
+  "atk": 19,
   "def": 20,
   "tickMs": 1900,
   "pattern": [
     {
-      "type": "attack",
-      "telegraphMs": 0
+      "type": "focusAttack",
+      "telegraphMs": 1500,
+      "multiplier": 7
     },
     {
       "type": "attack",
@@ -32,8 +33,9 @@
       "tickMs": 1800,
       "pattern": [
         {
-          "type": "attack",
-          "telegraphMs": 0
+          "type": "focusAttack",
+          "telegraphMs": 1500,
+          "multiplier": 7
         },
         {
           "type": "poison",
@@ -59,8 +61,9 @@
       "tickMs": 1600,
       "pattern": [
         {
-          "type": "attack",
-          "telegraphMs": 0
+          "type": "focusAttack",
+          "telegraphMs": 1500,
+          "multiplier": 7
         },
         {
           "type": "poison",
