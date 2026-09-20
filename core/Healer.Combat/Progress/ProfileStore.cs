@@ -34,6 +34,8 @@ namespace Healer.Combat.Progress
                 ["wallet"] = balances,
                 ["ledger"] = JArray.FromObject(p.Wallet.Ledger),
                 ["settings"] = new JObject { ["muted"] = p.Settings.Muted },
+                ["equipment"] = new JObject(p.Loadout.Equipment.OrderBy(k => k.Key, StringComparer.Ordinal).Select(k => new JProperty(k.Key, k.Value))),
+                ["talents"] = new JObject(p.Loadout.Talents.OrderBy(k => k.Key).Select(k => new JProperty(k.Key.ToString(), k.Value))),
             };
             return root.ToString(Formatting.Indented);
         }
@@ -66,6 +68,11 @@ namespace Healer.Combat.Progress
                 if (root["wallet"] is JObject wallet)
                     foreach (var kv in wallet) loaded.Wallet.Restore(kv.Key, kv.Value?.Value<int>() ?? 0, kv.Key == Wallet.Gold ? ledger : null);
                 loaded.Settings.Muted = root["settings"]?.Value<bool?>("muted") ?? false;
+                if (root["equipment"] is JObject equipment)
+                    foreach (var kv in equipment) loaded.Loadout.Equipment[kv.Key] = kv.Value?.Value<int>() ?? 0;
+                if (root["talents"] is JObject talents)
+                    foreach (var kv in talents)
+                        if (int.TryParse(kv.Key, out int tier) && kv.Value?.Value<string>() is string option) loaded.Loadout.Talents[tier] = option;
 
                 loaded.Repair(content);
                 profile = loaded;

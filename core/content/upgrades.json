@@ -1,0 +1,287 @@
+{
+  "equipment": [
+    {
+      "id": "tank_weapon",
+      "characterId": "tank",
+      "name": "Épée du Garde",
+      "maxLevel": 5,
+      "costs": [
+        50,
+        80,
+        110,
+        150,
+        200
+      ],
+      "perLevel": [
+        {
+          "stat": "atk",
+          "pct": 4
+        }
+      ]
+    },
+    {
+      "id": "tank_armor",
+      "characterId": "tank",
+      "name": "Armure du Garde",
+      "maxLevel": 5,
+      "costs": [
+        50,
+        80,
+        110,
+        150,
+        200
+      ],
+      "perLevel": [
+        {
+          "stat": "maxHp",
+          "pct": 4
+        },
+        {
+          "stat": "def",
+          "pct": 3
+        }
+      ]
+    },
+    {
+      "id": "dps1_weapon",
+      "characterId": "dps1",
+      "name": "Arc de l'Archère",
+      "maxLevel": 5,
+      "costs": [
+        50,
+        80,
+        110,
+        150,
+        200
+      ],
+      "perLevel": [
+        {
+          "stat": "atk",
+          "pct": 4
+        }
+      ]
+    },
+    {
+      "id": "dps1_armor",
+      "characterId": "dps1",
+      "name": "Cuirasse de l'Archère",
+      "maxLevel": 5,
+      "costs": [
+        50,
+        80,
+        110,
+        150,
+        200
+      ],
+      "perLevel": [
+        {
+          "stat": "maxHp",
+          "pct": 4
+        },
+        {
+          "stat": "def",
+          "pct": 3
+        }
+      ]
+    },
+    {
+      "id": "dps2_weapon",
+      "characterId": "dps2",
+      "name": "Grimoire du Mage",
+      "maxLevel": 5,
+      "costs": [
+        50,
+        80,
+        110,
+        150,
+        200
+      ],
+      "perLevel": [
+        {
+          "stat": "atk",
+          "pct": 4
+        }
+      ]
+    },
+    {
+      "id": "dps2_armor",
+      "characterId": "dps2",
+      "name": "Robe du Mage",
+      "maxLevel": 5,
+      "costs": [
+        50,
+        80,
+        110,
+        150,
+        200
+      ],
+      "perLevel": [
+        {
+          "stat": "maxHp",
+          "pct": 4
+        },
+        {
+          "stat": "def",
+          "pct": 3
+        }
+      ]
+    },
+    {
+      "id": "healer_weapon",
+      "characterId": "healer",
+      "name": "Bâton de soin",
+      "maxLevel": 5,
+      "costs": [
+        50,
+        80,
+        110,
+        150,
+        200
+      ],
+      "perLevel": [
+        {
+          "skill": "heal_single",
+          "field": "healAmount",
+          "pct": 4
+        },
+        {
+          "skill": "heal_aoe",
+          "field": "healAmount",
+          "pct": 4
+        }
+      ]
+    },
+    {
+      "id": "healer_armor",
+      "characterId": "healer",
+      "name": "Robe du soigneur",
+      "maxLevel": 5,
+      "costs": [
+        50,
+        80,
+        110,
+        150,
+        200
+      ],
+      "perLevel": [
+        {
+          "stat": "maxHp",
+          "pct": 4
+        },
+        {
+          "stat": "maxMana",
+          "pct": 4
+        }
+      ]
+    }
+  ],
+  "talentTiers": [
+    {
+      "tier": 1,
+      "requiresStars": 2,
+      "cost": 150,
+      "options": [
+        {
+          "id": "quick_heal",
+          "name": "Soins vifs",
+          "description": "Le Soin rend 30 % de PV en plus et coûte 15 % de mana en moins.",
+          "effects": [
+            {
+              "skill": "heal_single",
+              "field": "healAmount",
+              "pct": 30
+            },
+            {
+              "skill": "heal_single",
+              "field": "manaCost",
+              "pct": -15
+            }
+          ]
+        },
+        {
+          "id": "thrifty",
+          "name": "Économe",
+          "description": "Tous les sorts coûtent 9 % de mana en moins.",
+          "effects": [
+            {
+              "skill": "*",
+              "field": "manaCost",
+              "pct": -9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tier": 2,
+      "requiresStars": 5,
+      "cost": 300,
+      "options": [
+        {
+          "id": "strong_shield",
+          "name": "Rempart",
+          "description": "Le Bouclier absorbe 70 % de dégâts en plus.",
+          "effects": [
+            {
+              "skill": "shield",
+              "field": "shieldAmount",
+              "pct": 70
+            }
+          ]
+        },
+        {
+          "id": "swift_purge",
+          "name": "Purge vive",
+          "description": "La Purge coûte 30 % de mana en moins et se recharge 10 % plus vite.",
+          "effects": [
+            {
+              "skill": "purge",
+              "field": "cooldownMs",
+              "pct": -10
+            },
+            {
+              "skill": "purge",
+              "field": "manaCost",
+              "pct": -30
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tier": 3,
+      "requiresStars": 8,
+      "cost": 500,
+      "options": [
+        {
+          "id": "mana_flow",
+          "name": "Flux de mana",
+          "description": "Le mana se régénère 5 % plus vite.",
+          "effects": [
+            {
+              "stat": "manaRegen",
+              "pct": 5
+            }
+          ]
+        },
+        {
+          "id": "wide_heal",
+          "name": "Onde de vie",
+          "description": "Le Soin de zone rend 60 % de PV en plus et coûte 45 % de mana en moins.",
+          "effects": [
+            {
+              "skill": "heal_aoe",
+              "field": "healAmount",
+              "pct": 60
+            },
+            {
+              "skill": "heal_aoe",
+              "field": "manaCost",
+              "pct": -45
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -33,6 +33,9 @@ namespace Healer.Combat.Progress
         public Wallet Wallet { get; } = new Wallet();
         public Settings Settings { get; } = new Settings();
 
+        /// <summary>Équipement acheté et talents choisis.</summary>
+        public Loadout Loadout { get; } = new Loadout();
+
         /// <summary>Nouvelle partie : en premium, tous les personnages de base sont possédés d'emblée.</summary>
         public static PlayerProfile NewGame(GameContent content)
         {
@@ -69,6 +72,28 @@ namespace Healer.Combat.Progress
             foreach (var c in content.Characters.Where(c => c.Role == "healer"))
                 if (!OwnedCharacters.Contains(c.Id)) OwnedCharacters.Add(c.Id);
             if (OwnedCharacters.Count == 1) OwnedCharacters.AddRange(content.Characters.Where(c => !OwnedCharacters.Contains(c.Id) && c.Role == "tank").Select(c => c.Id));
+            // Améliorations : on retire l'inconnu, on borne les niveaux, on ne garde que des paliers de talent cohérents.
+            foreach (var id in Loadout.Equipment.Keys.ToList())
+            {
+                var track = content.Upgrades.Track(id);
+                if (track == null || !characterIds.Contains(track.CharacterId)) { Loadout.Equipment.Remove(id); continue; }
+                int level = System.Math.Max(0, System.Math.Min(track.MaxLevel, Loadout.Equipment[id]));
+                if (level == 0) Loadout.Equipment.Remove(id); else Loadout.Equipment[id] = level;
+            }
+            foreach (var tier in Loadout.Talents.Keys.ToList())
+            {
+                var def = content.Upgrades.Tier(tier);
+                if (def == null || def.Options.All(o => o.Id != Loadout.Talents[tier])) Loadout.Talents.Remove(tier);
+            }
+            // Un palier n'existe que si le précédent existe et si les étoiles requises sont là.
+            int expected = 1;
+            foreach (var tier in Loadout.Talents.Keys.OrderBy(k => k).ToList())
+            {
+                var def = content.Upgrades.Tier(tier)!;
+                if (tier != expected || TotalStars < def.RequiresStars) { Loadout.Talents.Remove(tier); continue; }
+                expected++;
+            }
+
             // Un niveau ne peut pas être terminé sans que son prérequis l'ait été.
             foreach (var level in content.Levels)
                 if (level.Requires != null && RecordOf(level.Id).Completed && !RecordOf(level.Requires).Completed)

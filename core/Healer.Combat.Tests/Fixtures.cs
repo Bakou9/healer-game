@@ -41,7 +41,7 @@ namespace Healer.Combat.Tests
         {
             var bosses = new System.Collections.Generic.List<string>();
             for (int i = 1; File.Exists(Path.Combine(ContentDir, $"boss{i}.json")); i++) bosses.Add(Read($"boss{i}.json"));
-            return GameContent.FromJson(CharactersJson, SkillsJson, EffectsJson, bosses, Read("levels.json"));
+            return GameContent.FromJson(CharactersJson, SkillsJson, EffectsJson, bosses, Read("levels.json"), Read("upgrades.json"));
         }
     }
 }

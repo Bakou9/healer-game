@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Healer.Combat.Progress;
 using Newtonsoft.Json;
 
 namespace Healer.Combat
@@ -17,14 +18,18 @@ namespace Healer.Combat
         public List<BossDef> Bosses { get; }
         public List<LevelDef> Levels { get; }
 
+        /// <summary>Équipement et talents achetables (core/content/upgrades.json).</summary>
+        public UpgradeCatalog Upgrades { get; }
+
         /// <summary>Premier boss (compatibilité : les combats de référence et les tests historiques).</summary>
         public BossDef Boss => Bosses[0];
 
         public GameContent(List<CharacterDef> characters, List<SkillDef> skills, List<EffectDef> effects, BossDef boss)
             : this(characters, skills, effects, new List<BossDef> { boss }, new List<LevelDef>()) { }
 
-        public GameContent(List<CharacterDef> characters, List<SkillDef> skills, List<EffectDef> effects, List<BossDef> bosses, List<LevelDef> levels)
+        public GameContent(List<CharacterDef> characters, List<SkillDef> skills, List<EffectDef> effects, List<BossDef> bosses, List<LevelDef> levels, UpgradeCatalog? upgrades = null)
         {
+            Upgrades = upgrades ?? UpgradeCatalog.Empty;
             Characters = characters;
             Skills = skills;
             Effects = effects;
@@ -48,7 +53,7 @@ namespace Healer.Combat
         }
 
         /// <summary>Contenu complet : plusieurs boss (un JSON chacun, dans l'ordre) et les niveaux de la campagne.</summary>
-        public static GameContent FromJson(string charactersJson, string skillsJson, string effectsJson, IEnumerable<string> bossJsons, string levelsJson)
+        public static GameContent FromJson(string charactersJson, string skillsJson, string effectsJson, IEnumerable<string> bossJsons, string levelsJson, string? upgradesJson = null)
         {
             var bosses = new List<BossDef>();
             int n = 0;
@@ -58,7 +63,8 @@ namespace Healer.Combat
                 Parse<List<SkillDef>>(skillsJson, "skills.json"),
                 Parse<List<EffectDef>>(effectsJson, "effects.json"),
                 bosses,
-                Parse<List<LevelDef>>(levelsJson, "levels.json"));
+                Parse<List<LevelDef>>(levelsJson, "levels.json"),
+                string.IsNullOrWhiteSpace(upgradesJson) ? null : Parse<UpgradeCatalog>(upgradesJson!, "upgrades.json"));
         }
 
         /// <summary>Identifiants des boss utilisés par les niveaux, dans l'ordre et sans doublon : le client sait quels fichiers lire.</summary>
@@ -92,21 +98,24 @@ namespace Healer.Combat
         public EncounterDef CreateEncounter(string bossId, uint seed) => CreateEncounter(bossId, seed, null);
 
         /// <summary>Rencontre avec l'équipe réellement possédée par le joueur (null = tous les personnages). Le soigneur en fait toujours partie.</summary>
-        public EncounterDef CreateEncounter(string bossId, uint seed, IEnumerable<string>? ownedCharacterIds)
+        public EncounterDef CreateEncounter(string bossId, uint seed, IEnumerable<string>? ownedCharacterIds) =>
+            CreateEncounter(bossId, seed, ownedCharacterIds, null);
+
+        /// <summary>Rencontre avec l'équipe possédée ET l'équipement et les talents du joueur (null = aucun : contenu de base, identique aux golden).</summary>
+        public EncounterDef CreateEncounter(string bossId, uint seed, IEnumerable<string>? ownedCharacterIds, Loadout? loadout)
         {
             var owned = ownedCharacterIds == null ? null : new HashSet<string>(ownedCharacterIds);
             var team = owned == null ? Characters : Characters.FindAll(c => c.Role == "healer" || owned.Contains(c.Id));
-            return Build(bossId, seed, team);
+            var (characters, skills) = LoadoutApplier.Apply(Upgrades, loadout, team, Skills);
+            return new EncounterDef
+            {
+                Id = "encounter-" + bossId,
+                Boss = BossById(bossId),
+                Allies = characters,
+                Effects = Effects,
+                Skills = skills,
+                Seed = seed,
+            };
         }
-
-        private EncounterDef Build(string bossId, uint seed, List<CharacterDef> team) => new EncounterDef
-        {
-            Id = "encounter-" + bossId,
-            Boss = BossById(bossId),
-            Allies = team,
-            Effects = Effects,
-            Skills = Skills,
-            Seed = seed,
-        };
     }
 }

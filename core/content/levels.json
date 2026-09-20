@@ -5,7 +5,7 @@
     "bossId": "boss1",
     "requires": null,
     "rewardGold": 100,
-    "repeatGold": 20,
+    "repeatGold": 50,
     "starBonusGold": 20,
     "threeStarMaxDamageTaken": 3700
   },
@@ -15,7 +15,7 @@
     "bossId": "boss2",
     "requires": "l1",
     "rewardGold": 150,
-    "repeatGold": 30,
+    "repeatGold": 80,
     "starBonusGold": 30,
     "threeStarMaxDamageTaken": 2000
   },
@@ -25,7 +25,7 @@
     "bossId": "boss3",
     "requires": "l2",
     "rewardGold": 220,
-    "repeatGold": 45,
+    "repeatGold": 120,
     "starBonusGold": 40,
     "threeStarMaxDamageTaken": 3000
   }
