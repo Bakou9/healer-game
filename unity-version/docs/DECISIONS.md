@@ -226,3 +226,7 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - **Décision** : le combat ne démarre plus tout seul : un écran « Jouer » explique les gestes (cible puis sort, bouclier avant l'attaque, purge, mana). Le combat se met en pause si la fenêtre perd le focus (sauf quand le bot joue en mode capture). `Builder.BuildAndroid` (IL2CPP arm64, portrait) et lecture de StreamingAssets par UnityWebRequest sur Android sont prêts.
 - **Pourquoi** : un joueur qui lance le jeu ne doit pas perdre un combat avant d'avoir compris ; changer de fenêtre ne doit pas être puni.
 - **Reste à faire** : le build Android exige le module Android d'Unity (installation = à valider avec l'utilisateur, cf. QUESTIONS_EN_ATTENTE).
+
+## D-040 — Input System adopté ; le projet Unity se travaille dans C:\WhatTheHeal
+- **Décision** : le paquet `com.unity.inputsystem` 1.14.2 remplace l'ancien Input Manager (`activeInputHandler: 1`). Un essai dans `C:\Users\banja\Documents\healer-game` échouait toujours (EPERM au renommage du paquet dans `Library/PackageCache`) ; le même dépôt cloné dans `C:\WhatTheHeal` s'installe sans erreur. Le dossier `Documents` (accès contrôlé aux dossiers ou OneDrive) est donc la cause probable.
+- **Conséquence** : travailler et builder depuis `C:\WhatTheHeal` (clone de https://github.com/Bakou9/healer-game). Ferme D-034 pour l'Input System ; le clic réel n'est pas retesté (`unity-clicktest.ps1` ignore l'écran « Jouer »).
