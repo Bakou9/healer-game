@@ -132,6 +132,88 @@ namespace Healer.Client
             return b.ToMesh("Cube");
         });
 
+        // ---- Formes « dark fantasy » (D-058) : facettes marquées, silhouettes anguleuses ---------------------
+
+        /// <summary>Tronc à facettes : base de rayon 0,5, sommet de rayon 0,5 × topScale (plus large en haut si &gt; 1), hauteur 1. rotDeg tourne les arêtes.</summary>
+        public static Mesh Prism(int sides = 6, float topScale = 0.7f, float rotDeg = 0f) => Cached($"prism{sides}_{topScale}_{rotDeg}", () =>
+        {
+            var b = new MeshBuilder();
+            float rot = rotDeg * Mathf.Deg2Rad;
+            Vector3 Bot(int s) { float a = 2f * Mathf.PI * s / sides + rot; return new Vector3(0.5f * Mathf.Cos(a), -0.5f, 0.5f * Mathf.Sin(a)); }
+            Vector3 Top(int s) { float a = 2f * Mathf.PI * s / sides + rot; return new Vector3(0.5f * topScale * Mathf.Cos(a), 0.5f, 0.5f * topScale * Mathf.Sin(a)); }
+            for (int s = 0; s < sides; s++)
+            {
+                b.Quad(Bot(s), Bot(s + 1), Top(s + 1), Top(s));
+                b.Tri(new Vector3(0, 0.5f, 0), Top(s), Top(s + 1));
+                b.Tri(new Vector3(0, -0.5f, 0), Bot(s), Bot(s + 1));
+            }
+            return b.ToMesh("Prism");
+        });
+
+        /// <summary>Cristal : double pyramide de hauteur 1 ; waist (0 à 1) place la ceinture, de rayon 0,5.</summary>
+        public static Mesh Crystal(int sides = 6, float waist = 0.5f) => Cached($"crystal{sides}_{waist}", () =>
+        {
+            var b = new MeshBuilder();
+            float y = waist - 0.5f;
+            Vector3 R(int s) { float a = 2f * Mathf.PI * s / sides; return new Vector3(0.5f * Mathf.Cos(a), y, 0.5f * Mathf.Sin(a)); }
+            for (int s = 0; s < sides; s++)
+            {
+                b.Tri(new Vector3(0, 0.5f, 0), R(s), R(s + 1));
+                b.Tri(new Vector3(0, -0.5f, 0), R(s), R(s + 1));
+            }
+            return b.ToMesh("Crystal");
+        });
+
+        /// <summary>Rocher taillé : sphère à facettes dont chaque sommet est déplacé de façon déterministe (roughness ≈ 0,15 à 0,35).</summary>
+        public static Mesh Rock(int seed = 1, float roughness = 0.25f, int rings = 4, int segs = 7) => Cached($"rock{seed}_{roughness}_{rings}_{segs}", () =>
+        {
+            var b = new MeshBuilder();
+            float Hash(int r, int s) => Mathf.Repeat(Mathf.Sin(seed * 12.9898f + r * 78.233f + (s % segs) * 37.719f) * 43758.5453f, 1f);
+            Vector3 P(int r, int s)
+            {
+                float phi = Mathf.PI * r / rings;
+                float theta = 2f * Mathf.PI * s / segs;
+                float k = r == 0 || r == rings ? 1f : 1f + roughness * (Hash(r, s) - 0.5f) * 2f;
+                return 0.5f * k * new Vector3(Mathf.Sin(phi) * Mathf.Cos(theta), Mathf.Cos(phi), Mathf.Sin(phi) * Mathf.Sin(theta));
+            }
+            for (int r = 0; r < rings; r++)
+                for (int s = 0; s < segs; s++)
+                {
+                    Vector3 a = P(r, s), bb = P(r, s + 1), c = P(r + 1, s + 1), d = P(r + 1, s);
+                    if (r == 0) b.Tri(a, c, d);
+                    else if (r == rings - 1) b.Tri(a, bb, c);
+                    else b.Quad(a, bb, c, d);
+                }
+            return b.ToMesh("Rock");
+        });
+
+        /// <summary>Toit à deux pans (plaque d'armure, pointe d'épaulière) : base 1×1, arête en haut le long de X.</summary>
+        public static Mesh Wedge() => Cached("wedge", () =>
+        {
+            var b = new MeshBuilder();
+            var a = new Vector3(-0.5f, -0.5f, -0.5f); var bb = new Vector3(0.5f, -0.5f, -0.5f);
+            var c = new Vector3(0.5f, -0.5f, 0.5f); var d = new Vector3(-0.5f, -0.5f, 0.5f);
+            var e = new Vector3(-0.5f, 0.5f, 0f); var f = new Vector3(0.5f, 0.5f, 0f);
+            b.Quad(a, bb, c, d);
+            b.Quad(a, bb, f, e);
+            b.Quad(d, c, f, e);
+            b.Tri(a, e, d);
+            b.Tri(bb, f, c);
+            return b.ToMesh("Wedge");
+        });
+
+        /// <summary>Lame plate en losange (épée, plume, épine) : largeur 1 (X), hauteur 1 (Y, pointe en haut), épaisseur 0,32 (Z).</summary>
+        public static Mesh Blade() => Cached("blade", () =>
+        {
+            var b = new MeshBuilder();
+            var tip = new Vector3(0, 0.5f, 0); var bottom = new Vector3(0, -0.5f, 0);
+            var l = new Vector3(-0.5f, 0.05f, 0); var r = new Vector3(0.5f, 0.05f, 0);
+            var front = new Vector3(0, 0.05f, 0.16f); var back = new Vector3(0, 0.05f, -0.16f);
+            b.Tri(tip, l, front); b.Tri(tip, front, r); b.Tri(bottom, front, l); b.Tri(bottom, r, front);
+            b.Tri(tip, back, l); b.Tri(tip, r, back); b.Tri(bottom, l, back); b.Tri(bottom, back, r);
+            return b.ToMesh("Blade");
+        });
+
         public static int TriangleCount(Mesh mesh) => mesh.triangles.Length / 3;
     }
 }

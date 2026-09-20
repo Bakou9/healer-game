@@ -19,7 +19,7 @@ namespace Healer.Client
         private const float BossFeetY = 452f;
         private const float AllyFeetY = 640f;
         private const float BossScale = 2.1f;
-        private const float AllyScale = 1.65f;
+        private const float AllyScale = 1.85f;
 
         private sealed class UnitView
         {
@@ -34,6 +34,7 @@ namespace Healer.Client
             public GameObject Bubble = null!;
             public GameObject Ring = null!;
             public float HealGlow;
+            public UnitRig? Rig;
         }
 
         private Camera _cam = null!;
@@ -94,6 +95,7 @@ namespace Healer.Client
             BuildLights();
             BuildBackdrop();
             BuildParticles();
+            BuildAtmosphere();
             BuildModels();
             ctl.EventEmitted += OnEvent;
             ctl.Restarted += ResetVisuals;
@@ -117,33 +119,165 @@ namespace Healer.Client
             _cam.nearClipPlane = 0.3f;
             _cam.farClipPlane = 200f;
             _cam.clearFlags = CameraClearFlags.SolidColor;
-            _cam.backgroundColor = Palette.Hex("0A0C14");
+            _cam.backgroundColor = Palette.Hex("05060B");
             _cam.transform.position = Vector3.zero;
             _cam.transform.rotation = Quaternion.identity;
         }
 
         private void BuildLights()
         {
+            // Ambiance nocturne : ambiance bleu nuit, lune froide, contre-jour violet, deux braseros chauds sur les côtés.
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.40f, 0.42f, 0.54f);
-            var sun = new GameObject("Sun").AddComponent<Light>();
+            RenderSettings.ambientLight = new Color(0.29f, 0.30f, 0.45f);
+            var sun = new GameObject("Moon").AddComponent<Light>();
             sun.type = LightType.Directional;
-            sun.color = new Color(1f, 0.9f, 0.78f);
-            sun.intensity = 1.25f;
+            sun.color = new Color(0.66f, 0.74f, 1f);
+            sun.intensity = 1.3f;
             sun.transform.rotation = Quaternion.Euler(42f, 205f, 0f);
             sun.shadows = LightShadows.None;
-            // Contre-jour froid : détache les silhouettes du décor sombre.
             var rim = new GameObject("RimLight").AddComponent<Light>();
             rim.type = LightType.Directional;
-            rim.color = new Color(0.45f, 0.6f, 1f);
-            rim.intensity = 0.8f;
+            rim.color = new Color(0.58f, 0.36f, 0.95f);
+            rim.intensity = 0.95f;
             rim.transform.rotation = Quaternion.Euler(28f, 175f, 0f);
             rim.shadows = LightShadows.None;
             _coreLight = new GameObject("CoreLight").AddComponent<Light>();
             _coreLight.type = LightType.Point;
-            _coreLight.range = 9f;
-            _coreLight.intensity = 0.8f;
+            _coreLight.range = 11f;
+            _coreLight.intensity = 1.0f;
             _coreLight.color = Palette.CoreCalm;
+            _brazierL = new GameObject("BrazierL").AddComponent<Light>();
+            _brazierR = new GameObject("BrazierR").AddComponent<Light>();
+            foreach (var l in new[] { _brazierL, _brazierR })
+            {
+                l.type = LightType.Point;
+                l.range = 10f;
+                l.intensity = 0.9f;
+                l.color = new Color(1f, 0.55f, 0.26f);
+            }
+        }
+
+        // ---- Atmosphère : cercle runique, brume, poussières lumineuses, braseros ------------------------------
+
+        private Light _brazierL = null!, _brazierR = null!;
+        private Transform _runeCircle = null!;
+        private Material _runeMat = null!;
+        private readonly List<Transform> _mist = new List<Transform>();
+        private readonly List<Material> _mistMat = new List<Material>();
+        private ParticleSystem? _motes;
+
+        private void BuildAtmosphere()
+        {
+            var circle = new GameObject("RuneCircle");
+            circle.transform.SetParent(transform, false);
+            circle.AddComponent<MeshFilter>().sharedMesh = QuadMesh();
+            _runeMat = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended")) { mainTexture = RuneCircleTexture(256) };
+            _runeMat.SetColor("_TintColor", new Color(0.4f, 0.8f, 1f, 0.3f));
+            circle.AddComponent<MeshRenderer>().sharedMaterial = _runeMat;
+            _runeCircle = circle.transform;
+
+            for (int i = 0; i < 6; i++)
+            {
+                var go = new GameObject("Mist");
+                go.transform.SetParent(transform, false);
+                go.AddComponent<MeshFilter>().sharedMesh = QuadMesh();
+                var mat = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended")) { mainTexture = SoftDot(64) };
+                mat.SetColor("_TintColor", new Color(0.36f, 0.32f, 0.56f, 0.1f));
+                go.AddComponent<MeshRenderer>().sharedMaterial = mat;
+                _mist.Add(go.transform);
+                _mistMat.Add(mat);
+            }
+
+            var motes = new GameObject("FxMotes");
+            motes.transform.SetParent(transform, false);
+            _motes = motes.AddComponent<ParticleSystem>();
+            var main = _motes.main;
+            main.loop = true;
+            main.playOnAwake = true;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.startLifetime = 7f;
+            main.startSize = new ParticleSystem.MinMaxCurve(0.07f, 0.18f);
+            main.startSpeed = new ParticleSystem.MinMaxCurve(0.1f, 0.35f);
+            main.gravityModifier = -0.02f;
+            main.maxParticles = 160;
+            main.startColor = new Color(0.4f, 0.9f, 1f, 0.65f);
+            var emission = _motes.emission;
+            emission.enabled = true;
+            emission.rateOverTime = 14f;
+            var shape = _motes.shape;
+            shape.enabled = true;
+            shape.shapeType = ParticleSystemShapeType.Box;
+            shape.scale = new Vector3(20f, 0.2f, 9f);
+            var fade = _motes.colorOverLifetime;
+            fade.enabled = true;
+            var g = new Gradient();
+            g.SetKeys(new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) },
+                      new[] { new GradientAlphaKey(0f, 0), new GradientAlphaKey(1f, 0.25f), new GradientAlphaKey(0f, 1) });
+            fade.color = g;
+            var renderer = motes.GetComponent<ParticleSystemRenderer>();
+            renderer.sharedMaterial = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended")) { mainTexture = SoftDot(64) };
+            _motes.Play();
+        }
+
+        private void UpdateAtmosphere(float t)
+        {
+            var center = WorldAt((float)Layout.GameW / 2f, AllyFeetY, AllyDepth);
+            _runeCircle.position = center + new Vector3(0f, 0.02f, 0f);
+            _runeCircle.rotation = Quaternion.Euler(90f, 0f, 0f) * Quaternion.Euler(0f, 0f, t * 3.5f);
+            _runeCircle.localScale = new Vector3(19f, 19f * 0.42f, 1f);
+            var glow = _boss != null ? ((_ctl.Battle != null && _ctl.Battle.GetBossPhase().Index > 0) ? _coreFury : _coreCalm) : Palette.CoreCalm;
+            _runeMat.SetColor("_TintColor", new Color(glow.r, glow.g, glow.b, 0.22f + 0.1f * Mathf.Sin(t * 1.4f)));
+            if (_motes != null) _motes.transform.position = center + new Vector3(0f, 0.2f, 1.5f);
+            for (int i = 0; i < _mist.Count; i++)
+            {
+                float k = i / (float)_mist.Count;
+                var p = WorldAt(240f + 160f * i + Mathf.Sin(t * 0.07f + i * 1.7f) * 120f, AllyFeetY - 15f, AllyDepth + 4f - i * 1.2f);
+                _mist[i].position = p + new Vector3(0f, 0.55f + 0.18f * Mathf.Sin(t * 0.3f + i), 0f);
+                _mist[i].rotation = _cam.transform.rotation;
+                _mist[i].localScale = new Vector3(11f, 2.6f, 1f);
+                _mistMat[i].SetColor("_TintColor", new Color(0.36f, 0.32f, 0.56f, 0.07f + 0.04f * Mathf.Sin(t * 0.4f + i * 2f + k)));
+            }
+            _brazierL.transform.position = WorldAt(70f, 520f, AllyDepth - 2f);
+            _brazierR.transform.position = WorldAt((float)Layout.GameW - 70f, 520f, AllyDepth - 2f);
+            _brazierL.intensity = 0.85f + 0.25f * Mathf.Sin(t * 11f) * Mathf.Sin(t * 3.7f);
+            _brazierR.intensity = 0.85f + 0.25f * Mathf.Sin(t * 9.3f + 1f) * Mathf.Sin(t * 4.1f);
+        }
+
+        /// <summary>Cercle runique : deux anneaux, douze graduations et un hexagramme, en blanc à transparence (teinté par la scène).</summary>
+        private static Texture2D RuneCircleTexture(int size)
+        {
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            float c = (size - 1) * 0.5f;
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = (x - c) / c, dy = (y - c) / c;
+                    float d = Mathf.Sqrt(dx * dx + dy * dy);
+                    float ang = Mathf.Atan2(dy, dx);
+                    float a = 0f;
+                    a = Mathf.Max(a, 1f - Mathf.Abs(d - 0.96f) / 0.012f);
+                    a = Mathf.Max(a, 1f - Mathf.Abs(d - 0.8f) / 0.008f);
+                    float tick = Mathf.Abs(Mathf.Repeat(ang / (Mathf.PI * 2f) * 12f, 1f) - 0.5f);
+                    if (d > 0.8f && d < 0.96f) a = Mathf.Max(a, (1f - tick / 0.04f) * 0.9f);
+                    // hexagramme : deux triangles inscrits dans le cercle intérieur
+                    for (int tri = 0; tri < 2; tri++)
+                    {
+                        float best = 9f;
+                        for (int e = 0; e < 3; e++)
+                        {
+                            float a0 = (tri * 60f + e * 120f + 90f) * Mathf.Deg2Rad, a1 = (tri * 60f + (e + 1) * 120f + 90f) * Mathf.Deg2Rad;
+                            var p0 = 0.78f * new Vector2(Mathf.Cos(a0), Mathf.Sin(a0)); var p1 = 0.78f * new Vector2(Mathf.Cos(a1), Mathf.Sin(a1));
+                            var q = new Vector2(dx, dy); var ab = p1 - p0;
+                            float u = Mathf.Clamp01(Vector2.Dot(q - p0, ab) / ab.sqrMagnitude);
+                            best = Mathf.Min(best, (q - (p0 + ab * u)).magnitude);
+                        }
+                        a = Mathf.Max(a, (1f - best / 0.008f) * 0.7f);
+                    }
+                    if (d > 1f) a = 0f;
+                    tex.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01(a)));
+                }
+            tex.Apply();
+            return tex;
         }
 
         private void BuildBackdrop()
@@ -173,12 +307,12 @@ namespace Healer.Client
         {
             var tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             var pixels = new Color[w * h];
-            var skyTop = Palette.Hex("080A12");
-            var skyLow = Palette.Hex("1E1C34");
-            var haze = Palette.Hex("4A3F66");
-            var floorNear = Palette.Hex("07080D");
-            var floorFar = Palette.Hex("17162A");
-            var pillar = Palette.Hex("0C0D18");
+            var skyTop = Palette.Hex("04050A");
+            var skyLow = Palette.Hex("100F24");
+            var haze = Palette.Hex("352B54");
+            var floorNear = Palette.Hex("040509");
+            var floorFar = Palette.Hex("0E0D1D");
+            var pillar = Palette.Hex("080911");
             const float horizon = 0.6f; // fraction depuis le bas
             float[] pillarX = { 0.09f, 0.26f, 0.74f, 0.91f };
             float[] pillarW = { 0.03f, 0.022f, 0.022f, 0.03f };
@@ -195,6 +329,17 @@ namespace Healer.Client
                         c = Color.Lerp(skyLow, skyTop, Mathf.Pow(k, 0.7f));
                         float glow = Mathf.Exp(-Mathf.Pow((v - horizon) / 0.09f, 2f)) * Mathf.Exp(-Mathf.Pow((u - 0.5f) / 0.55f, 2f));
                         c = Color.Lerp(c, haze, glow * 0.55f);
+                        // Fenêtre gothique en ogive derrière le boss : lueur froide de lune, meneaux sombres.
+                        float wy = (v - (horizon + 0.05f)) / 0.3f;
+                        if (wy > 0f && wy < 1f)
+                        {
+                            float half = 0.085f * Mathf.Sqrt(Mathf.Clamp01(1f - Mathf.Pow(Mathf.Max(0f, wy - 0.55f) / 0.45f, 2f)));
+                            if (Mathf.Abs(u - 0.5f) < half)
+                            {
+                                float mull = Mathf.Abs(Mathf.Abs(u - 0.5f) - 0.03f) < 0.004f || Mathf.Abs(wy - 0.42f) < 0.012f ? 0.25f : 1f;
+                                c = Color.Lerp(c, Palette.Hex("4B5C8A"), 0.32f * mull * (1f - 0.5f * wy));
+                            }
+                        }
                         for (int p = 0; p < pillarX.Length; p++)
                         {
                             float d = Mathf.Abs(u - pillarX[p]);
@@ -403,6 +548,7 @@ namespace Healer.Client
             bubble.SetActive(false);
             view.Bubble = bubble;
             view.Ring = ring;
+            view.Rig = model.GetComponent<UnitRig>();
             return view;
         }
 
@@ -435,6 +581,7 @@ namespace Healer.Client
             _boss = MakeView("boss", model, BossScale * _bossScaleFactor);
             _bossGlow = model.GetComponentsInChildren<Renderer>().Where(r => r.name is "Core" or "EyeL" or "EyeR" or "Rune").ToArray();
             _bossHit = _bossStrike = _phaseBurst = 0;
+            if (_motes != null) { var main = _motes.main; main.startColor = new Color(_coreCalm.r, _coreCalm.g, _coreCalm.b, 0.65f); }
         }
 
         private readonly Dictionary<string, float> _stageX = new Dictionary<string, float>();
@@ -455,7 +602,7 @@ namespace Healer.Client
             return _cam.ViewportToWorldPoint(new Vector3(vp.x, vp.y, depth));
         }
 
-        public Vector3 AllyHead(string id) => _units.TryGetValue(id, out var v) ? v.Root.transform.position + Vector3.up * 2.2f * AllyScale : Vector3.zero;
+        public Vector3 AllyHead(string id) => _units.TryGetValue(id, out var v) ? v.Root.transform.position + Vector3.up * 2.9f * AllyScale : Vector3.zero;
 
         // ---- Boucle ------------------------------------------------------------------------------
 
@@ -491,6 +638,7 @@ namespace Healer.Client
             var br = _boss.Root.transform;
             br.position = bp + new Vector3(bossShake, breathe * 0.05f, -_bossStrike * 1.6f);
             br.rotation = Quaternion.Euler(_bossStrike * 14f, 180f, 0f);
+            _boss.Rig?.Apply(t, 0.4f, 0f, (float)bossPose.Lunge, (float)bossPose.Recoil, 0f);
             br.localScale = new Vector3(1f + _bossHit * 0.04f, 1f - _bossHit * 0.03f + breathe * 0.008f, 1f + _bossHit * 0.04f) * BossScale * _bossScaleFactor;
             Color core = phase.Index > 0 ? _coreFury : _coreCalm;
             float pulse = bigAttack ? 0.7f + 0.3f * Mathf.Sin(t * 22f) : 0.8f + 0.2f * Mathf.Sin(t * 3.2f);
@@ -529,6 +677,7 @@ namespace Healer.Client
                 tr.position = home + new Vector3(0, bob - v.HitFlash * 0.12f + (float)pose.Cast * 0.2f - (float)pose.Fall * 0.3f, -v.Lunge * 1.2f + (float)pose.Recoil * 0.25f);
                 float side = kv.Key == "healer" ? -10f : (kv.Key == "tank" ? 12f : kv.Key == "dps1" ? -6f : 8f);
                 tr.rotation = Quaternion.Euler(-(float)pose.Cast * 10f, 180f + side * (1f - (float)pose.Fall), (float)pose.Fall * 78f);
+                v.Rig?.Apply(t, v.Phase, (float)pose.Cast, (float)pose.Lunge, (float)pose.Recoil, (float)pose.Fall);
                 v.Bubble.SetActive(st.Alive && st.Shield > 0.5f);
                 v.Ring.SetActive(st.Alive && _ctl.Selection.Selected == kv.Key);
                 bool poisoned = st.Effects.Count > 0;
@@ -562,6 +711,7 @@ namespace Healer.Client
                 _dangerRing.transform.localScale = new Vector3(15f + 4f * (1f - progress), 6f + 1.6f * (1f - progress), 1f);
             }
             UpdateFx(dt);
+            UpdateAtmosphere(t);
 
             // Secousse de caméra.
             _shake = Mathf.Max(0f, _shake - dt * 2.4f);

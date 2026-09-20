@@ -125,13 +125,13 @@ namespace Healer.EditorTools
                 if (tris > budget) throw new Exception($"{name} dépasse son budget de triangles : {tris} > {budget}");
                 if (missing.Count > 0) throw new Exception($"{name} : parties manquantes : {string.Join(", ", missing)}");
             }
-            Check("Golem", ModelFactory.Golem(), BossBudget, "Core", "Eyes", "Runes", "Head", "Torso");
-            Check("Reine des Marais", ModelFactory.SwampQueen(), BossBudget, "Core", "Eyes", "Runes", "Head", "Torso");
-            Check("Seigneur de Cendre", ModelFactory.AshLord(), BossBudget, "Core", "Eyes", "Runes", "Head", "Torso");
-            Check("Garde", ModelFactory.Tank(), CharacterBudget, "Shield", "Helmet", "Eyes");
-            Check("Archère", ModelFactory.Archer(), CharacterBudget, "Bow", "Quiver", "Eyes");
-            Check("Mage", ModelFactory.Mage(), CharacterBudget, "Hat", "Staff", "Orb", "Eyes");
-            Check("Soigneuse", ModelFactory.Healer(), CharacterBudget, "Staff", "Cross", "Eyes");
+            Check("Golem", ModelFactory.Golem(), BossBudget, "Core", "EyeL", "EyeR", "Rune", "Head", "Torso", "ArmL", "ArmR");
+            Check("Reine des Marais", ModelFactory.SwampQueen(), BossBudget, "Core", "EyeL", "EyeR", "Rune", "Head", "Torso", "ArmL", "ArmR");
+            Check("Seigneur de Cendre", ModelFactory.AshLord(), BossBudget, "Core", "EyeL", "EyeR", "Rune", "Head", "Torso", "ArmL", "ArmR");
+            Check("Garde", ModelFactory.Tank(), CharacterBudget, "Shield", "Helm", "Visor", "Head", "Torso", "ArmL", "ArmR");
+            Check("Archère", ModelFactory.Archer(), CharacterBudget, "Bow", "Quiver", "Hood", "Head", "Torso", "ArmL", "ArmR");
+            Check("Mage", ModelFactory.Mage(), CharacterBudget, "Hat", "Staff", "Orb", "Head", "Torso", "ArmL", "ArmR");
+            Check("Soigneuse", ModelFactory.Healer(), CharacterBudget, "Staff", "Cross", "Halo", "Head", "Torso", "ArmL", "ArmR");
             Debug.Log(report.ToString());
         }
 

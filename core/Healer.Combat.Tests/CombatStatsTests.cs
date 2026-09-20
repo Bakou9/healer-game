@@ -84,5 +84,50 @@ namespace Healer.Combat.Tests
             Assert.That(seen!.TotalMs, Is.GreaterThan(0));
             Assert.That(seen.MsRemaining, Is.LessThanOrEqualTo(seen.TotalMs));
         }
+
+        // Overheal (soins gaspillés) : affiché sur l'écran de fin.
+        private static CombatStats PlayArena(EncounterDef enc, double ms, params Command[] commands)
+        {
+            var battle = new Battle(enc, commands);
+            var stats = new CombatStats();
+            stats.Attach(battle);
+            while (battle.GetClock() < ms && battle.GetResult() == BattleResults.Ongoing) battle.Step(50);
+            return stats;
+        }
+
+        [Test]
+        public void Un_soin_sur_un_allie_en_pleine_forme_est_entierement_de_l_overheal()
+        {
+            var stats = PlayArena(Arena.Make(), 600, new Command { TimeMs = 100, SkillId = "heal_single", TargetId = "tank" });
+            Assert.That(stats.HealingDone, Is.EqualTo(0));
+            Assert.That(stats.Overheal, Is.EqualTo(170), "tout le soin de 170 dépasse les PV manquants (0)");
+            Assert.That(stats.OverhealRatio, Is.EqualTo(1.0));
+        }
+
+        [Test]
+        public void L_overheal_est_la_part_du_soin_qui_depasse_les_PV_manquants()
+        {
+            // Le boss frappe les deux alliés (100 - défense 10 = 90 chacun) à 1000 ms ; le soin de zone (140) part à 1500 ms.
+            var enc = Arena.Make(boss: Arena.AoePattern);
+            var stats = PlayArena(enc, 1600, new Command { TimeMs = 1500, SkillId = "heal_aoe" });
+            Assert.That(stats.HealingDone, Is.EqualTo(180), "90 PV manquants x 2 alliés");
+            Assert.That(stats.Overheal, Is.EqualTo(100), "(140 - 90) x 2 alliés");
+            Assert.That(stats.OverhealRatio, Is.EqualTo(100.0 / 280.0).Within(1e-9));
+        }
+
+        [Test]
+        public void L_overheal_ne_change_pas_la_trace_des_evenements()
+        {
+            var e = new BattleEvent { Type = "healed", TimeMs = 5, UnitId = "tank", Amount = 90, Overheal = 50 };
+            Assert.That(e.Format(), Is.EqualTo("5ms healed tank 90"), "les golden ne bougent pas");
+        }
+
+        [Test]
+        public void Sans_soin_l_overheal_est_nul_et_sa_part_aussi()
+        {
+            var stats = new CombatStats();
+            Assert.That(stats.Overheal, Is.EqualTo(0));
+            Assert.That(stats.OverhealRatio, Is.EqualTo(0));
+        }
     }
 }

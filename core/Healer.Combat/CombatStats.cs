@@ -11,6 +11,10 @@ namespace Healer.Combat
     public sealed class CombatStats
     {
         public double HealingDone { get; private set; }
+        /// <summary>Soins gaspillés : la part des soins qui dépassait les PV manquants (overheal).</summary>
+        public double Overheal { get; private set; }
+        /// <summary>Part des soins lancés qui a été gaspillée (0 à 1) ; 0 si rien n'a été lancé.</summary>
+        public double OverhealRatio => HealingDone + Overheal <= 0 ? 0 : Overheal / (HealingDone + Overheal);
         public double ShieldGranted { get; private set; }
         public double DamageTaken { get; private set; }
         public double DamageAbsorbed { get; private set; }
@@ -56,6 +60,7 @@ namespace Healer.Combat
                     break;
                 case "healed":
                     HealingDone += e.Amount;
+                    Overheal += e.Overheal;
                     break;
                 case "shielded":
                     ShieldGranted += e.Amount;

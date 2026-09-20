@@ -264,7 +264,7 @@ namespace Healer.Combat
             double before = unit.Hp;
             unit.Hp = Math.Min(unit.MaxHp, unit.Hp + amount);
             double healed = unit.Hp - before;
-            Emit(new BattleEvent { Type = "healed", TimeMs = now, UnitId = unit.Id, Amount = healed, Crit = crit });
+            Emit(new BattleEvent { Type = "healed", TimeMs = now, UnitId = unit.Id, Amount = healed, Overheal = amount - healed, Crit = crit });
             // Soigner attire l'attention du boss : une part des soins EFFECTIFS devient de la menace du soigneur.
             if (source != null && healed > 0) source.Threat += healed * HealThreatFactor * source.ThreatMod / 100.0;
         }

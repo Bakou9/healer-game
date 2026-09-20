@@ -26,6 +26,8 @@ namespace Healer.Combat
         public IReadOnlyList<string> TargetIds { get; set; } = Array.Empty<string>();
         public double Amount { get; set; }
         public double Absorbed { get; set; }
+        /// <summary>Soin excédentaire (événement healed) : la part du soin qui dépasse les PV manquants. Non écrit dans la trace des golden.</summary>
+        public double Overheal { get; set; }
         public int Phase { get; set; }
         public bool HitsAll { get; set; }
         /// <summary>Coup ou soin critique.</summary>

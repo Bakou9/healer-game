@@ -499,17 +499,18 @@ namespace Healer.Client
             var panel = Ui.R(Layout.EndStatsPanel);
             M(panel, new Color(Ui.Panel.r, Ui.Panel.g, Ui.Panel.b, 0.96f), 14, Ui.PanelStroke, 2);
             BuildDamagePanel();
-            string[] labels = { "Durée du combat", "Soins effectifs", "Dégâts encaissés", "dont absorbés par boucliers", "Sorts lancés", "Alliés K.O.", "Poisons et brûlures purgés" };
+            string[] labels = { "Durée du combat", "Soins effectifs", "Soins gaspillés (excédent)", "Dégâts encaissés", "dont absorbés par boucliers", "Sorts lancés", "Alliés K.O.", "Poisons et brûlures purgés" };
             string[] values =
             {
-                Format.Seconds(s.DurationMs), Format.Number(s.HealingDone), Format.Number(s.DamageTaken),
+                Format.Seconds(s.DurationMs), Format.Number(s.HealingDone), Format.Number(s.Overheal) + " (" + (int)(s.OverhealRatio * 100) + " %)", Format.Number(s.DamageTaken),
                 Format.Number(s.DamageAbsorbed), s.Casts.ToString(), s.Deaths.ToString(), s.Purges.ToString(),
             };
             for (int i = 0; i < labels.Length; i++)
             {
-                var row = new Rect(panel.x + 20, panel.y + 12 + i * 31, panel.width - 40, 28);
-                T(row, labels[i], Layout.Font.Body, i == 3 ? Ui.Muted : Color.white, TextAnchor.MiddleLeft);
-                T(row, values[i], Layout.Font.Body, i == 5 && s.Deaths > 0 ? Palette.Damage : Palette.Heal, TextAnchor.MiddleRight, true);
+                var row = new Rect(panel.x + 20, panel.y + 10 + i * 27, panel.width - 40, 26);
+                bool muted = i == 2 || i == 4; // excédent de soin et absorption : lignes secondaires
+                T(row, labels[i], Layout.Font.Body, muted ? Ui.Muted : Color.white, TextAnchor.MiddleLeft);
+                T(row, values[i], Layout.Font.Body, i == 6 && s.Deaths > 0 ? Palette.Damage : i == 2 ? Palette.Hex("E0BE6A") : Palette.Heal, TextAnchor.MiddleRight, true);
             }
 
             float y = 418;
