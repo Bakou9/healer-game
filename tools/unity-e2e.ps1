@@ -9,11 +9,12 @@
 #   F : atelier -> acheter de l'équipement, choisir et changer un talent, or insuffisant, palier verrouillé,
 #       sauvegarde sur disque, relance : l'équipement et le talent sont appliqués au combat
 #   H : le Seigneur de Cendre s'enrage si le combat s'éternise (l'enrage est un réglage du boss)
+#   I : réglages (volumes, secousse) : changés à la souris, sauvegardés, rechargés après relance
 #   G : maintenir un sort (souris puis clavier) l'enchaîne ; re-toucher un allié ne le désélectionne pas
 # Toutes les parties utilisent un dossier de sauvegarde temporaire : la vraie sauvegarde n'est jamais touchée.
 # À lancer quand personne n'utilise souris ni clavier. Code de sortie 1 si une vérification échoue.
-# Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E|F|G|H]
-param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G","H")][string]$Scenario = "all")
+# Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E|F|G|H|I]
+param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G","H","I")][string]$Scenario = "all")
 $ErrorActionPreference = "Stop"
 Add-Type @"
 using System;
@@ -95,11 +96,11 @@ function Check($ok, $label) {
 }
 function Want($scn) { return ($Scenario -eq "all" -or $Scenario -eq $scn) }
 
-# Positions (Healer.Ui.Layout) : menu Jouer (640,322), Atelier (640,398) ; atelier : achat de la 1re carte (318,120), talents palier 1 (903,196) / (1149,196) ; cartes de niveau 1/2/3 au centre x = 312 / 640 / 968, y = 340 ;
+# Positions (Healer.Ui.Layout) : menu Jouer (640,302), Atelier (640,374), Réglages (640,442) ; atelier : achat de la 1re carte (318,120), talents palier 1 (903,196) / (1149,196) ; cartes de niveau 1/2/3 au centre x = 312 / 640 / 968, y = 340 ;
 # Jouer du combat (640,500) ; colonne gauche = alliés (Garde 144,148) ; colonne droite = sorts (Soin 1136,190) ;
 # fin de combat : 2 boutons -> Recommencer (522,618) ; 3 boutons -> Recommencer (404,618), Niveau suivant (640,618) ;
 # pause : Quitter le niveau (640,430) ; Retour (87,32).
-$menuPlay = @(640, 322); $menuWorkshop = @(640, 398); $level1 = @(312, 340); $level2 = @(640, 340); $level3 = @(968, 340); $fightPlay = @(640, 500)
+$menuPlay = @(640, 302); $menuWorkshop = @(640, 374); $menuSettings = @(640, 442); $level1 = @(312, 340); $level2 = @(640, 340); $level3 = @(968, 340); $fightPlay = @(640, 500)
 
 # ---- Scénario A -----------------------------------------------------------------------------
 if (Want "A") {
@@ -300,6 +301,45 @@ Start-Sleep -Seconds 6
 Stop-Game
 $h2 = Log
 Forbid $h2 "boss enragé" "le Golem, boss tutoriel, ne s'enrage jamais"
+}
+
+# ---- Scénario I -----------------------------------------------------------------------------
+if (Want "I") {
+Write-Output "Scénario I : réglages (musique, effets, secousse), sauvegarde et rechargement"
+$dirI = New-ProfileDir "I"
+Start-Game @("-healer-profile-dir", $dirI)
+Tap $menuSettings[0] $menuSettings[1] "Réglages (menu)"
+Tap 692 200 "musique : moins"
+Tap 692 200 "musique : moins"
+Tap 920 296 "effets : plus"
+Tap 920 296 "effets : plus"
+Tap 692 392 "secousse : Non"
+Press 0x01 "Échap (retour au menu)"
+Stop-Game
+$i1 = Log
+Expect $i1 "écran : réglages" "le bouton Réglages ouvre les réglages"
+Expect $i1 "réglage : musique 50" "un clic sur moins baisse la musique de 10 (60 -> 50)"
+Expect $i1 "réglage : musique 40" "un second clic la baisse encore (40)"
+Expect $i1 "réglage : effets 90" "un clic sur plus monte les effets (80 -> 90)"
+Expect $i1 "réglage : effets 100" "et jusqu'au maximum (100)"
+Expect $i1 "réglage : secousse non" "l'interrupteur coupe la secousse"
+Expect $i1 "écran : menu principal" "Échap revient au menu"
+$profileI = Join-Path $dirI "profile.json"
+Check (Test-Path $profileI) "la sauvegarde existe"
+if (Test-Path $profileI) {
+  $ji = Get-Content $profileI -Raw -Encoding UTF8 | ConvertFrom-Json
+  Check ($ji.settings.musicVolume -eq 40) "la sauvegarde contient le volume de la musique (40)"
+  Check ($ji.settings.sfxVolume -eq 100) "la sauvegarde contient le volume des effets (100)"
+  Check ($ji.settings.screenShake -eq $false) "la sauvegarde contient la secousse coupée"
+}
+Write-Output "  -- relance : les réglages sont rechargés (un clic sur moins part de 40, pas de 60)"
+Start-Game @("-healer-profile-dir", $dirI)
+Tap $menuSettings[0] $menuSettings[1] "Réglages (menu)"
+Tap 692 200 "musique : moins"
+Stop-Game
+$i2 = Log
+Expect $i2 "sauvegarde : chargée" "la sauvegarde est rechargée"
+Expect $i2 "réglage : musique 30" "les réglages rechargés servent de point de départ (40 -> 30)"
 }
 
 if ($failures.Count -gt 0) { Write-Output ""; Write-Output "$($failures.Count) vérification(s) en échec."; exit 1 }

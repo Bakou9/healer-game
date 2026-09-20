@@ -278,9 +278,14 @@ namespace Healer.Client
             }
             foreach (float side in new[] { -1f, 1f })
             {
-                Part(t, "Tentacle", cyl, moss, new Vector3(side * 1.15f, 2.4f, 0.2f), S(0.3f, 1.7f, 0.3f), new Vector3(0, 0, side * -22f));
-                Part(t, "Tentacle", cyl, dark, new Vector3(side * 1.75f, 1.3f, 0.45f), S(0.24f, 1.6f, 0.24f), new Vector3(0, 0, side * -52f));
-                Part(t, "TentacleTip", sphere, light, new Vector3(side * 2.2f, 0.55f, 0.55f), S(0.34f, 0.34f, 0.34f));
+                // Tentacule : chaîne de segments qui s'affinent en suivant une courbe (plus de bâtons raides).
+                for (int seg = 0; seg < 6; seg++)
+                {
+                    float k = seg;
+                    float size = 0.66f - 0.075f * k;
+                    Part(t, "Tentacle", sphere, seg % 2 == 0 ? moss : dark, new Vector3(side * (0.95f + 0.22f * k), 2.55f - 0.33f * k - 0.03f * k * k, 0.15f + 0.08f * k), S(size, size * 1.2f, size));
+                }
+                Part(t, "TentacleTip", cone, light, new Vector3(side * 2.25f, 0.55f, 0.6f), S(0.2f, 0.6f, 0.2f), new Vector3(0, 0, side * 160f));
             }
             var glow = GlowMaterial(Palette.Hex("9CFF5A"));
             Part(t, "Core", sphere, glow, new Vector3(0, 2.25f, 0.72f), S(0.55f, 0.55f, 0.4f));

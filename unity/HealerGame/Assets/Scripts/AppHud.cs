@@ -33,8 +33,9 @@ namespace Healer.Client
             UiKit.Fill(new Rect(-2000, -2000, 5000, 5000), new Color(0.03f, 0.04f, 0.09f, 0.72f), 0);
             if (_flow.Screen == AppScreen.MainMenu) DrawMenu();
             else if (_flow.Screen == AppScreen.Workshop) DrawWorkshop();
+            else if (_flow.Screen == AppScreen.Settings) DrawSettings();
             else DrawLevels();
-            if (_flow.Screen != AppScreen.Workshop) DrawFooter();
+            if (_flow.Screen != AppScreen.Workshop && _flow.Screen != AppScreen.Settings) DrawFooter();
             GUI.matrix = previous;
         }
 
@@ -54,6 +55,10 @@ namespace Healer.Client
             UiKit.Button(workshop, "Atelier", Layout.Font.Title, Palette.Hex("22273B"), UiKit.Gold);
             if (Hit(workshop, UiAction.MenuWorkshop)) _flow.OpenWorkshop();
 
+            var settings = R(Layout.MenuSettings);
+            UiKit.Button(settings, "Réglages", Layout.Font.Title, Palette.Hex("22273B"), Palette.Hex("6F7698"));
+            if (Hit(settings, UiAction.MenuSettings)) _flow.OpenSettings();
+
             var sound = R(Layout.MenuSound);
             UiKit.Button(sound, _flow.Profile.Settings.Muted ? "Son : coupé" : "Son : activé", Layout.Font.Title, Palette.Hex("22273B"), Palette.Hex("6F7698"));
             if (Hit(sound, UiAction.MenuToggleSound)) _flow.ToggleMute();
@@ -70,6 +75,48 @@ namespace Healer.Client
 
         /// <summary>Un bouton « Quitter » n'a de sens que sur PC (les téléphones ferment l'application autrement).</summary>
         private static bool CanQuit => Application.platform != RuntimePlatform.Android && Application.platform != RuntimePlatform.IPhonePlayer;
+
+        // ---- Réglages -----------------------------------------------------------------------------
+
+        private void DrawSettings()
+        {
+            float w = (float)Layout.GameW;
+            var s = _flow.Profile.Settings;
+            UiKit.Label(new Rect(0, 60, w, 60), "Réglages", 44, Color.white, TextAnchor.MiddleCenter, true);
+            var back = R(Layout.BackButton);
+            UiKit.Button(back, "← Menu", Layout.Font.Body, Palette.Hex("22273B"), Palette.Hex("6F7698"));
+            if (Hit(back, UiAction.BackToMenu)) _flow.BackToMenu();
+
+            string[] labels = { "Musique", "Effets sonores", "Secousse de l'écran" };
+            for (int row = 0; row < Layout.SettingsRows; row++)
+            {
+                var r = R(Layout.SettingsRow(row));
+                UiKit.Fill(r, new Color(UiKit.Panel.r, UiKit.Panel.g, UiKit.Panel.b, 0.94f), 10);
+                UiKit.Outline(r, UiKit.PanelStroke, 1.5f, 10);
+                UiKit.Label(new Rect(r.x + 20, r.y, 300, r.height), labels[row], Layout.Font.Strong, Color.white, TextAnchor.MiddleLeft, true);
+
+                var minus = R(Layout.SettingsMinus(row));
+                var plus = R(Layout.SettingsPlus(row));
+                var bar = R(Layout.SettingsBar(row));
+                bool toggle = row == 2;
+                UiKit.Button(minus, toggle ? "Non" : "−", toggle ? Layout.Font.Body : Layout.Font.Banner, Palette.Hex("22273B"), Palette.Hex("6F7698"));
+                UiKit.Button(plus, toggle ? "Oui" : "+", toggle ? Layout.Font.Body : Layout.Font.Banner, Palette.Hex("22273B"), Palette.Hex("6F7698"));
+                UiKit.Fill(bar, new Color(0, 0, 0, 0.55f), 6);
+                if (toggle)
+                {
+                    UiKit.Label(bar, s.ScreenShake ? "Activée" : "Coupée", Layout.Font.Small, s.ScreenShake ? Palette.Heal : UiKit.Muted, TextAnchor.MiddleCenter, true);
+                }
+                else
+                {
+                    int value = row == 0 ? s.MusicVolume : s.SfxVolume;
+                    if (value > 0) UiKit.Fill(new Rect(bar.x, bar.y, Mathf.Max(6f, bar.width * value / 100f), bar.height), Palette.Hex("4AA8FF"), 6);
+                    UiKit.Label(bar, value + " %", Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, true);
+                }
+                if (Hit(minus, UiAction.AdjustSetting)) _flow.AdjustSetting(row, -1);
+                if (Hit(plus, UiAction.AdjustSetting)) _flow.AdjustSetting(row, +1);
+            }
+            UiKit.Label(new Rect(0, 470, w, 26), "Le bouton « Son » du menu (ou la touche M) coupe tout sans perdre ces réglages.", Layout.Font.Small, UiKit.Muted, TextAnchor.MiddleCenter);
+        }
 
         // ---- Atelier ------------------------------------------------------------------------------
 

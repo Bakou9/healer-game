@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Healer.Combat;
+using Healer.Combat.Presentation;
 using Healer.Ui;
 using UnityEngine;
 
@@ -46,6 +47,28 @@ namespace Healer.Client
         private Light _coreLight = null!;
         private Transform _backdrop = null!;
         private float _shake;
+
+        // Animation : l'attitude de chaque unité vient de UnitAnimator (cœur, testé), jamais calculée ici.
+        private readonly Dictionary<string, UnitAnimator> _anims = new Dictionary<string, UnitAnimator>();
+        private readonly UnitAnimator _bossAnim = new UnitAnimator("boss", true);
+        private bool _lastBossBig;
+
+        /// <summary>Renseigné par le flux : faux si le joueur a désactivé la secousse de l'écran.</summary>
+        public System.Func<bool>? ShakeEnabled { get; set; }
+
+        private void AddShake(float amount)
+        {
+            if (ShakeEnabled != null && !ShakeEnabled()) return;
+            _shake = Mathf.Max(_shake, amount);
+        }
+
+        // Effets : anneaux au sol, faisceaux entre le soigneur et sa cible, anneau de danger avant l'attaque de zone.
+        private sealed class RingFx { public GameObject Go = null!; public Material Mat = null!; public float Age = 99f; public float Size; public Color Color; }
+        private sealed class BeamFx { public LineRenderer Line = null!; public float Age = 99f; public Color Color; }
+        private readonly List<RingFx> _rings = new List<RingFx>();
+        private readonly List<BeamFx> _beams = new List<BeamFx>();
+        private GameObject _dangerRing = null!;
+        private Material _dangerMat = null!;
         private float _bossHit;
         private float _bossStrike;
         private float _phaseBurst;
@@ -285,6 +308,38 @@ namespace Healer.Client
             _poison = MakeSystem("FxPoison", 0.9f, 1.0f, -0.08f);
             _purge = MakeSystem("FxPurge", 0.8f, 0.7f, -0.04f);
             _impact = MakeSystem("FxImpact", 0.7f, 0.45f, 0.2f);
+            var ringTex = RingTexture(128);
+            for (int i = 0; i < 10; i++)
+            {
+                var go = new GameObject("RingFx");
+                go.transform.SetParent(transform, false);
+                go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+                go.AddComponent<MeshFilter>().sharedMesh = QuadMesh();
+                var mat = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended")) { mainTexture = ringTex };
+                go.AddComponent<MeshRenderer>().sharedMaterial = mat;
+                go.SetActive(false);
+                _rings.Add(new RingFx { Go = go, Mat = mat });
+            }
+            for (int i = 0; i < 8; i++)
+            {
+                var go = new GameObject("BeamFx");
+                go.transform.SetParent(transform, false);
+                var line = go.AddComponent<LineRenderer>();
+                line.positionCount = 2;
+                line.useWorldSpace = true;
+                line.material = new Material(Shader.Find("Sprites/Default"));
+                line.startWidth = 0.22f;
+                line.endWidth = 0.03f;
+                line.enabled = false;
+                _beams.Add(new BeamFx { Line = line });
+            }
+            _dangerRing = new GameObject("DangerRing");
+            _dangerRing.transform.SetParent(transform, false);
+            _dangerRing.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            _dangerRing.AddComponent<MeshFilter>().sharedMesh = QuadMesh();
+            _dangerMat = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended")) { mainTexture = ringTex };
+            _dangerRing.AddComponent<MeshRenderer>().sharedMaterial = _dangerMat;
+            _dangerRing.SetActive(false);
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             for (int i = 0; i < 16; i++)
             {
@@ -362,6 +417,7 @@ namespace Healer.Client
                 var view = MakeView(a.Id, ModelFactory.ForCharacter(a.Id, a.Role), AllyScale);
                 view.Root.name = "Ally_" + a.Id;
                 _units[a.Id] = view;
+                _anims[a.Id] = new UnitAnimator(a.Id);
                 _stageX[a.Id] = (float)Layout.AllyStageX(i, allies.Count);
             }
         }
@@ -387,6 +443,8 @@ namespace Healer.Client
         {
             foreach (var v in _units.Values) { v.HitFlash = 0; v.Lunge = 0; v.HealGlow = 0; v.Root.transform.rotation = Quaternion.identity; }
             _bossHit = _bossStrike = _phaseBurst = _shake = 0;
+            _bossAnim.Reset();
+            foreach (var a in _anims.Values) a.Reset();
         }
 
         // ---- Positions ---------------------------------------------------------------------------
@@ -424,8 +482,10 @@ namespace Healer.Client
             // Boss.
             var bp = WorldAt((float)Layout.GameW / 2f, BossFeetY, BossDepth);
             float bossShake = bigAttack ? Mathf.Sin(t * 45f) * 0.06f : 0f;
-            _bossHit = Mathf.Max(0f, _bossHit - dt * 4f);
-            _bossStrike = Mathf.Max(0f, _bossStrike - dt * 3.2f);
+            double clock = battle.GetClock();
+            var bossPose = _bossAnim.Sample(clock);
+            _bossHit = (float)bossPose.Recoil;
+            _bossStrike = (float)bossPose.Lunge * (_lastBossBig ? 1f : 0.5f);
             float breathe = Mathf.Sin(t * 1.6f);
             var br = _boss.Root.transform;
             br.position = bp + new Vector3(bossShake, breathe * 0.05f, -_bossStrike * 1.6f);
@@ -458,15 +518,16 @@ namespace Healer.Client
             {
                 var v = kv.Value;
                 if (!states.TryGetValue(kv.Key, out var st)) continue;
-                v.HitFlash = Mathf.Max(0f, v.HitFlash - dt * 3.5f);
-                v.Lunge = Mathf.Max(0f, v.Lunge - dt * 4f);
-                v.HealGlow = Mathf.Max(0f, v.HealGlow - dt * 2.5f);
+                var pose = _anims[kv.Key].Sample(clock);
+                v.HitFlash = (float)pose.Recoil;
+                v.Lunge = (float)pose.Lunge;
+                v.HealGlow = (float)pose.Glow;
                 Vector3 home = WorldAt(_stageX[kv.Key], AllyFeetY, AllyDepth);
                 float bob = st.Alive ? Mathf.Abs(Mathf.Sin(t * 2.4f + v.Phase)) * 0.09f : 0f;
                 var tr = v.Root.transform;
-                tr.position = home + new Vector3(0, bob - v.HitFlash * 0.12f, -v.Lunge * 1.2f);
+                tr.position = home + new Vector3(0, bob - v.HitFlash * 0.12f + (float)pose.Cast * 0.2f - (float)pose.Fall * 0.3f, -v.Lunge * 1.2f + (float)pose.Recoil * 0.25f);
                 float side = kv.Key == "healer" ? -10f : (kv.Key == "tank" ? 12f : kv.Key == "dps1" ? -6f : 8f);
-                tr.rotation = st.Alive ? Quaternion.Euler(0f, 180f + side, 0f) : Quaternion.Euler(0f, 180f, 78f);
+                tr.rotation = Quaternion.Euler(-(float)pose.Cast * 10f, 180f + side * (1f - (float)pose.Fall), (float)pose.Fall * 78f);
                 v.Bubble.SetActive(st.Alive && st.Shield > 0.5f);
                 v.Ring.SetActive(st.Alive && _ctl.Selection.Selected == kv.Key);
                 bool poisoned = st.Effects.Count > 0;
@@ -487,6 +548,18 @@ namespace Healer.Client
                 }
             }
 
+            // Anneau de danger sous l'équipe pendant que l'attaque de zone est annoncée.
+            _dangerRing.SetActive(bigAttack);
+            if (bigAttack && telegraph != null)
+            {
+                float progress = 1f - Mathf.Clamp01((float)(telegraph.MsRemaining / System.Math.Max(1.0, telegraph.TotalMs)));
+                float blink = 0.6f + 0.4f * Mathf.Sin(t * 16f);
+                _dangerMat.SetColor("_TintColor", new Color(1f, 0.25f, 0.2f, (0.12f + 0.55f * progress) * blink));
+                _dangerRing.transform.position = WorldAt((float)Layout.GameW / 2f, AllyFeetY, AllyDepth) + new Vector3(0f, 0.04f, 0f);
+                _dangerRing.transform.localScale = new Vector3(15f + 4f * (1f - progress), 6f + 1.6f * (1f - progress), 1f);
+            }
+            UpdateFx(dt);
+
             // Secousse de caméra.
             _shake = Mathf.Max(0f, _shake - dt * 2.4f);
             _cam.transform.position = _shake > 0f
@@ -500,12 +573,28 @@ namespace Healer.Client
 
         private void OnEvent(BattleEvent e)
         {
+            _bossAnim.OnEvent(e);
+            foreach (var a in _anims.Values) a.OnEvent(e);
             switch (e.Type)
             {
+                case "skillUsed":
+                    if (_units.TryGetValue(e.CasterId, out var cv))
+                    {
+                        var from = cv.Root.transform.position + Vector3.up * 1.7f;
+                        Color sc = e.SkillId == "shield" ? Palette.Shield : e.SkillId == "purge" ? Palette.Poison : Palette.Heal;
+                        Ring(cv.Root.transform.position, sc, 2.4f);
+                        foreach (var id in e.TargetIds)
+                            if (id != e.CasterId && _units.TryGetValue(id, out var beamTarget)) Beam(from, beamTarget.Root.transform.position + Vector3.up * 1.4f, sc);
+                    }
+                    break;
+                case "bossEnraged":
+                    AddShake(0.5f);
+                    Ring(_boss.Root.transform.position, _coreFury, 7f);
+                    Burst(_impact, _boss.Root.transform.position + Vector3.up * 1.7f, _coreFury, 30, 4f);
+                    break;
                 case "healed":
                     if (e.Amount > 0 && _units.TryGetValue(e.UnitId, out var hv))
                     {
-                        hv.HealGlow = 1f;
                         Burst(_heal, hv.Root.transform.position + Vector3.up * 1.0f, Palette.Heal, 10, 1.6f);
                         Float(hv, "+" + Format.Number(e.Amount), Palette.Heal);
                     }
@@ -514,6 +603,7 @@ namespace Healer.Client
                     if (_units.TryGetValue(e.UnitId, out var sv))
                     {
                         Burst(_shield, sv.Root.transform.position + Vector3.up * 1.2f, Palette.Shield, 14, 2.6f);
+                        Ring(sv.Root.transform.position, Palette.Shield, 3.2f);
                         Float(sv, "+" + Format.Number(e.Amount), Palette.Shield);
                     }
                     break;
@@ -522,7 +612,6 @@ namespace Healer.Client
                     {
                         if (e.Amount > 0)
                         {
-                            dv.HitFlash = 1f;
                             Burst(_impact, dv.Root.transform.position + Vector3.up * 1.2f, Palette.Damage, 8, 3f);
                             Float(dv, "-" + Format.Number(e.Amount), Palette.Damage);
                         }
@@ -547,22 +636,64 @@ namespace Healer.Client
                     if (e.Reason == "cleansed" && _units.TryGetValue(e.UnitId, out var pv))
                     {
                         Burst(_purge, pv.Root.transform.position + Vector3.up * 1.0f, Color.white, 14, 2.2f);
+                        Ring(pv.Root.transform.position, Color.white, 2.8f);
                         Float(pv, "Purgé", Palette.Heal, 0.8f);
                     }
                     break;
                 case "bossDamaged":
-                    _bossHit = 1f;
-                    if (_units.TryGetValue(e.SourceId, out var lv)) lv.Lunge = 1f;
                     break;
                 case "bossAction":
-                    _bossStrike = e.Action == "bigAttack" ? 1f : 0.55f;
-                    if (e.Action == "bigAttack") _shake = Mathf.Max(_shake, 0.55f);
+                    _lastBossBig = e.Action == "bigAttack";
+                    if (_lastBossBig) AddShake(0.55f);
                     break;
                 case "bossPhaseChanged":
                     _phaseBurst = 1f;
-                    _shake = 1f;
+                    AddShake(1f);
                     Burst(_impact, _boss.Root.transform.position + Vector3.up * 1.7f, _coreFury, 40, 5f);
                     break;
+            }
+        }
+
+        /// <summary>Anneau qui s'étend au sol et s'estompe (lancer d'un sort, bouclier, purge, enrage).</summary>
+        private void Ring(Vector3 pos, Color color, float size)
+        {
+            var fx = _rings.OrderByDescending(r => r.Age).First();
+            fx.Age = 0f; fx.Size = size; fx.Color = color;
+            fx.Go.transform.position = new Vector3(pos.x, pos.y + 0.06f, pos.z);
+            fx.Go.SetActive(true);
+        }
+
+        /// <summary>Faisceau bref entre le soigneur et sa cible.</summary>
+        private void Beam(Vector3 from, Vector3 to, Color color)
+        {
+            var fx = _beams.OrderByDescending(b => b.Age).First();
+            fx.Age = 0f; fx.Color = color;
+            fx.Line.SetPosition(0, from);
+            fx.Line.SetPosition(1, to);
+            fx.Line.enabled = true;
+        }
+
+        private void UpdateFx(float dt)
+        {
+            foreach (var r in _rings)
+            {
+                if (!r.Go.activeSelf) continue;
+                r.Age += dt;
+                float k = r.Age / 0.55f;
+                if (k >= 1f) { r.Go.SetActive(false); continue; }
+                float size = r.Size * (0.35f + 0.65f * (1f - (1f - k) * (1f - k)));
+                r.Go.transform.localScale = new Vector3(size, size * 0.62f, 1f);
+                r.Mat.SetColor("_TintColor", new Color(r.Color.r, r.Color.g, r.Color.b, 0.85f * (1f - k)));
+            }
+            foreach (var b in _beams)
+            {
+                if (!b.Line.enabled) continue;
+                b.Age += dt;
+                float k = b.Age / 0.35f;
+                if (k >= 1f) { b.Line.enabled = false; continue; }
+                var c = new Color(b.Color.r, b.Color.g, b.Color.b, 0.9f * (1f - k));
+                b.Line.startColor = c;
+                b.Line.endColor = new Color(c.r, c.g, c.b, c.a * 0.3f);
             }
         }
 

@@ -175,7 +175,22 @@ répétée en boucle), **phases** et **enrage**.
 - Bilan de combat : durée, soins effectifs, dégâts encaissés (dont absorbés), sorts lancés, alliés K.O., effets
   purgés, **dégâts infligés au boss par membre** (avec part en %), étoiles, or, déblocages.
 
-## 9. Où changer quoi
+## 9. Sons, musique, animations, réglages (présentation)
+
+Rien de tout cela ne change le combat : ces systèmes **lisent** les événements. Leur logique vit dans le cœur
+(`core/Healer.Combat/Presentation`) pour être testée ; le client Unity ne fait que jouer le résultat.
+
+| Sujet | Règle |
+|---|---|
+| **Quel événement fait quel son** (`AudioCues`) | soin qui rend des PV → soin ; bouclier ; purge (pas l'expiration ni la mort d'un effet) ; effet appliqué ; coup avec PV perdus (un coup entièrement absorbé est muet) ; mort ; action du boss (zone = grondement, sinon un tic) ; changement de phase et enrage = rugissements ; fin = victoire ou défaite ; lancer d'un sort = petit son de confirmation |
+| **Anti-répétition** (`CueLimiter`) | un même son ne se rejoue pas avant 60 ms (150 ms pour le tic du boss, 1,5 s pour victoire, défaite, rugissements) ; un soin de zone sur 4 alliés = un seul son |
+| **Volumes** (`Mix`, réglages) | musique 60 et effets 80 par défaut, de 0 à 100 par pas de 10 ; « Son coupé » (touche M) met tout à zéro sans effacer les volumes |
+| **Musique adaptative** (`MusicDirector`) | intensité = 0,25 + 0,5 × (1 − PV du plus blessé) + 0,12 si une attaque de zone est annoncée + 0,08 × phase du boss (max 3) + 0,05 × palier d'enrage (max 4), bornée à 0-1 ; 0 dans les menus. Quatre couches : nappe (toujours), pulsation grave (à partir de 0,25), mélodie (0,50), alarme aiguë (0,78) ; montée en 0,6 s, retour au calme en 2,5 s |
+| **Animations** (`UnitAnimator`) | élan d'attaque 380 ms, recul 320 ms, geste de lancer 500 ms, halo de soin ou de bouclier 700 ms, chute à la mort 750 ms puis reste à terre ; le boss avance quand il attaque et recule quand il est touché |
+| **Effets visuels** (client) | anneau au sol par sort ; faisceau du soigneur vers sa cible ; anneau de danger rouge sous l'équipe pendant l'annonce d'une attaque de zone ; aura d'enrage |
+| **Secousse d'écran** | à l'attaque de zone, au changement de phase, à l'enrage ; désactivable dans les réglages |
+
+## 10. Où changer quoi
 
 | Je veux… | Je modifie |
 |---|---|

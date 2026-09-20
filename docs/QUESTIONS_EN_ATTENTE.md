@@ -42,3 +42,12 @@ avec ma recommandation. À passer en revue ensemble au retour, puis à consigner
 1. **Le Seigneur de Cendre est-il maintenant assez intense ?** Il l'est plus qu'avant (mesuré), mais je ne peux pas juger la sensation. Ce que je peux ajouter pour de vrai : (a) des **attaques focalisées** (« Frappe du bourreau » sur l'allié le moins protégé, télégraphiée), (b) des **effets à purger vite** (un effet qui s'aggrave chaque seconde), (c) des **adds** ou un **second front** (deux cibles à protéger), (d) un **enrage plus tôt** pour les niveaux difficiles. Chacune est une nouvelle mécanique → nouveaux golden → votre accord.
 2. **Faut-il punir les morts alliées plus que par les étoiles ?** Aujourd'hui un allié K.O. ne coûte qu'une étoile ; il réduit aussi les dégâts. Une mort pourrait coûter du temps, de l'or, ou fermer une récompense.
 3. **Critiques, résistances, armure en %, esquive** : voulez-vous ces mécaniques (docs/MECANIQUES.md §1 les liste comme absentes) ? Elles enrichissent l'équipement mais exigent tout un rééquilibrage et des choix de conception.
+
+
+## Jalon 3 (habillage) — à trancher ensemble
+
+1. **La musique et les effets vous plaisent-ils ?** Tout est généré par code (synthèse simple) : cohérent et léger, mais forcément « électronique ». Pour une vraie ambiance, il faudra des compositions et des sons enregistrés (achat de packs, ou un compositeur). À vous de dire si c'est acceptable pour une première version.
+2. **Direction artistique** : les modèles sont des figurines en volumes simples. Trois voies : (a) rester stylisé et le soigner (couleurs, animations, éclairage) ; (b) acheter/commander des modèles rigés animés ; (c) passer en 2D illustrée. Le choix change tout le pipeline d'assets.
+3. **Interface** : elle est dessinée avec IMGUI (module de développement d'Unity). Pour un jeu vendable il faut UI Toolkit ou uGUI (mise à l'échelle, accessibilité, manettes, textes traduits). C'est un chantier de plusieurs jours : à lancer maintenant ou après le contenu ?
+4. **Langues** : tout le texte est en français, écrit dans le code. Avant de viser Steam ou les stores, il faudra extraire les textes (fichiers de traduction).
+5. **Manette et accessibilité** : pas de support manette, pas de mode daltonien, pas de sous-titres des sons. À planifier.

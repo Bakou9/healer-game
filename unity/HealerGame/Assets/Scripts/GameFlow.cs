@@ -25,6 +25,11 @@ namespace Healer.Client
         public bool NoticeIsError { get; private set; }
 
         private ProfileStorage _storage = null!;
+
+        /// <summary>Sons d'interface (clic, achat, refus) ; renseigné au démarrage.</summary>
+        public BattleAudio? Audio { get; set; }
+
+        private void Sound(Healer.Combat.Presentation.SoundCue cue, double volume = 0.6) => Audio?.Play(cue, volume);
         private BattleStage _stage = null!;
 
         public AppScreen Screen => Nav.Screen;
@@ -38,6 +43,7 @@ namespace Healer.Client
             Ctl = ctl;
             _stage = stage;
             ctl.EventEmitted += OnBattleEvent;
+            stage.ShakeEnabled = () => Profile.Settings.ScreenShake;
             if (profile.TotalStars > 0) ctl.SkipGuidance(); // le guidage du premier geste ne sert qu'aux débutants
         }
 
@@ -50,12 +56,20 @@ namespace Healer.Client
 
         public void OpenLevels()
         {
-            if (Nav.OpenLevelSelect()) Debug.Log("[Healer] écran : choix du niveau");
+            if (Nav.OpenLevelSelect())
+            {
+                Debug.Log("[Healer] écran : choix du niveau");
+                Sound(Healer.Combat.Presentation.SoundCue.Click);
+            }
         }
 
         public void OpenWorkshop()
         {
-            if (Nav.OpenWorkshop()) Debug.Log("[Healer] écran : atelier");
+            if (Nav.OpenWorkshop())
+            {
+                Debug.Log("[Healer] écran : atelier");
+                Sound(Healer.Combat.Presentation.SoundCue.Click);
+            }
         }
 
         private void SetNotice(string text, bool error)
@@ -74,12 +88,14 @@ namespace Healer.Client
                 int level = Profile.Loadout.LevelOf(trackId);
                 Debug.Log($"[Healer] atelier : achat {trackId} niveau {level}");
                 SetNotice($"Acheté : {track?.Name} (niveau {level})", false);
+                Sound(Healer.Combat.Presentation.SoundCue.Buy, 0.7);
                 _storage.Save(Profile);
             }
             else
             {
                 Debug.Log($"[Healer] atelier : refus {trackId} ({result})");
                 SetNotice(Explain(result), true);
+                Sound(Healer.Combat.Presentation.SoundCue.Refuse, 0.6);
             }
         }
 
@@ -92,12 +108,14 @@ namespace Healer.Client
                 var name = Content.Upgrades.Tier(tier)?.Options.Find(o => o.Id == optionId)?.Name;
                 Debug.Log($"[Healer] atelier : talent {tier} {optionId}");
                 SetNotice((alreadyBought ? "Talent changé : " : "Talent acquis : ") + name, false);
+                Sound(Healer.Combat.Presentation.SoundCue.Buy, 0.7);
                 _storage.Save(Profile);
             }
             else
             {
                 Debug.Log($"[Healer] atelier : refus talent {tier} {optionId} ({result})");
                 SetNotice(Explain(result), true);
+                Sound(Healer.Combat.Presentation.SoundCue.Refuse, 0.6);
             }
         }
 
@@ -115,7 +133,11 @@ namespace Healer.Client
 
         public void BackToMenu()
         {
-            if (Nav.BackToMenu()) Debug.Log("[Healer] écran : menu principal");
+            if (Nav.BackToMenu())
+            {
+                Debug.Log("[Healer] écran : menu principal");
+                Sound(Healer.Combat.Presentation.SoundCue.Click);
+            }
         }
 
         public bool StartLevel(string levelId)
@@ -163,6 +185,39 @@ namespace Healer.Client
         public void LeaveBattle()
         {
             if (Nav.LeaveBattle()) Debug.Log("[Healer] écran : choix du niveau");
+        }
+
+        public void OpenSettings()
+        {
+            if (Nav.OpenSettings())
+            {
+                Debug.Log("[Healer] écran : réglages");
+                Sound(Healer.Combat.Presentation.SoundCue.Click);
+            }
+        }
+
+        /// <summary>Change un réglage : rangée 0 = musique, 1 = effets sonores, 2 = secousse de l'écran (-1 = non, +1 = oui) ; direction -1 ou +1.</summary>
+        public void AdjustSetting(int row, int direction)
+        {
+            var s = Profile.Settings;
+            switch (row)
+            {
+                case 0:
+                    s.MusicVolume = Healer.Combat.Presentation.Mix.Adjust(s.MusicVolume, direction);
+                    Debug.Log($"[Healer] réglage : musique {s.MusicVolume}");
+                    break;
+                case 1:
+                    s.SfxVolume = Healer.Combat.Presentation.Mix.Adjust(s.SfxVolume, direction);
+                    Debug.Log($"[Healer] réglage : effets {s.SfxVolume}");
+                    Sound(Healer.Combat.Presentation.SoundCue.Heal, 0.6); // on entend le nouveau volume
+                    break;
+                case 2:
+                    s.ScreenShake = direction > 0; // « Non » (gauche) coupe, « Oui » (droite) active
+                    Debug.Log($"[Healer] réglage : secousse {(s.ScreenShake ? "oui" : "non")}");
+                    break;
+                default: return;
+            }
+            _storage.Save(Profile);
         }
 
         public void ToggleMute()

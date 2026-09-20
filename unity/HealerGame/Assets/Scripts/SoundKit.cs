@@ -70,6 +70,27 @@ namespace Healer.Client
             return t < 0.34f ? Attack(local) * Decay(local, 12f) * 0.3f * Mathf.Sin(Tau * 880f * t) : 0f;
         });
 
+        public static AudioClip Cast() => Make("cast", 0.16f, (t, i) => Attack(t) * 0.22f * Decay(t, 22f) * Mathf.Sin(Tau * 620f * t) * (1f + 0.5f * Mathf.Sin(Tau * 30f * t)));
+
+        public static AudioClip Enrage() => Make("enrage", 1.1f, (t, i) =>
+        {
+            float pulse = 0.5f + 0.5f * Mathf.Sin(Tau * 7f * t);
+            return Attack(t) * Decay(t, 2.2f) * (0.5f * Sweep(t, 70f, 150f, 1.1f) * (0.6f + 0.4f * pulse) + 0.2f * Noise(i / 4));
+        });
+
+        public static AudioClip Death() => Make("death", 0.7f, (t, i) => Attack(t) * (0.6f * Decay(t, 6f) * Sweep(t, 220f, 60f, 0.7f) + 0.2f * Decay(t, 14f) * Noise(i)));
+
+        public static AudioClip Click() => Make("click", 0.09f, (t, i) => Attack(t) * 0.3f * Decay(t, 40f) * Mathf.Sin(Tau * 900f * t));
+
+        public static AudioClip Buy() => Make("buy", 0.45f, (t, i) =>
+        {
+            float f = t < 0.09f ? 988f : 1319f;
+            float local = t < 0.09f ? t : t - 0.09f;
+            return Attack(local) * Decay(local, 8f) * (0.3f * Mathf.Sin(Tau * f * t) + 0.1f * Mathf.Sin(Tau * f * 3f * t));
+        });
+
+        public static AudioClip Refuse() => Make("refuse", 0.25f, (t, i) => Attack(t) * 0.3f * Decay(t, 9f) * Mathf.Sign(Mathf.Sin(Tau * 120f * t)) * 0.6f);
+
         private static AudioClip Arpeggio(string name, float[] freqs, float step)
         {
             return Make(name, step * freqs.Length + 0.5f, (t, i) =>

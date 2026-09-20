@@ -11,7 +11,7 @@ namespace Healer.Client
     /// Point d'entrée : assemble contenu, profil, contrôleur de combat, scène 3D, interface et navigation.
     /// Options de ligne de commande (vérifications automatiques, jamais utilisées en jeu normal) :
     ///   -healer-shots 8,30,46   captures d'écran à ces secondes de combat (le bot de référence joue)
-    ///   -healer-screen menu|levels   avec -healer-shots : capture d'un écran hors combat (secondes réelles)
+    ///   -healer-screen menu|levels|workshop|settings   avec -healer-shots : capture d'un écran hors combat (secondes réelles)
     ///   -healer-level l2        démarre directement ce niveau
     ///   -healer-out DOSSIER     dossier des captures
     ///   -healer-speed 6         accélération du temps pendant les captures
@@ -56,7 +56,10 @@ namespace Healer.Client
             flow.Init(content, storage, profile, controller, stage);
             gameObject.AddComponent<BattleHud>().Init(controller, flow);
             gameObject.AddComponent<AppHud>().Init(flow);
-            gameObject.AddComponent<BattleAudio>().Init(controller, flow);
+            var audio = gameObject.AddComponent<BattleAudio>();
+            audio.Init(controller, flow);
+            flow.Audio = audio;
+            gameObject.AddComponent<BattleMusic>().Init(flow);
             gameObject.AddComponent<BattleKeys>().Init(flow);
 
             if (float.TryParse(Arg("-healer-timescale"), out var fast)) controller.TimeScale = fast;
@@ -70,10 +73,11 @@ namespace Healer.Client
                 string dir = Arg("-healer-out") ?? Path.Combine(Application.persistentDataPath, "captures");
                 Directory.CreateDirectory(dir);
                 string? screen = Arg("-healer-screen");
-                if (screen == "menu" || screen == "levels" || screen == "workshop")
+                if (screen == "menu" || screen == "levels" || screen == "workshop" || screen == "settings")
                 {
                     if (screen == "levels") flow.OpenLevels();
                     if (screen == "workshop") flow.OpenWorkshop();
+                    if (screen == "settings") flow.OpenSettings();
                     StartCoroutine(RealtimeCaptureRoutine(seconds, dir));
                     return;
                 }
