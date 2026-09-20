@@ -112,6 +112,13 @@ adopte un.
 - **Équilibrage entre choix de spécialisation** : toute option, talent ou build
   passe la batterie d'équilibrage (E08 et `docs/EQUILIBRAGE.md` §8).
 
+## Ressources externes et crédits (OBLIGATOIRE)
+
+Toute ressource externe (modèle, texture, son, police, plugin…) suit **`docs/ASSETS.md`** : licence libre autorisant l'usage commercial (CC0 de préférence),
+dossier `unity/HealerGame/Assets/Art/Imported/<Dossier>/`, fichier de licence conservé, et **une entrée dans `core/content/credits.json`** (auteur, licence
+SPDX, URL https, usage) : elle alimente l'écran « Crédits » du menu, et un test échoue si un dossier importé n'a pas d'entrée. Ne télécharger qu'avec l'accord
+explicite de l'utilisateur (nom, source, taille) ; ne jamais créer de compte ni saisir de mot de passe.
+
 ## Équilibrage et valeurs lisibles (OBLIGATOIRE)
 
 - **`docs/MECANIQUES.md`** décrit chaque règle, formule et valeur du jeu (et ce qui n'existe pas). **Toute modification de règle ou

@@ -187,6 +187,18 @@ namespace Healer.Client
             if (Nav.LeaveBattle()) Debug.Log("[Healer] écran : choix du niveau");
         }
 
+        public void OpenCredits()
+        {
+            if (Nav.OpenCredits())
+            {
+                Debug.Log("[Healer] écran : crédits");
+                Sound(Healer.Combat.Presentation.SoundCue.Click);
+            }
+        }
+
+        /// <summary>Générique chargé depuis core/content/credits.json (ressources et outils remerciés).</summary>
+        public CreditsData Credits { get; set; } = new CreditsData();
+
         public void OpenSettings()
         {
             if (Nav.OpenSettings())

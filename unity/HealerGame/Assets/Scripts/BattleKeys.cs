@@ -52,6 +52,7 @@ namespace Healer.Client
                     if (confirm) _flow.OpenLevels();
                     return;
                 case AppScreen.Workshop:
+                case AppScreen.Credits:
                 case AppScreen.Settings:
                     if (back) _flow.BackToMenu();
                     return;

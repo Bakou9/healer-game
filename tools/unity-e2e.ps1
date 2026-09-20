@@ -18,7 +18,7 @@
 # Toutes les parties utilisent un dossier de sauvegarde temporaire : la vraie sauvegarde n'est jamais touchée.
 # Code de sortie 1 si une vérification échoue.
 # Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E|F|G|H|I] [-Jobs 4] [-RealInput]
-param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G","H","I","J")][string]$Scenario = "all", [int]$Jobs = 4, [switch]$RealInput, [int]$Show = 6)
+param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G","H","I","J","K")][string]$Scenario = "all", [int]$Jobs = 4, [switch]$RealInput, [int]$Show = 6)
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Add-Type @"
@@ -75,7 +75,7 @@ if (-not $SkipBuild) {
 
 # ---- Exécution parallèle : un processus par scénario (les gestes sont injectés, aucun ne dispute la souris) ----
 if ($Scenario -eq "all" -and -not $RealInput -and $Jobs -gt 1) {
-  $order = "D","G","F","H","B","C","A","E","I","J"  # les plus longs d'abord
+  $order = "D","G","F","H","B","C","A","E","I","J","K"  # les plus longs d'abord
   $queue = New-Object System.Collections.Queue; foreach ($s in $order) { $queue.Enqueue($s) }
   $running = @{}; $outs = @{}; $codes = @{}
   while ($queue.Count -gt 0 -or $running.Count -gt 0) {
@@ -455,6 +455,18 @@ if (Test-Path $notesFile) {
 Check ((Get-ChildItem $notesDir -Filter "note_*.png" -ErrorAction SilentlyContinue).Count -ge 1) "une capture d'écran est jointe"
 Expect $j "état : reprise" "le combat reprend après la note"
 Stop-Game
+}
+
+# ---- Scénario K -----------------------------------------------------------------------------
+if (Want "K") {
+Write-Output "Scénario K : générique (crédits) : ouverture depuis le menu, retour"
+Start-Game @("-healer-profile-dir", (New-ProfileDir "K"))
+Tap 97 684 "Crédits (menu)"
+Press 0x01 "Échap (retour au menu)"
+Stop-Game
+$k = Log
+Expect $k "écran : crédits" "le bouton Crédits ouvre le générique"
+Expect $k "écran : menu principal" "Échap revient au menu"
 }
 
 if ($failures.Count -gt 0) { Write-Output ""; Write-Output "$($failures.Count) vérification(s) en échec."; Write-Output "[e2e-fin] code=1"; exit 1 }

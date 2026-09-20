@@ -13,6 +13,28 @@ namespace Healer.Client
     /// </summary>
     public static class ContentLoader
     {
+        /// <summary>Lit credits.json (remerciements aux auteurs) ; un fichier absent ou illisible donne un générique vide, jamais une erreur.</summary>
+        public static CreditsData LoadCredits()
+        {
+            try
+            {
+                string path = Path.Combine(Application.streamingAssetsPath, "content", "credits.json");
+#if UNITY_ANDROID && !UNITY_EDITOR
+                using var request = UnityWebRequest.Get(path);
+                var op = request.SendWebRequest();
+                while (!op.isDone) { }
+                return request.result == UnityWebRequest.Result.Success ? CreditsData.FromJson(request.downloadHandler.text) : new CreditsData();
+#else
+                return File.Exists(path) ? CreditsData.FromJson(File.ReadAllText(path)) : new CreditsData();
+#endif
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning("[Healer] crédits illisibles : " + e.Message);
+                return new CreditsData();
+            }
+        }
+
         public static GameContent Load()
         {
             string dir = Path.Combine(Application.streamingAssetsPath, "content");

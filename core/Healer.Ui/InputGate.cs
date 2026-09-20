@@ -20,6 +20,8 @@ namespace Healer.Ui
         Workshop,
         /// <summary>Réglages : volumes et confort.</summary>
         Settings,
+        /// <summary>Générique : les auteurs des ressources.</summary>
+        Credits,
         Battle,
     }
 
@@ -40,6 +42,7 @@ namespace Healer.Ui
         MenuSettings,
         MenuToggleSound,
         MenuQuit,
+        MenuCredits,
         // Choix du niveau
         PickLevel,
         BackToMenu,
@@ -83,9 +86,11 @@ namespace Healer.Ui
             switch (screen)
             {
                 case AppScreen.MainMenu:
-                    return action == UiAction.MenuPlay || action == UiAction.MenuWorkshop || action == UiAction.MenuSettings || action == UiAction.MenuToggleSound || action == UiAction.MenuQuit;
+                    return action == UiAction.MenuPlay || action == UiAction.MenuWorkshop || action == UiAction.MenuSettings || action == UiAction.MenuToggleSound || action == UiAction.MenuQuit || action == UiAction.MenuCredits;
                 case AppScreen.Settings:
                     return action == UiAction.AdjustSetting || action == UiAction.BackToMenu;
+                case AppScreen.Credits:
+                    return action == UiAction.BackToMenu;
                 case AppScreen.Workshop:
                     return action == UiAction.BuyEquipment || action == UiAction.PickTalent || action == UiAction.BackToMenu;
                 case AppScreen.LevelSelect:

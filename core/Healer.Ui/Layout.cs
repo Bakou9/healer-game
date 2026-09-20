@@ -112,6 +112,9 @@ namespace Healer.Ui
         public static readonly Rect MenuSound = new Rect(GameW / 2 - 160, 482, 320, 56);
         public static readonly Rect MenuQuit = new Rect(GameW / 2 - 160, 550, 320, 56);
 
+        /// <summary>Petit bouton « Crédits » en bas à gauche du menu principal (D-060).</summary>
+        public static readonly Rect MenuCredits = new Rect(SafeSide, GameH - SafeBottom - MinTouch, 170, MinTouch);
+
         /// <summary>Bouton « retour » en haut à gauche des écrans secondaires.</summary>
         public static readonly Rect BackButton = new Rect(SafeSide, SafeTop, 150, MinTouch);
 

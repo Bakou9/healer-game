@@ -1,0 +1,20 @@
+{
+  "title": "Healer Game",
+  "assets": [],
+  "tools": [
+    {
+      "name": "Unity",
+      "author": "Unity Technologies",
+      "license": "Unity-Engine",
+      "url": "https://unity.com",
+      "usedFor": "Moteur de jeu (rendu, entrées, interface)"
+    },
+    {
+      "name": "Json.NET (Newtonsoft.Json)",
+      "author": "James Newton-King",
+      "license": "MIT",
+      "url": "https://www.newtonsoft.com/json",
+      "usedFor": "Lecture des données de jeu (JSON)"
+    }
+  ]
+}

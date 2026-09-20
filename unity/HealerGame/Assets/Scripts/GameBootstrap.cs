@@ -11,7 +11,7 @@ namespace Healer.Client
     /// Point d'entrée : assemble contenu, profil, contrôleur de combat, scène 3D, interface et navigation.
     /// Options de ligne de commande (vérifications automatiques, jamais utilisées en jeu normal) :
     ///   -healer-shots 8,30,46   captures d'écran à ces secondes de combat (le bot de référence joue)
-    ///   -healer-screen menu|levels|workshop|settings   avec -healer-shots : capture d'un écran hors combat (secondes réelles)
+    ///   -healer-screen menu|levels|workshop|settings|credits   avec -healer-shots : capture d'un écran hors combat (secondes réelles)
     ///   -healer-level l2        démarre directement ce niveau
     ///   -healer-out DOSSIER     dossier des captures
     ///   -healer-speed 6         accélération du temps pendant les captures
@@ -57,6 +57,7 @@ namespace Healer.Client
             stage.Build(cam, controller);
             var flow = gameObject.AddComponent<GameFlow>();
             flow.Init(content, storage, profile, controller, stage);
+            flow.Credits = ContentLoader.LoadCredits();
             var ui = gameObject.AddComponent<UiRoot>();
             ui.Init(flow);
             gameObject.AddComponent<PlaytestNotes>().Init(ui, flow, Arg("-healer-notes-dir") ?? Path.Combine(Application.persistentDataPath, "playtest"));
@@ -81,11 +82,12 @@ namespace Healer.Client
                 string dir = Arg("-healer-out") ?? Path.Combine(Application.persistentDataPath, "captures");
                 Directory.CreateDirectory(dir);
                 string? screen = Arg("-healer-screen");
-                if (screen == "menu" || screen == "levels" || screen == "workshop" || screen == "settings")
+                if (screen == "menu" || screen == "levels" || screen == "workshop" || screen == "settings" || screen == "credits")
                 {
                     if (screen == "levels") flow.OpenLevels();
                     if (screen == "workshop") flow.OpenWorkshop();
                     if (screen == "settings") flow.OpenSettings();
+                    if (screen == "credits") flow.OpenCredits();
                     StartCoroutine(RealtimeCaptureRoutine(seconds, dir));
                     return;
                 }

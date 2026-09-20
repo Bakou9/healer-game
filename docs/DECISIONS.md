@@ -397,3 +397,12 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Écran de fin** : « Dégâts encaissés 2694 (3763) » : PV perdus, puis le total avant boucliers (`CombatStats.DamageBeforeShields`, testé). Les seuils d'étoiles utilisent toujours les PV perdus.
 - **Question B** : aucune règle ni valeur modifiée ; golden inchangés ; 727 tests et 10 scénarios e2e verts.
 
+## D-060 — Générique des auteurs et règles pour les ressources externes
+
+- **Date** : 2026-09-20 — **Statut** : Livrée (le mécanisme) ; aucune ressource externe importée pour l'instant.
+- **Demande** : un générique qui remercie tous les auteurs de toutes les ressources ajoutées à l'avenir.
+- **Mécanisme** : `core/content/credits.json` (ressources et outils : nom, auteur, licence SPDX, URL, usage, dossier, modifié) ; écran « Crédits » (bouton en bas à gauche du menu, défilement automatique en boucle, Échap pour revenir) ; `CreditsRoll` (lignes du générique) et `CreditPolicy` (licences autorisées, champs obligatoires) dans le cœur, testés (9 tests) ; **garde-fou** : un dossier sous `Assets/Art/Imported` sans entrée fait échouer les tests. Outils déjà remerciés : Unity, Json.NET. Règle ajoutée à `CLAUDE.md`. Scénario e2e K.
+- **Ressources** : voir `docs/ASSETS.md` (règles, candidats vérifiés, comparaison des voies de création sur mesure et de leurs coûts).
+- **À préciser avec l'utilisateur** : le nom à afficher pour la conception du jeu (« Créé par … ») : je n'invente aucun nom.
+- **Question B** : aucune règle ni valeur de jeu modifiée.
+

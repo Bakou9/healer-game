@@ -128,7 +128,7 @@ namespace Healer.Combat.Tests
 
     public class AppScreenGateTests
     {
-        private static readonly UiAction[] Menu = { UiAction.MenuPlay, UiAction.MenuWorkshop, UiAction.MenuSettings, UiAction.MenuToggleSound, UiAction.MenuQuit };
+        private static readonly UiAction[] Menu = { UiAction.MenuPlay, UiAction.MenuWorkshop, UiAction.MenuSettings, UiAction.MenuToggleSound, UiAction.MenuQuit, UiAction.MenuCredits };
         private static readonly UiAction[] Levels = { UiAction.PickLevel, UiAction.BackToMenu };
 
         [Test]

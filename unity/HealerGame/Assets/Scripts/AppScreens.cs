@@ -41,6 +41,7 @@ namespace Healer.Client
             _container.style.display = Active ? DisplayStyle.Flex : DisplayStyle.None;
             if (!Active) { _signature = ""; return; }
             string sig = Signature();
+            if (_flow.Screen == AppScreen.Credits) ScrollCredits();
             if (sig == _signature) return;
             _signature = sig;
             _container.Clear();
@@ -49,6 +50,7 @@ namespace Healer.Client
                 case AppScreen.MainMenu: BuildMenu(); break;
                 case AppScreen.Workshop: BuildWorkshop(); break;
                 case AppScreen.Settings: BuildSettings(); break;
+                case AppScreen.Credits: BuildCredits(); break;
                 default: BuildLevels(); BuildFooter(); break;
             }
         }
@@ -92,6 +94,7 @@ namespace Healer.Client
             Btn(Ui.R(Layout.MenuSettings), "Réglages", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuSettings, _flow.OpenSettings);
             Btn(Ui.R(Layout.MenuSound), _flow.Profile.Settings.Muted ? "Son : coupé" : "Son : activé", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuToggleSound, _flow.ToggleMute);
             if (CanQuit) Btn(Ui.R(Layout.MenuQuit), "Quitter", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuQuit, _flow.Quit);
+            Btn(Ui.R(Layout.MenuCredits), "Crédits", Layout.Font.Body, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuCredits, _flow.OpenCredits);
             if (Keyboard.current != null) Txt(new Rect(0, 624, w, 24), "Entrée : jouer · M : son · F8 : noter un retour", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
         }
 
@@ -100,6 +103,50 @@ namespace Healer.Client
 
         private void BackButton() =>
             Btn(Ui.R(Layout.BackButton), "← Menu", Layout.Font.Body, Ui.ButtonFill, Ui.ButtonStroke, UiAction.BackToMenu, _flow.BackToMenu);
+
+        // ---- Générique ---------------------------------------------------------------------------
+
+        private VisualElement? _creditsRoll;
+        private float _creditsHeight, _creditsStart;
+        private const float CreditsViewTop = 70f, CreditsViewHeight = 590f, CreditsSpeed = 46f;
+
+        private void BuildCredits()
+        {
+            float w = (float)Layout.GameW;
+            BackButton();
+            var lines = CreditsRoll.Build(_flow.Credits);
+            _creditsHeight = (float)CreditsRoll.TotalHeight(lines);
+            var view = Add(new Rect(0, CreditsViewTop, w, CreditsViewHeight), Color.clear, 0);
+            view.style.overflow = Overflow.Hidden;
+            _creditsRoll = new VisualElement { pickingMode = PickingMode.Ignore };
+            _creditsRoll.style.position = Position.Absolute;
+            _creditsRoll.style.left = 0; _creditsRoll.style.width = w; _creditsRoll.style.height = _creditsHeight;
+            view.Add(_creditsRoll);
+            float y = 0;
+            foreach (var l in lines)
+            {
+                var r = new Rect(80, y, w - 160, (float)l.Height);
+                switch (l.Kind)
+                {
+                    case CreditLineKind.Title: Ui.Text(_creditsRoll, r, l.Text, 64, Color.white, TextAnchor.MiddleCenter, true); break;
+                    case CreditLineKind.Heading: Ui.Text(_creditsRoll, r, l.Text, 34, Ui.Gold, TextAnchor.MiddleCenter, true); break;
+                    case CreditLineKind.Name: Ui.Text(_creditsRoll, r, l.Text, Layout.Font.Title, Color.white, TextAnchor.MiddleCenter, true); break;
+                    case CreditLineKind.Thanks: Ui.Text(_creditsRoll, r, l.Text, Layout.Font.Title, Palette.Heal, TextAnchor.MiddleCenter, true); break;
+                    case CreditLineKind.Detail: Ui.Text(_creditsRoll, r, l.Text, Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter); break;
+                }
+                y += (float)l.Height;
+            }
+            _creditsStart = Time.realtimeSinceStartup;
+        }
+
+        /// <summary>Le générique défile tout seul, en boucle (46 px par seconde).</summary>
+        private void ScrollCredits()
+        {
+            if (_creditsRoll == null) return;
+            float travel = CreditsViewHeight + _creditsHeight;
+            float offset = ((Time.realtimeSinceStartup - _creditsStart) * CreditsSpeed) % travel;
+            _creditsRoll.style.top = CreditsViewHeight - offset;
+        }
 
         // ---- Réglages ----------------------------------------------------------------------------
 
