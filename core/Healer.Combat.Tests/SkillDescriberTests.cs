@@ -5,69 +5,82 @@ using NUnit.Framework;
 
 namespace Healer.Combat.Tests
 {
-    /// <summary>Fiche de sort du menu de pause (D-054) et grille de sorts en icônes.</summary>
+    /// <summary>Fiche de sort du menu de pause (D-055) : valeurs modifiées entre parenthèses.</summary>
     public class SkillDescriberTests
     {
-        private static SkillDef Heal(double amount = 170, double cost = 18, double cast = 1000, double cd = 0) =>
-            new SkillDef { Id = "heal_single", Name = "Soin", ManaCost = cost, CastMs = cast, CooldownMs = cd, Target = "single", HealAmount = amount };
+        private static SkillDef Aoe(double heal = 160, double cost = 45, double cd = 5000, double cast = 0) =>
+            new SkillDef { Id = "heal_aoe", Name = "Soin de zone", ManaCost = cost, CooldownMs = cd, CastMs = cast, Target = "all", HealAmount = heal,
+                Description = "Soigne tous les alliés vivants de {heal} PV, mais coûteux et lent à recharger." };
+
+        private static string Plain(System.Collections.Generic.IReadOnlyList<SkillSpan> s) => SkillSheet.Plain(s);
 
         [Test]
-        public void Sans_bonus_la_valeur_de_base_et_la_valeur_actuelle_sont_identiques()
+        public void Sans_bonus_rien_n_est_entre_parentheses()
         {
-            var stats = SkillDescriber.Stats(Heal(), Heal());
-            Assert.That(stats.Any(s => s.Changed), Is.False);
+            var sheet = SkillDescriber.Sheet(Aoe(), Aoe());
+            Assert.That(Plain(sheet.Cost), Is.EqualTo("45 mana"));
+            Assert.That(Plain(sheet.Cast), Is.EqualTo("Incantation : instantanée"));
+            Assert.That(Plain(sheet.Cooldown), Is.EqualTo("CD : 5s"));
+            Assert.That(sheet.Target, Is.EqualTo("Cible : toute l'équipe"));
+            Assert.That(Plain(sheet.Description), Is.EqualTo("Soigne tous les alliés vivants de 160 PV, mais coûteux et lent à recharger."));
+            Assert.That(sheet.Cost.Concat(sheet.Cast).Concat(sheet.Cooldown).Concat(sheet.Description).Any(s => s.Changed), Is.False);
         }
 
         [Test]
-        public void Un_bonus_de_soin_et_un_cout_reduit_apparaissent_ligne_par_ligne()
+        public void Une_valeur_modifiee_s_ecrit_base_puis_nouvelle_valeur_entre_parentheses_marquee_changee()
         {
-            var stats = SkillDescriber.Stats(Heal(170, 18), Heal(187, 15)).ToDictionary(s => s.Label);
-            Assert.That(stats["Soin"].Base, Is.EqualTo("170 PV"));
-            Assert.That(stats["Soin"].Current, Is.EqualTo("187 PV"));
-            Assert.That(stats["Soin"].Changed, Is.True);
-            Assert.That(stats["Coût"].Base, Is.EqualTo("18 mana"));
-            Assert.That(stats["Coût"].Current, Is.EqualTo("15 mana"));
-            Assert.That(stats["Incantation"].Changed, Is.False);
+            var sheet = SkillDescriber.Sheet(Aoe(160, 45), Aoe(240, 41));
+            Assert.That(Plain(sheet.Cost), Is.EqualTo("45(41) mana"));
+            Assert.That(sheet.Cost.Count(s => s.Changed), Is.EqualTo(1));
+            Assert.That(sheet.Cost.First(s => s.Changed).Text, Is.EqualTo("41"));
+            Assert.That(Plain(sheet.Description), Is.EqualTo("Soigne tous les alliés vivants de 160(240) PV, mais coûteux et lent à recharger."));
+            Assert.That(sheet.Description.Any(s => s.Changed && s.Text == "240"), Is.True);
         }
 
         [Test]
-        public void Incantation_et_recharge_sont_lisibles_et_tronquees()
+        public void Incantation_et_recharge_modifiees_sont_tronquees_et_lisibles()
         {
-            var stats = SkillDescriber.Stats(Heal(cast: 1000, cd: 0), Heal(cast: 1990, cd: 4960)).ToDictionary(s => s.Label);
-            Assert.That(stats["Incantation"].Base, Is.EqualTo("1s"));
-            Assert.That(stats["Incantation"].Current, Is.EqualTo("1,9s"), "tronqué, jamais arrondi vers le haut");
-            Assert.That(stats["Recharge"].Base, Is.EqualTo("Aucune"));
-            Assert.That(stats["Recharge"].Current, Is.EqualTo("4,9s"));
+            var sheet = SkillDescriber.Sheet(Aoe(cd: 5000, cast: 1000), Aoe(cd: 4960, cast: 1990));
+            Assert.That(Plain(sheet.Cast), Is.EqualTo("Incantation : 1s(1,9s)"), "tronqué, jamais arrondi vers le haut");
+            Assert.That(Plain(sheet.Cooldown), Is.EqualTo("CD : 5s(4,9s)"));
         }
 
         [Test]
-        public void Un_sort_instantane_est_annonce_comme_tel()
+        public void Un_bonus_peut_donner_ou_retirer_l_incantation()
         {
-            var s = new SkillDef { Id = "shield", Name = "Bouclier", ManaCost = 28, CooldownMs = 7000, Target = "single", ShieldAmount = 260 };
-            var stats = SkillDescriber.Stats(s, s).ToDictionary(x => x.Label);
-            Assert.That(stats["Incantation"].Current, Is.EqualTo("Instantané"));
-            Assert.That(stats["Bouclier"].Current, Is.EqualTo("260 PV"));
-            Assert.That(stats.ContainsKey("Soin"), Is.False);
+            Assert.That(Plain(SkillDescriber.Sheet(Aoe(cast: 0), Aoe(cast: 500)).Cast), Is.EqualTo("Incantation : instantanée(0,5s)"));
+            Assert.That(Plain(SkillDescriber.Sheet(Aoe(cd: 0), Aoe(cd: 0)).Cooldown), Is.EqualTo("CD : aucun"));
         }
 
         [Test]
-        public void La_purge_et_le_soin_de_zone_ont_leur_ligne_d_effet_et_de_cible()
+        public void Le_bouclier_et_l_incantation_du_soin_sont_inseres_dans_leur_description()
         {
-            var purge = new SkillDef { Id = "purge", Name = "Purge", ManaCost = 12, CooldownMs = 5000, Target = "single", Cleanse = true };
-            var aoe = new SkillDef { Id = "heal_aoe", Name = "Soin de zone", ManaCost = 45, CooldownMs = 5000, Target = "all", HealAmount = 160 };
-            Assert.That(SkillDescriber.Stats(purge, purge).Any(s => s.Label == "Effet" && s.Current.Contains("négatifs")), Is.True);
-            Assert.That(SkillDescriber.Stats(aoe, aoe).First(s => s.Label == "Cible").Current, Is.EqualTo("Toute l'équipe"));
+            var shield = new SkillDef { Id = "shield", Name = "Bouclier", ManaCost = 28, CooldownMs = 7000, Target = "single", ShieldAmount = 260, Description = "Pose un bouclier qui absorbe {shield} points de dégâts avant les PV." };
+            var boosted = new SkillDef { Id = "shield", Name = "Bouclier", ManaCost = 28, CooldownMs = 7000, Target = "single", ShieldAmount = 312, Description = shield.Description };
+            Assert.That(Plain(SkillDescriber.Sheet(shield, boosted).Description), Is.EqualTo("Pose un bouclier qui absorbe 260(312) points de dégâts avant les PV."));
+            var heal = new SkillDef { Id = "heal_single", Name = "Soin", ManaCost = 18, CastMs = 1000, Target = "single", HealAmount = 170, Description = "Soigne un allié ciblé de {heal} PV après une incantation de {cast}." };
+            Assert.That(Plain(SkillDescriber.Sheet(heal, heal).Description), Is.EqualTo("Soigne un allié ciblé de 170 PV après une incantation de 1s."));
         }
 
         [Test]
-        public void Chaque_sort_du_jeu_a_une_fiche_avec_au_moins_cout_et_recharge_ou_incantation()
+        public void Un_marqueur_inconnu_est_laisse_tel_quel_et_une_description_absente_donne_un_texte_vide()
+        {
+            var s = new SkillDef { Id = "x", Name = "X", Description = "Fait {truc} ici." };
+            Assert.That(Plain(SkillDescriber.Sheet(s, s).Description), Is.EqualTo("Fait {truc} ici."));
+            var none = new SkillDef { Id = "y", Name = "Y" };
+            Assert.That(Plain(SkillDescriber.Sheet(none, none).Description), Is.EqualTo(""));
+        }
+
+        [Test]
+        public void Chaque_sort_du_jeu_a_une_fiche_complete_sans_marqueur_oublie()
         {
             var content = Fixtures.FullContent();
             foreach (var skill in content.Skills)
             {
-                var stats = SkillDescriber.Stats(skill, skill);
-                Assert.That(stats.Any(s => s.Label == "Coût"), Is.True, skill.Id);
-                Assert.That(stats.All(s => !string.IsNullOrWhiteSpace(s.Current)), Is.True, skill.Id);
+                var sheet = SkillDescriber.Sheet(skill, skill);
+                Assert.That(SkillSheet.Plain(sheet.Cost), Does.EndWith(" mana"), skill.Id);
+                Assert.That(SkillSheet.Plain(sheet.Description), Is.Not.Empty, skill.Id);
+                Assert.That(SkillSheet.Plain(sheet.Description), Does.Not.Contain("{"), skill.Id + " : marqueur non remplacé");
             }
         }
     }

@@ -28,6 +28,16 @@ namespace Healer.Client
         /// <summary>Rectangle du cœur (double) vers rectangle Unity (float).</summary>
         public static Rect R(Healer.Ui.Rect r) => new Rect((float)r.X, (float)r.Y, (float)r.W, (float)r.H);
 
+        /// <summary>Texte riche d'une fiche de sort : les valeurs modifiées (Changed) sont en vert, entre parenthèses.</summary>
+        public static string Rich(System.Collections.Generic.IReadOnlyList<Healer.Ui.SkillSpan> spans)
+        {
+            string green = ColorUtility.ToHtmlStringRGB(Palette.Heal);
+            var sb = new System.Text.StringBuilder();
+            foreach (var span in spans)
+                sb.Append(span.Changed ? "<b><color=#" + green + ">(" + span.Text + ")</color></b>" : span.Text);
+            return sb.ToString();
+        }
+
         /// <summary>Police d'interface (police intégrée d'Unity) appliquée à la racine : les enfants en héritent.</summary>
         public static void ApplyFont(VisualElement root)
         {

@@ -11,14 +11,16 @@ namespace Healer.Client
     /// toucher, et passe par la même règle (InputGate). Les touches sont physiques (même position sur QWERTY et
     /// AZERTY) ; le HUD affiche le libellé réel de la disposition de l'utilisateur.
     ///   Menu : Entrée / Espace = Jouer.   Choix du niveau : 1-9 = niveau, Échap = retour.
-    ///   Combat : 1-4 cibler · Q W E R (A Z E R en AZERTY) sorts · Tab allié suivant · Espace / Entrée jouer, pause,
+    ///   Combat : Q W E R T (A Z E R T en AZERTY : la rangée de lettres) cibler · 1-6 ou pavé numérique = sorts (D-055) · Tab allié suivant · Espace / Entrée jouer, pause,
     ///   enchaîner ou rejouer · Échap / P pause (ou retour à la carte avant et après le combat) · M son.
     /// </summary>
     public sealed class BattleKeys : MonoBehaviour
     {
-        private static readonly Key[] AllyKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4 };
-        private static readonly Key[] NumpadKeys = { Key.Numpad1, Key.Numpad2, Key.Numpad3, Key.Numpad4 };
-        private static readonly Key[] SkillKeys = { Key.Q, Key.W, Key.E, Key.R };
+        // Alliés sur la rangée de lettres (touches physiques : le libellé affiché suit la disposition, AZERTY ou autre) ;
+        // sorts sur les chiffres, avec le pavé numérique en doublon.
+        private static readonly Key[] AllyKeys = { Key.Q, Key.W, Key.E, Key.R, Key.T };
+        private static readonly Key[] SkillKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5, Key.Digit6 };
+        private static readonly Key[] NumpadKeys = { Key.Numpad1, Key.Numpad2, Key.Numpad3, Key.Numpad4, Key.Numpad5, Key.Numpad6 };
         private static readonly Key[] LevelKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5, Key.Digit6, Key.Digit7, Key.Digit8, Key.Digit9 };
 
         private GameFlow _flow = null!;
@@ -26,14 +28,14 @@ namespace Healer.Client
         public void Init(GameFlow flow) => _flow = flow;
 
         /// <summary>Libellé de la touche du n-ième allié / sort, ou null s'il n'y a pas de clavier (mobile).</summary>
-        public static string? AllyLabel(int index) => Keyboard.current != null && index >= 0 && index < AllyKeys.Length ? (index + 1).ToString() : null;
-
-        public static string? SkillLabel(int index)
+        public static string? AllyLabel(int index)
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null || index < 0 || index >= SkillKeys.Length) return null;
-            return keyboard[SkillKeys[index]].displayName.ToUpperInvariant();
+            if (keyboard == null || index < 0 || index >= AllyKeys.Length) return null;
+            return keyboard[AllyKeys[index]].displayName.ToUpperInvariant();
         }
+
+        public static string? SkillLabel(int index) => Keyboard.current != null && index >= 0 && index < SkillKeys.Length ? (index + 1).ToString() : null;
 
         public static string? LevelLabel(int index) => Keyboard.current != null && index >= 0 && index < LevelKeys.Length ? (index + 1).ToString() : null;
 
@@ -77,16 +79,18 @@ namespace Healer.Client
             if (InputGate.Allows(state, UiAction.TapAlly))
             {
                 for (int i = 0; i < AllyKeys.Length && i < allies.Count; i++)
-                    if (kb[AllyKeys[i]].wasPressedThisFrame || kb[NumpadKeys[i]].wasPressedThisFrame) ctl.TapAlly(allies[i].Id);
+                    if (kb[AllyKeys[i]].wasPressedThisFrame) ctl.TapAlly(allies[i].Id);
                 if (kb.tabKey.wasPressedThisFrame) CycleTarget(allies.ToList(), kb.shiftKey.isPressed ? -1 : 1);
             }
 
             var skills = ctl.Skills;
             for (int i = 0; i < SkillKeys.Length && i < skills.Count; i++)
             {
-                if (kb[SkillKeys[i]].wasReleasedThisFrame) ctl.ReleaseSkill(skills[i]);
+                bool released = kb[SkillKeys[i]].wasReleasedThisFrame || kb[NumpadKeys[i]].wasReleasedThisFrame;
+                bool pressed = kb[SkillKeys[i]].wasPressedThisFrame || kb[NumpadKeys[i]].wasPressedThisFrame;
+                if (released) ctl.ReleaseSkill(skills[i]);
                 // Appui : lance tout de suite ; maintenue, la touche enchaîne le sort (HoldRepeat).
-                else if (kb[SkillKeys[i]].wasPressedThisFrame && InputGate.Allows(state, UiAction.TapSkill)) ctl.PressSkill(skills[i], false);
+                else if (pressed && InputGate.Allows(state, UiAction.TapSkill)) ctl.PressSkill(skills[i], false);
             }
         }
 

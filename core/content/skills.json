@@ -2,7 +2,7 @@
   {
     "id": "heal_single",
     "name": "Soin",
-    "description": "Soigne un allié ciblé après une incantation d'une seconde.",
+    "description": "Soigne un allié ciblé de {heal} PV après une incantation de {cast}.",
     "manaCost": 18,
     "cooldownMs": 0,
     "target": "single",
@@ -12,7 +12,7 @@
   {
     "id": "heal_aoe",
     "name": "Soin de zone",
-    "description": "Soigne tous les alliés vivants, mais coûteux et lent à recharger.",
+    "description": "Soigne tous les alliés vivants de {heal} PV, mais coûteux et lent à recharger.",
     "manaCost": 45,
     "cooldownMs": 5000,
     "target": "all",
@@ -21,7 +21,7 @@
   {
     "id": "shield",
     "name": "Bouclier",
-    "description": "Pose un bouclier qui absorbe les dégâts avant les PV.",
+    "description": "Pose un bouclier qui absorbe {shield} points de dégâts avant les PV.",
     "manaCost": 28,
     "cooldownMs": 7000,
     "target": "single",

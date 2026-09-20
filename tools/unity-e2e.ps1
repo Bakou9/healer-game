@@ -139,7 +139,7 @@ function Send($command) {
   while ((Get-Date) -lt $deadline) { if ((LogText).Contains($tag)) { return }; Start-Sleep -Milliseconds 30 }
   throw "le jeu n'a pas joué la commande : $command"
 }
-$keyNames = @{ 0x39 = "Space"; 0x01 = "Escape"; 0x1C = "Enter"; 0x02 = "Digit1"; 0x10 = "Q"; 0x42 = "F8" }
+$keyNames = @{ 0x39 = "Space"; 0x01 = "Escape"; 0x1C = "Enter"; 0x02 = "Digit1"; 0x10 = "Q"; 0x42 = "F8"; 0x4F = "Numpad1" }
 function Tap($lx, $ly, $label) {
   Write-Output ("  clic {0} : logique ({1},{2})" -f $label, $lx, $ly)
   if ($RealInput) { $sx = [int]($script:origin.X + $script:offX + $lx * $script:scale); $sy = [int]($script:origin.Y + $script:offY + $ly * $script:scale); [Win]::Click($sx, $sy); Start-Sleep -Milliseconds 800 }
@@ -355,19 +355,23 @@ Tap $level1[0] $level1[1] "niveau 1"
 Tap $fightPlay[0] $fightPlay[1] "Jouer (combat)"
 Tap 144 148 "carte Garde"
 Tap 144 148 "carte Garde (encore)"
-Press 0x02 "1 (Garde)"
-Press 0x02 "1 (Garde, encore)"
+Press 0x10 "A (Garde, clavier AZERTY)"
+Press 0x10 "A (Garde, encore)"
 HoldMouse 1068 184 5 "le sort Soin (souris)"
 $g1 = Log
 $mouseCasts = Count $g1 "geste : sort heal_single → Cast"
-HoldKey 0x10 4 "A (Soin, clavier AZERTY)"
+HoldKey 0x02 4 "1 (Soin)"
+$keyCasts = Count (Log) "geste : sort heal_single → Cast"
+Start-Sleep -Milliseconds 1500
+Press 0x4F "1 du pavé numérique (Soin)"
 Stop-Game
 $g2 = Log
 $totalCasts = Count $g2 "geste : sort heal_single → Cast"
-Forbid $g2 "cible = aucune" "re-toucher un allié (carte ou touche 1) ne le désélectionne jamais"
+Forbid $g2 "cible = aucune" "re-toucher un allié (carte ou touche A) ne le désélectionne jamais"
 Check ($mouseCasts -ge 3) "maintenir le sort à la souris 5 s l'enchaîne (lancers : $mouseCasts, au moins 3 attendus)"
 Check ($mouseCasts -le 6) "la recharge est respectée (lancers : $mouseCasts, au plus 6 en 5 s)"
-Check (($totalCasts - $mouseCasts) -ge 2) "maintenir la touche 4 s l'enchaîne aussi (lancers supplémentaires : $($totalCasts - $mouseCasts))"
+Check (($keyCasts - $mouseCasts) -ge 2) "maintenir la touche 1 pendant 4 s enchaîne aussi (lancers supplémentaires : $($keyCasts - $mouseCasts))"
+Check ($totalCasts -gt $keyCasts) "le 1 du pavé numérique lance aussi le sort (lancers : $keyCasts puis $totalCasts)"
 Expect $g2 "geste : sort heal_single → Cast \(cible tank\)" "le sort maintenu vise la cible sélectionnée"
 }
 

@@ -439,8 +439,8 @@ namespace Healer.Client
             B(Ui.R(Layout.StartButton), "Jouer", 26, Ui.PrimaryFill, Ui.PrimaryStroke, UiAction.StartFight, _ctl.StartFight);
             if (Keyboard.current != null)
             {
-                string sorts = string.Join(" ", new[] { 0, 1, 2, 3 }.Select(BattleKeys.SkillLabel));
-                T(new Rect(0, 556, w, 24), "Clavier : 1-4 cibler · " + sorts + " sorts · Tab suivant", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
+                string allies = string.Join(" ", new[] { 0, 1, 2, 3 }.Select(BattleKeys.AllyLabel));
+                T(new Rect(0, 556, w, 24), "Clavier : " + allies + " pour cibler · 1 2 3 4 (ou pavé numérique) pour les sorts · Tab : allié suivant", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
                 T(new Rect(0, 580, w, 24), "Espace : jouer / pause · Échap : retour · M : son · F8 : noter un retour", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
             }
             else T(new Rect(0, 560, w, 24), "Touchez Jouer pour commencer", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
@@ -454,40 +454,28 @@ namespace Healer.Client
             var skills = _ctl.Skills;
             var baseSkills = _flow.Content.Skills;
             int n = System.Math.Max(1, skills.Count);
-            const float gap = 8f, top = 76f, height = 250f;
+            const float gap = 8f, top = 76f, height = 226f;
             float cardW = (w - 24f - gap * (n - 1)) / n;
             for (int i = 0; i < skills.Count; i++)
             {
                 var s = skills[i];
-                var baseSkill = baseSkills.FirstOrDefault(x => x.Id == s.Id) ?? s;
+                var sheet = SkillDescriber.Sheet(baseSkills.FirstOrDefault(x => x.Id == s.Id) ?? s, s);
                 float x = 12f + i * (cardW + gap);
                 M(new Rect(x, top, cardW, height), new Color(Ui.Panel.r, Ui.Panel.g, Ui.Panel.b, 0.96f), 12, IconKit.Accent(s.Id), 2);
-                var icon = M(new Rect(x + 12, top + 12, 48, 48), Color.clear, 0);
+                var icon = M(new Rect(x + 10, top + 10, 44, 44), Color.clear, 0);
                 icon.style.backgroundImage = new StyleBackground(IconKit.For(s.Id));
                 icon.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
-                T(new Rect(x + 68, top + 12, cardW - 80, 48), s.Name, Layout.Font.Strong, Color.white, TextAnchor.MiddleLeft, true);
-                T(new Rect(x + 12, top + 64, cardW - 24, 44), s.Description ?? "", Layout.Font.Small, Ui.Muted, TextAnchor.UpperLeft, false, true);
-                float colX = x + 96, colW = (cardW - 96 - 12) / 2f;
-                T(new Rect(colX, top + 108, colW, 18), "Base", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleLeft, true);
-                T(new Rect(colX + colW, top + 108, colW, 18), "Avec bonus", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleLeft, true);
-                float y = top + 130;
-                foreach (var stat in SkillDescriber.Stats(baseSkill, s))
-                {
-                    T(new Rect(x + 12, y, 84, 20), stat.Label, Layout.Font.Small, Ui.Muted, TextAnchor.MiddleLeft);
-                    if (!stat.Changed && stat.Base.Length > 16)
-                        T(new Rect(colX, y, colW * 2, 20), stat.Base, Layout.Font.Small, Color.white, TextAnchor.MiddleLeft);
-                    else
-                    {
-                        T(new Rect(colX, y, colW, 20), stat.Base, Layout.Font.Small, Color.white, TextAnchor.MiddleLeft);
-                        T(new Rect(colX + colW, y, colW, 20), stat.Current, Layout.Font.Small, stat.Changed ? Palette.Heal : Color.white, TextAnchor.MiddleLeft, stat.Changed);
-                    }
-                    y += 22;
-                }
+                T(new Rect(x + 62, top + 10, cardW - 62 - 122, 44), sheet.Name, Layout.Font.Strong, Color.white, TextAnchor.MiddleLeft, true);
+                T(new Rect(x + cardW - 122, top + 10, 112, 44), Ui.Rich(sheet.Cost), Layout.Font.Body, Color.white, TextAnchor.MiddleRight, true);
+                T(new Rect(x + 12, top + 62, cardW * 0.62f, 22), Ui.Rich(sheet.Cast), Layout.Font.Small, Palette.Hex("C9CDE0"), TextAnchor.MiddleLeft);
+                T(new Rect(x + cardW * 0.62f, top + 62, cardW * 0.38f - 12, 22), Ui.Rich(sheet.Cooldown), Layout.Font.Small, Palette.Hex("C9CDE0"), TextAnchor.MiddleRight);
+                T(new Rect(x + 12, top + 86, cardW - 24, 22), sheet.Target, Layout.Font.Small, Palette.Hex("C9CDE0"), TextAnchor.MiddleLeft);
+                T(new Rect(x + 12, top + 116, cardW - 24, height - 124), Ui.Rich(sheet.Description), Layout.Font.Body, Color.white, TextAnchor.UpperLeft, false, true);
             }
-            Debug.Log($"[Healer] fiche des sorts : {skills.Count} sorts");
             B(Ui.R(Layout.PauseResume), "Reprendre", Layout.Font.Title, Ui.PrimaryFill, Ui.PrimaryStroke, UiAction.TogglePause, _ctl.TogglePause);
             B(Ui.R(Layout.PauseLeave), "Quitter le niveau", Layout.Font.Body, Ui.ButtonFill, Ui.ButtonStroke, UiAction.BackToMap, _flow.LeaveBattle);
-            T(new Rect(0, 530, w, 24), "Base : le sort sans aucun bonus  ·  Avec bonus : équipement et talents actifs (Atelier)", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
+            T(new Rect(0, 330, w, 24), Ui.Rich(new[] { new SkillSpan("Les valeurs "), new SkillSpan("en vert", true), new SkillSpan(" viennent de votre équipement et de vos talents (Atelier).") }), Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
+            Debug.Log($"[Healer] fiche des sorts : {skills.Count} sorts");
         }
 
         private void BuildEnd()

@@ -33,9 +33,9 @@ Menu **Healer** : synchroniser le contenu, configurer le projet, créer la scèn
 
 | Touche | Action |
 |---|---|
-| `1` `2` `3` `4` (ou pavé numérique) | Cibler l'allié n° 1 à 4 |
+| `A` `Z` `E` `R` en AZERTY (`Q` `W` `E` `R` en QWERTY, `T` pour un 5e allié) | Cibler l'allié n° 1 à 4 : la rangée de lettres, le libellé suit votre disposition de clavier |
 | `Tab` / `Maj+Tab` | Allié vivant suivant / précédent |
-| `Q` `W` `E` `R` (`A` `Z` `E` `R` en AZERTY) | Lancer le sort n° 1 à 4 (Soin, Soin de zone, Bouclier, Purge) |
+| `1` `2` `3` `4` (**ou** les mêmes chiffres du pavé numérique) | Lancer le sort n° 1 à 4 (Soin, Soin de zone, Bouclier, Purge) ; maintenir la touche enchaîne le sort |
 | `Espace` ou `Entrée` | Jouer ; pause / reprise ; rejouer en fin de combat |
 | `Échap` ou `P` | Pause |
 | `M` | Couper / rétablir le son |

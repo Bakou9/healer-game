@@ -353,3 +353,10 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Équilibrage (question B)** : aucune règle ni valeur de jeu modifiée ; golden inchangés (701 tests verts). Effet sur le ressenti : boutons de sorts plus grands, mais plus de nom en combat : à confirmer au playtest (lisibilité des 4 sorts par icône seule).
 - **Vérification** : 10 scénarios e2e (dont la note F8 et la fiche des sorts) verts en ~63 s ; captures de contrôle du menu, du combat et de la pause.
 - **Limites connues** : les icônes sont simples (formes dessinées par le code) ; la direction artistique « dark fantasy » (D-030) reste à faire (jalon suivant) ; la vérification à la vraie souris (`-RealInput`) n'a pas été rejouée après la refonte.
+
+## D-055 — Fiche des sorts en description, raccourcis inversés (alliés sur les lettres, sorts sur les chiffres)
+
+- **Date** : 2026-09-20 — **Statut** : Validée (demande de l'utilisateur après le premier essai de D-054 ; icônes approuvées).
+- **Fiche des sorts (pause)** : remplace le tableau à deux colonnes. Une carte par sort : nom et coût (« 45(41) mana »), « Incantation : instantanée » et « CD : 5s », cible, description avec les valeurs insérées (« de 160(240) PV »). La valeur de base est écrite normalement, la valeur modifiée par l'équipement ou un talent **entre parenthèses, en vert**. Les descriptions de `skills.json` contiennent des marqueurs `{heal}` `{shield}` `{cast}` `{mana}` `{cd}` remplacés par `SkillDescriber.Sheet` (cœur, testé : 8 tests dont « aucun marqueur oublié dans le contenu »).
+- **Raccourcis** : alliés sur la rangée de lettres physique (**A Z E R** en AZERTY, Q W E R en QWERTY, T pour un 5e allié : le libellé affiché suit la disposition du clavier détectée par l'Input System) ; sorts sur **1 à 6, avec le pavé numérique en doublon** (maintenir enchaîne le sort, y compris au pavé). Le départ de combat l'indique (« 1 2 3 4 (ou pavé numérique) »). E2E : scénario G adapté (touche A pour cibler, 1 pour maintenir, 1 du pavé pour lancer).
+- **Question B (équilibre)** : aucun changement de règle ni de valeur ; raccourcis et texte seulement.
