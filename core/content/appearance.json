@@ -44,6 +44,20 @@
             "accent": "D8404E",
             "glow": "A8E4FF",
             "trim": "E8C25A"
+          },
+          "model": {
+            "path": "Imported/KayKitAdventurers/sword_2handed",
+            "size": 2.2,
+            "offset": [
+              0,
+              0,
+              0.3
+            ],
+            "euler": [
+              90,
+              0,
+              0
+            ]
           }
         }
       ],
