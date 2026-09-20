@@ -3,7 +3,8 @@
   "rootNamespace": "Healer.Client",
   "references": [
     "Healer.Combat",
-    "Healer.Ui"
+    "Healer.Ui",
+    "Unity.InputSystem"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

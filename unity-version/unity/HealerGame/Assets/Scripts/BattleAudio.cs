@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Healer.Combat;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Healer.Client
 {
@@ -41,7 +42,8 @@ namespace Healer.Client
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.M)) Muted = !Muted;
+            var keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.mKey.wasPressedThisFrame) Muted = !Muted;
             if (_ctl == null || _ctl.Battle == null) return;
             var telegraph = _ctl.Battle.GetTelegraph();
             bool telegraphing = telegraph != null && telegraph.Type == "bigAttack";
