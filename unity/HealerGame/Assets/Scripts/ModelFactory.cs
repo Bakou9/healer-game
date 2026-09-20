@@ -176,6 +176,8 @@ namespace Healer.Client
             var instance = Object.Instantiate(prefab, rig.Weapon, false);
             instance.name = "ImportedWeapon";
             instance.transform.localPosition = Vector3.zero;
+            var native = BoundsIn(instance.transform, instance.transform);
+            Debug.Log($"[Healer] modèle natif {model.Path} : taille {native.size.x:0.###} x {native.size.y:0.###} x {native.size.z:0.###}, de {native.min.x:0.###},{native.min.y:0.###},{native.min.z:0.###} à {native.max.x:0.###},{native.max.y:0.###},{native.max.z:0.###}");
             instance.transform.localEulerAngles = new Vector3(model.Euler[0], model.Euler[1], model.Euler[2]);
             foreach (var collider in instance.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(collider);
             // Taille normalisée : l'unité du fichier (mètres, centimètres…) ne compte pas, seule la taille voulue compte.
