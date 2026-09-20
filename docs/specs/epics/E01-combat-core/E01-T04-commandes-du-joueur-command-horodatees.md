@@ -5,7 +5,7 @@ titre: Commandes du joueur (Command) horodatées
 type: Tech
 priorité: P0
 phase: 1
-statut: Terminé
+statut: À faire
 taille: S
 dépendances: E01-T01
 ---
@@ -13,11 +13,13 @@ dépendances: E01-T01
 # E01-T04 — Commandes du joueur (Command) horodatées
 
 ## Contexte
+> **Portage Unity :** réalisé dans la version Phaser (dépôt `Bakou9/healer-game`, commit 91d7beb). À refaire et re-valider dans ce dépôt (epic E14).
+
 Le joueur, le bot et les tests utilisent le même chemin ; base du replay et de la validation serveur.
 
 ## Critères d'acceptation
-- [x] `Command { timeMs, skillId, targetId }` via `issueCommand`
-- [x] Insertion triée, traitement déterministe
+- [ ] `Command { timeMs, skillId, targetId }` via `issueCommand`
+- [ ] Insertion triée, traitement déterministe
 
 ## Tests automatiques exigés
 `Battle.test.ts`.

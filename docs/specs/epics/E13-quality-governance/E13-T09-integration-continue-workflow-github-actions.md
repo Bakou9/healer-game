@@ -5,7 +5,7 @@ titre: Intégration continue (workflow GitHub Actions)
 type: Tech
 priorité: P0
 phase: 2
-statut: En cours
+statut: À faire
 taille: S
 dépendances: E13-T04
 ---
@@ -13,11 +13,13 @@ dépendances: E13-T04
 # E13-T09 — Intégration continue (workflow GitHub Actions)
 
 ## Contexte
+> **Portage Unity :** réalisé dans la version Phaser (dépôt `Bakou9/healer-game`, commit 91d7beb). À refaire et re-valider dans ce dépôt (epic E14).
+
 Le filet de tests ne sert que s'il s'exécute toujours, pas seulement sur le poste de l'agent.
 
 ## Critères d'acceptation
-- [x] Workflow `.github/workflows/check.yml` : `npm ci` puis `npm run check` à chaque envoi sur `main` et chaque demande de fusion
-- [x] Première exécution vérifiée verte sur GitHub (2026-09-19, commit 24faa39)
+- [ ] Workflow `.github/workflows/check.yml` : `npm ci` puis `npm run check` à chaque envoi sur `main` et chaque demande de fusion
+- [ ] Première exécution vérifiée verte sur GitHub (2026-09-19, commit 24faa39)
 - [ ] Tests d'équilibrage complets de nuit (E08-T12)
 - [ ] Échec visible avec message explicatif
 

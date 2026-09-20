@@ -1,33 +1,20 @@
-{
-  "name": "healer-game",
+﻿{
+  "name": "healer-game-unity",
   "private": true,
   "version": "0.1.0",
+  "description": "Version Unity + MCP du jeu Healer Game. Outillage Node : cohÃ©rence des spÃ©cifications et orchestration des vÃ©rifications. Le jeu lui-mÃªme est en C# (core/ et unity/).",
   "type": "module",
-  "description": "Prototype d'un healer gacha : boucle de combat en TypeScript pur (testable) + rendu Phaser, packagé pour Android via Capacitor et pensé pour un futur build Steam.",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "typecheck": "tsc --noEmit",
-    "test:update-golden": "node scripts/update-golden.mjs",
-    "check": "npm run typecheck && npm test && npm run build",
-    "cap:add:android": "cap add android",
-    "cap:sync": "npm run build && cap sync android",
-    "cap:open:android": "cap open android",
-    "specs:index": "vite-node scripts/specs-index.ts"
-  },
-  "dependencies": {
-    "@capacitor/android": "^6.1.2",
-    "@capacitor/core": "^6.1.2",
-    "phaser": "^3.85.2"
+    "specs:index": "vite-node tools/specs/specs-index.ts",
+    "specs:test": "vitest run --config tools/vitest.config.ts",
+    "check": "npm run specs:test && node tools/check-core.mjs",
+    "e2e": "powershell -NoProfile -File tools/unity-e2e.ps1"
   },
   "devDependencies": {
-    "@capacitor/cli": "^6.1.2",
     "@types/node": "^20.19.43",
     "typescript": "^5.6.3",
-    "vite": "^5.4.10",
+    "vite-node": "^2.1.4",
     "vitest": "^2.1.4"
   }
 }
+

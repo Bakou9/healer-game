@@ -23,7 +23,7 @@ Définition du contenu (E02, E03, E05), économie (E06).
 <!-- TICKETS:START -->
 | Ticket | Titre | Type | Priorité | Phase | Statut | Dépend de |
 |---|---|---|---|---|---|---|
-| [E08-T01](E08-T01-profils-de-joueurs-de-reference-attentif-lent-sa.md) | Profils de joueurs de référence (attentif, lent, sans purge, passif, spam) | Test | P0 | 1 | Terminé | E01-T01 |
+| [E08-T01](E08-T01-profils-de-joueurs-de-reference-attentif-lent-sa.md) | Profils de joueurs de référence (attentif, lent, sans purge, passif, spam) | Test | P0 | 1 | À faire | E01-T01 |
 | [E08-T02](E08-T02-un-bot-raisonnable-par-specialisation.md) | Un bot « raisonnable » par spécialisation | Test | P0 | 2 | À faire | E02-T04, E08-T01 |
 | [E08-T03](E08-T03-generateur-de-l-espace-de-builds-enumeration-ou.md) | Générateur de l'espace de builds (énumération ou échantillonnage seedé) | Test | P0 | 2 | À faire | E02-T01 |
 | [E08-T04](E08-T04-metriques-standard-d-equilibrage.md) | Métriques standard d'équilibrage | Test | P0 | 2 | À faire | E01-T13 |

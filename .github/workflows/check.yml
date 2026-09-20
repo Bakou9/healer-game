@@ -1,7 +1,8 @@
-name: check
+﻿name: check
 
-# Filet de sécurité du projet : types, tests (dont non-régression et équilibrage) et build,
-# à chaque envoi sur la branche principale et à chaque demande de fusion.
+# Filet de sécurité du projet : cohérence des spécifications et tests du cœur C#
+# (conformité aux combats de référence, équilibrage, données, architecture, interface).
+# À chaque envoi sur la branche principale et à chaque demande de fusion.
 on:
   push:
     branches: [main]
@@ -16,5 +17,8 @@ jobs:
         with:
           node-version: 20
           cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
       - run: npm ci
       - run: npm run check

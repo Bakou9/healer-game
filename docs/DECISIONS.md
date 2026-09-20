@@ -148,7 +148,112 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - Tickets : E09-T01
 
 ### D-026 — Unity et son MCP : point de décision, pas de bascule maintenant
-- Date : 2026-09-19 · Statut : Proposition (avis de l'agent, à valider)
+- Date : 2026-09-19 · Statut : Remplacée par D-027
 - Contexte : l'utilisateur demande si utiliser Unity via son MCP (serveur officiel, plugin officiel pour Claude Code) a du sens.
 - Position : rester sur TypeScript + Phaser + Capacitor pour la phase 1-3 ; décider d'un éventuel passage à Unity à une porte précise, après le test sur appareil Android d'entrée de gamme et les budgets de performance, selon des critères posés à l'avance. Si bascule, les références golden (indépendantes du langage) servent de spécification de conformité pour porter la simulation en C#.
 - Tickets : E11-T07, E11-T01, E11-T02
+
+### D-027 — Version Unity + MCP en parallèle, sans toucher à la version Phaser
+- Date : 2026-09-19 · Statut : Ferme (remplace D-026 : l'utilisateur veut « tenter » Unity dès maintenant)
+- Décision : « garder le projet actuel de côté et ne plus y toucher », et refaire le jeu avec Unity et un serveur MCP en reprenant toutes les règles, tous les `.md` et toute la mécanique de test. Ne jamais supprimer la version Phaser : un retour reste possible. Nouveau dépôt : `%USERPROFILE%\Documents\healer-game-unity`.
+- Tickets : E14-T01, E14-T17, E11-T07
+
+### D-028 — Choix du MCP : à trancher avec l'utilisateur
+- Date : 2026-09-19 · Statut : À préciser
+- Constat : le MCP officiel de Unity demande Unity 6+, un projet connecté à Unity Cloud et un essai ou un abonnement aux outils IA (bêta), donc un coût possible ; des MCP communautaires libres existent. Voir `docs/UNITY_SETUP.md`.
+- Question ouverte : officiel (abonnement éventuel) ou communautaire libre ?
+- Tickets : E14-T03
+
+### D-029 — Architecture Unity : cœur C# pur partagé, Unity en présentation
+- Date : 2026-09-19 · Statut : Proposition
+- Décision : les règles vivent dans un cœur C# sans dépendance à Unity, compilé par dotnet (tests, CI, futur serveur) et par Unity (paquet local) ; contenu JSON et références golden partagés, repris de la version Phaser ; Unity ne contient aucune règle. Voir `docs/ARCHITECTURE_UNITY.md`.
+- Réalisé : cœur porté, **7 combats de référence reproduits à l'identique**, 62 tests.
+- Tickets : E14-T04, E14-T05, E14-T06, E14-T07, E14-T08, E14-T09
+
+### D-030 — Modèles 3D « user friendly » : style figurine low-poly, construits par scripts
+- Date : 2026-09-19 · Statut : Proposition (style délégué à l'agent, à valider après le premier test)
+- Décision : formes simples et arrondies, silhouettes lisibles en portrait, couleurs par rôle, faible budget de triangles, matériaux unis ; modèles construits par scripts d'Éditeur reproductibles (préfabriqués), avec budget de triangles testé. Voir `docs/ART_3D.md`.
+- Tickets : E14-T13
+
+### D-031 — Installation des outils autorisée
+- Date : 2026-09-19 · Statut : Ferme
+- Décision : l'utilisateur a autorisé l'installation du SDK .NET 8, d'Unity Hub et de l'Éditeur Unity 6 LTS avec module Android (via winget et le Hub, sources officielles). La connexion au compte Unity et l'activation de la licence restent à faire par l'utilisateur ; l'agent ne saisit jamais d'identifiant.
+- Tickets : E14-T02
+
+### D-032 — Compte Unity créé et essai démarré par l'utilisateur
+- Date : 2026-09-19 · Statut : À préciser
+- Constat : l'utilisateur a créé son compte Unity et s'est inscrit à un essai (type d'essai non précisé). Un essai peut se transformer en abonnement payant à son terme.
+- À préciser par l'utilisateur (sans jamais donner de mot de passe ni de coordonnées bancaires à l'agent) : quel essai (Unity Pro, outils IA, autre) ; date de fin ; renouvellement automatique ou non ; carte bancaire demandée ou non ; coût après l'essai.
+- Règle : l'utilisateur note la date de fin dans son calendrier et annule avant l'échéance s'il ne veut pas payer ; l'agent rappelle cette date à chaque étape qui dépend de l'essai (MCP officiel).
+- Tickets : E14-T02, E14-T03
+
+### D-033 — Un seul dépôt GitHub : la version Unity vit dans unity-version/
+- Date : 2026-09-19 · Statut : Ferme (précise D-027 : la version Phaser reste intacte, mais la version Unity n'a plus de dépôt séparé)
+- Décision : sur demande de l'utilisateur, la version Unity est poussée dans un répertoire imbriqué du dépôt https://github.com/Bakou9/healer-game, dossier `unity-version/` (historique complet conservé, import par `git subtree add`). Les fichiers Phaser ne sont pas modifiés ; ajouts : `vitest.config.ts` (les tests Phaser ignorent le sous-dossier), un workflow `unity-version.yml`, et un pointeur en tête du `CLAUDE.md` racine. Le dossier local `%USERPROFILE%\Documents\healer-game-unity` devient une copie de secours : on ne travaille plus que dans `unity-version/`.
+- Tickets : E14-T01, E14-T16
+
+### D-034 — Newtonsoft.Json intégré au cœur, aucun paquet du registre Unity pour l'instant
+- Date : 2026-09-19 · Statut : Ferme (contournement temporaire, réversible)
+- Constat : Windows Defender fait échouer le renommage des paquets téléchargés du registre Unity (EPERM). Ce n'est pas un jugement sur le projet : l'analyse en temps réel tient les fichiers fraîchement écrits.
+- Décision : intégrer la DLL Newtonsoft.Json 13.0.3 (identique à celle des tests dotnet, licence MIT) au paquet du cœur et ne dépendre d'aucun paquet du registre, ce qui permet à Unity d'ouvrir et de compiler le projet sans toucher aux réglages de sécurité de l'utilisateur. Une exclusion Defender du dossier `Library` (cache régénérable) sera demandée à l'utilisateur au moment d'ajouter URP, Input System ou Test Framework.
+- Tickets : E14-T10
+
+### D-035 — Historique du dépôt nettoyé (nom d'utilisateur Windows retiré)
+- Date : 2026-09-19 · Statut : Ferme
+- Constat : d'anciens commits (documentation) contenaient des chemins avec le nom d'utilisateur Windows de l'utilisateur, dans un dépôt public.
+- Décision : l'historique de `main` a été réécrit (17 commits, `git filter-branch`) pour remplacer ces chemins par `%USERPROFILE%`, puis publié par un push forcé sécurisé (`--force-with-lease`) sur ordre explicite de l'utilisateur. Contenu actuel strictement identique ; tests verts ; intégrations continues vertes. Sauvegarde complète avant l'opération : `Documents/healer-game-sauvegarde-avant-nettoyage.bundle` (restaurable par `git clone`).
+- Limites connues : GitHub garde les anciens commits accessibles par leur numéro exact pendant un temps (purge complète via le support GitHub) ; les numéros des commits de la version Unity ont changé, ceux de la version Phaser (dont `91d7beb`) sont inchangés ; le nom et l'email des auteurs de commits restent visibles.
+- Tickets : E13-T04
+
+### D-036 — Première version jouable : rendu intégré, interface IMGUI, modèles générés par code
+- Date : 2026-09-19 · Statut : Ferme (choix réversible, voir D-034)
+- Décision : tant que les paquets du registre Unity sont bloqués par Defender, la version jouable s'appuie sur ce qui est livré dans le cœur d'Unity : rendu intégré (pas d'URP), interface dessinée par IMGUI avec les jetons de `Healer.Ui` (aucune règle dans le client), modèles 3D « figurine » générés par code à chaque lancement (`MeshKit`, `ModelFactory`) plutôt que des préfabriqués : même reproductibilité, aucun fichier binaire, budget de triangles contrôlé à chaque build.
+- Spec remise en cause (préambule A) : E14-T13 prévoyait des préfabriqués construits par scripts d'Éditeur ; la génération à l'exécution offre la même reproductibilité sans dépendre de l'Éditeur, et simplifie le build. À reconsidérer si des artistes doivent retoucher les modèles.
+- Interface : le journal de combat à 3 lignes de la version Phaser est réduit à **une ligne** (dernière action), car les modèles 3D occupent la zone du journal ; les événements se lisent aussi par les animations et les chiffres flottants.
+- Tickets : E14-T11, E14-T12, E14-T13
+
+### D-037 — Outils de vérification du jeu Unity
+- Date : 2026-09-19 · Statut : Ferme
+- Décision : `tools/unity-cycle.ps1` (construit l'exécutable, le lance en mode capture avec le bot de référence, écrit des captures d'écran) et `tools/unity-clicktest.ps1` (clique réellement dans la fenêtre du jeu et vérifie les gestes par le journal du joueur) sont les vérifications visuelles et d'interaction du jeu Unity, en attendant des tests EditMode (le Test Framework vient du registre, donc bloqué par Defender).
+- Tickets : E14-T11, E14-T12, E13-T05
+
+### D-038 — Statistiques de combat dans le cœur, sons générés par code
+- Date : 2026-09-19 · Statut : Ferme
+- Décision : les statistiques de combat (`CombatStats`) vivent dans le cœur et sont calculées uniquement à partir des événements (testées : égalité avec la somme des événements) ; le télégraphe expose sa durée totale (`TotalMs`) pour les jauges ; les sons sont générés par code (`SoundKit`) faute de fichiers audio, avec la touche M pour couper le son.
+- Tickets : E01-T13, E04-T07, E04-T09, E04-T11
+
+## D-039 — Écran de démarrage, pause au changement de fenêtre, méthode de build Android
+- **Décision** : le combat ne démarre plus tout seul : un écran « Jouer » explique les gestes (cible puis sort, bouclier avant l'attaque, purge, mana). Le combat se met en pause si la fenêtre perd le focus (sauf quand le bot joue en mode capture). `Builder.BuildAndroid` (IL2CPP arm64, portrait) et lecture de StreamingAssets par UnityWebRequest sur Android sont prêts.
+- **Pourquoi** : un joueur qui lance le jeu ne doit pas perdre un combat avant d'avoir compris ; changer de fenêtre ne doit pas être puni.
+- **Reste à faire** : le build Android exige le module Android d'Unity (installation = à valider avec l'utilisateur, cf. QUESTIONS_EN_ATTENTE).
+
+## D-040 — Input System adopté ; le projet Unity se travaille dans C:\WhatTheHeal
+- **Décision** : le paquet `com.unity.inputsystem` 1.14.2 remplace l'ancien Input Manager (`activeInputHandler: 1`). Un essai dans `C:\Users\banja\Documents\healer-game` échouait toujours (EPERM au renommage du paquet dans `Library/PackageCache`) ; le même dépôt cloné dans `C:\WhatTheHeal` s'installe sans erreur. Le dossier `Documents` (accès contrôlé aux dossiers ou OneDrive) est donc la cause probable.
+- **Conséquence** : travailler et builder depuis `C:\WhatTheHeal` (clone de https://github.com/Bakou9/healer-game). Ferme D-034 pour l'Input System ; le clic réel n'est pas retesté (`unity-clicktest.ps1` ignore l'écran « Jouer »).
+
+## D-041 — Raccourcis clavier PC
+- **Décision** : `BattleKeys` traduit les touches en gestes du contrôleur (mêmes `TapAlly` / `TapSkill` que le toucher, aucune règle ajoutée) ; pastilles affichées sur les cartes seulement si un clavier est présent. Détail dans `docs/TESTER_LE_JEU.md`.
+- **Équilibrage** : aucune règle ni valeur modifiée ; les gestes sont plus rapides au clavier, mais le bot de référence (500 ms) reste la borne de jeu attentif. Vérifié en jeu réel (Espace, 1, A → soin lancé sur le Garde) ; pas de test automatisé du clavier.
+
+## D-042 — Jeu en paysage, PC d'abord, mobile toujours compatible
+- **Décision (utilisateur)** : le jeu est pensé PC d'abord, en paysage ; il doit rester utilisable sur mobile : pas d'entrées trop complexes. Remplace la grille portrait 480×854 (D-013 / version Phaser) : `Layout` passe à **1280×720** (16:9), colonne centrale de 1000 px (cartes d'alliés, cible et mana, sorts). Fenêtre PC 1280×720 redimensionnable ; orientation mobile paysage.
+- **Garde-fous mobile conservés** : cibles ≥ 48 px, texte ≥ 14 px, tout jouable en un tap ; le clavier (D-041) n'est qu'un bonus, jamais requis. Textes du tutoriel : « cliquez (ou touchez) ».
+- **Tests** : les 114 tests du cœur passent ; seul le nom d'un test de mise en page a changé (« zone du pouce » → « moitié basse de l'écran »), ses assertions sont identiques. Golden inchangés (aucune règle de combat touchée). Équilibrage : aucun impact.
+- **À valider avec l'utilisateur** : `docs/UX.md` et la vision (« Android d'abord ») restent à mettre à jour ; un essai sur téléphone en paysage reste à faire (E11-T01).
+
+## D-043 — Reprise automatique et style graphique plus mature
+- **Reprise** : la pause déclenchée par la perte de focus de la fenêtre se lève seule au retour ; une pause volontaire du joueur n'est jamais levée automatiquement.
+- **Graphismes** : palette plus sourde, proportions adultes (tête plus petite, buste long, bras fins, regard en fente), armure métallique, décor de ruines sombres peint par code (piliers, brume, sol dallé), éclairage clé chaud + contre-jour froid, vignette d'ambiance, interface plus sobre (panneaux sombres, filets fins, or terni). À juger visuellement par l'utilisateur (D-030 « À préciser » : validation du style 3D).
+
+## D-044 — Bug « Jouer ne démarre pas » et politique de tests automatisés maximale
+- **Bug** : en paysage, le bouton « Jouer » (et « Recommencer ») chevauchait des cartes d'alliés dessinées avant lui ; leur zone cliquable captait le clic, et `TapAlly` l'ignorait tant que le combat n'avait pas commencé. Espace fonctionnait car il passait par un autre chemin.
+- **Correction à la racine** : `Healer.Ui.InputGate` (cœur, testé) décide quels gestes sont permis selon l'état (démarrage, combat, pause, bilan). Souris, toucher ET clavier passent par elle ; un élément hors de son état ne capte plus aucun clic. Le bouton « Jouer » / « Recommencer » vient de `Layout` (rectangles testés).
+- **Tests ajoutés** : 43 tests du cœur (157 au total) : règle d'entrée par état, priorité des états, touche de confirmation, régressions géométriques (Jouer / Recommencer vs cartes, avec un garde-fou qui prévient si la géométrie ne reproduit plus le scénario), ajustement à l'écran (`ScreenFit`, extrait de `ScreenMap`), mise en page paysage. Vérifié par mutation : réintroduire le défaut fait échouer 2 tests.
+- **Bout en bout** : `npm run e2e` (`tools/unity-e2e.ps1`, remplace `unity-clicktest.ps1`) pilote la vraie souris et le vrai clavier sur le jeu Windows : clic sur Jouer par-dessus une carte, cibler, sort, pause Espace / Échap, défaite accélérée, Recommencer, Entrée. À lancer sans toucher souris ni clavier ; non inclus dans `npm run check` (dépend de l'écran et de Unity).
+- **Règle** : tout bug corrigé reçoit un test qui échouait avant ; toute nouvelle logique d'entrée ou de mise en page va dans le cœur (testable sans Unity), le client ne fait que la relier.
+
+## D-045 — Le dépôt ne contient plus que le projet Unity (Phaser retiré)
+- **Décision (utilisateur)** : « clean le projet pour qu'il n'y ait que le projet Unity et plus rien en lien avec Phaser ». Remplace **D-027** (ne jamais toucher à Phaser) et **D-033** (Unity dans un sous-dossier `unity-version/`).
+- **Fait** : étiquette Git `phaser-archive` posée sur le dernier état avec Phaser (publiée sur GitHub) ; tous les fichiers Phaser retirés (`src/`, `docs/` et `scripts/` Phaser, Vite, Capacitor, configs, ancien `CLAUDE.md`, ancien workflow) ; le contenu de `unity-version/` est remonté à la racine ; un seul workflow CI `check.yml`. Historique intact : rien n'est perdu.
+- **Retrouver Phaser** : `git checkout phaser-archive` (ou `git show phaser-archive:<chemin>`).
+- **Conséquences** : dossier de travail local = `C:\WhatTheHeal` (l'ancien dossier `Documents\healer-game` est obsolète et peut être supprimé à la main). Les mentions historiques de Phaser dans les décisions, revues et tickets sont conservées telles quelles (mémoire du projet) ; les golden restent la spécification de conformité (`core/golden`).

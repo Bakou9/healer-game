@@ -1,11 +1,15 @@
-# Instructions pour un agent travaillant sur ce projet
-
-> **Sous-projet Unity :** la version Unity + MCP du jeu vit dans `unity-version/` (décision D-033) avec
-> son propre `CLAUDE.md`. Quand on travaille dans `unity-version/`, ce sont SES règles qui s’appliquent ;
-> ce fichier-ci ne concerne que la version Phaser (racine du dépôt).
+# Instructions pour un agent travaillant sur ce projet (version Unity + MCP)
 
 Ce fichier s'adresse à un assistant IA (Claude Code ou équivalent) amené à
-modifier ce dépôt. Contexte complet dans `README.md`.
+modifier ce dépôt. Contexte complet dans `README.md` et `docs/`.
+
+**Ce dépôt est le jeu Unity, et rien d'autre.** Racine du dépôt
+https://github.com/Bakou9/healer-game ; en local : `C:\WhatTheHeal`.
+La version Phaser (TypeScript) a été **retirée** du dépôt (décision D-045, qui
+remplace D-027 et D-033). Elle reste consultable dans l'historique Git :
+`git show phaser-archive:src/sim/Battle.ts`, ou `git checkout phaser-archive`
+pour tout retrouver. Ne rien recréer de Phaser ici. Table de correspondance
+des anciens chemins : `docs/MIGRATION_UNITY.md`.
 
 ## PRÉAMBULE SYSTÉMATIQUE (à appliquer AVANT et APRÈS chaque ticket)
 
@@ -43,153 +47,135 @@ mesures, (3) ce que l'utilisateur doit valider.
 
 ## Ce qu'est ce projet
 
-Un prototype de jeu gacha "healer" : combat en temps réel où le joueur ne
-contrôle que le soigneur (le reste de l'équipe est en auto-battle). Stack :
-TypeScript + Phaser 3 + Vite, packagé Android via Capacitor. Un futur build
-Steam viendra plus tard (Electron/Tauri + steamworks.js), pas encore ici.
+Un jeu gacha « healer » : combat en temps réel où le joueur ne contrôle que le
+soigneur (le reste de l'équipe est en auto-battle). Version Unity (C#, 3D
+stylisée, URP), pilotée avec un serveur MCP, Android d'abord, Steam ensuite.
+Vision : `docs/specs/VISION.md`.
 
-Le projet avance par phases courtes et testables (voir README). **Ne pas
-anticiper des fonctionnalités de phases suivantes** (gacha, backend, IAP)
-sans qu'on le demande explicitement : la priorité actuelle est de valider
-que la boucle de combat est amusante.
+Le projet avance par phases courtes et testables. **Ne pas anticiper des
+fonctionnalités de phases suivantes** sans qu'on le demande. La priorité
+actuelle est la **migration à parité** (epic E14) : mêmes règles, mêmes tests,
+mêmes valeurs, puis nouveautés.
 
-## Règles d'architecture à respecter
+## Règles d'architecture (détail : `docs/ARCHITECTURE_UNITY.md`)
 
-1. **`src/sim/` ne doit jamais importer Phaser.** C'est la simulation de
-   combat : pure, testable, déterministe. `src/scenes/` fait uniquement le
-   rendu et la capture des taps ; il lit l'état de `Battle` et lui envoie des
-   commandes via `issueCommand()`. Si une modification de gameplay nécessite
-   de toucher à `BattleScene.ts` ET `Battle.ts`, c'est normal, mais la logique
-   de règles (dégâts, mana, cooldowns) reste dans `sim/`.
-
-2. **Tout le contenu de jeu est dans `src/data/*.json`**, pas codé en dur.
-   Un nouveau personnage, sort ou boss s'ajoute en éditant ou en créant un
-   JSON, pas en modifiant `Battle.ts`. Si une fonctionnalité ne peut pas être
-   exprimée en données (ex : un nouveau *type* d'effet), étendre les types
-   dans `src/sim/types.ts` et le traiter dans `Battle.ts` de façon générique
-   (pas un `if` spécifique à un seul sort).
-
-3. **Déterminisme.** `Battle` prend un `seed` et ne doit utiliser `Math.random()`
-   nulle part — uniquement le `Rng` fourni (voir `rng.ts`). Toute nouvelle
-   mécanique aléatoire doit passer par ce générateur, sinon les tests de
-   déterminisme et un futur rejouable/anti-triche côté serveur cassent.
-
-4. **Pas de calcul de gameplay côté client qui devra un jour être autoritatif.**
-   Ce prototype n'a pas encore de serveur, mais on garde `Battle` écrite comme
-   si elle allait tourner côté serveur un jour (pas d'accès DOM/window dedans).
+1. **Le cœur est en C# pur, sans Unity.** `core/Healer.Combat` (simulation) et
+   `core/Healer.Ui` (formatage, mise en page, ciblage) n'utilisent jamais
+   `UnityEngine`. Ils sont compilés par dotnet (tests) **et** par Unity (paquets
+   locaux). Toute règle de jeu y vit ; le client Unity n'en contient aucune.
+2. **Tout le contenu de jeu est dans `core/content/*.json`**, pas codé en dur ;
+   un nouveau personnage, sort, effet ou boss s'ajoute en éditant un JSON. Un
+   nouveau *type* d'effet étend le cœur de façon générique (pas de `if` propre à
+   un seul sort).
+3. **Déterminisme.** `Battle` prend un `seed` ; **jamais** `System.Random`,
+   `UnityEngine.Random`, `DateTime`, `Stopwatch` dans le cœur : uniquement le RNG
+   seedé fourni. Toute mécanique aléatoire passe par lui.
+4. **Rien de gameplay côté client qui devra un jour être autoritatif** : le cœur
+   est écrit comme s'il tournait un jour sur un serveur (pas d'accès fichier,
+   réseau ou moteur).
+5. **`MonoBehaviour` minces** : ils relient (lecture d'état, commandes,
+   événements), ils ne calculent pas. `Time.deltaTime` n'alimente que le pas fixe
+   du client.
+6. **Utiliser le MCP sans perdre la reproductibilité** : le code d'abord (fichiers
+   `.cs`) ; scènes et préfabriqués **reconstruisibles par scripts d'Éditeur** ;
+   tout versionné, `.meta` compris ; vérifier par tests et par la console, pas à
+   l'œil seul.
 
 ## Patterns de développement (OBLIGATOIRE)
 
-Le fichier de référence est **`docs/PATTERNS_JEU_VIDEO.md`**. Avant d'écrire du
-code, le consulter : il dit quel pattern appliquer (Game Loop à pas fixe,
-Command, Observer, data-driven, séparation modèle/vue…), lesquels sont différés
-(ECS, Behavior Tree, Object Pool…) avec leur déclencheur, et lesquels sont à
-éviter (Singleton, état global). Dans le compte rendu de chaque tâche, **citer
-le ou les patterns appliqués**. Ne pas introduire un pattern différé avant que
-son déclencheur soit atteint. Si on en adopte un, mettre le fichier à jour.
+Référence : **`docs/PATTERNS_JEU_VIDEO.md`** (pas fixe, Command, Observer,
+data-driven, séparation modèle/vue, effets sur la durée, phases de boss, Object
+Pool ; différés : ECS, Behavior Tree, Strategy…). Le consulter avant d'écrire du
+code ; **citer les patterns appliqués** dans chaque compte rendu ; n'adopter un
+pattern différé qu'à l'atteinte de son déclencheur ; le mettre à jour si on en
+adopte un.
 
 ## Specs, décisions et mémoire persistante (OBLIGATOIRE)
 
 - **Mémoire du projet = fichiers du dépôt, pas la conversation.** Avant de
-  travailler, lire `docs/DECISIONS.md` et le ticket concerné
-  (`docs/specs/`, index dans `docs/specs/README.md`, vision dans `VISION.md`).
+  travailler, lire `docs/DECISIONS.md` et le ticket concerné (`docs/specs/`,
+  index dans `docs/specs/README.md`, vision dans `VISION.md`).
 - **Toute nouvelle décision, exigence ou correction de l'utilisateur** est
-  ajoutée à `docs/DECISIONS.md` (daté, numéroté, statut) et rattachée à un
-  ticket (nouveau ou existant). On ne supprime pas une décision : on la remplace
-  par une nouvelle qui la cite. Une information manquante = statut « À préciser »
-  (le dire à l'utilisateur), une hypothèse à moi = « Proposition ».
-- **Un ticket = une unité de travail.** Critères d'acceptation cochés seulement
-  s'ils sont vrais et testés ; définition de « terminé » dans `docs/specs/README.md`.
-  Après tout changement de ticket ou de statut : `npm run specs:index`.
-  `src/testing/specs.test.ts` échoue si les specs sont incohérentes.
-- **Spécifier n'autorise pas à implémenter.** Ne développer que les tickets de
-  la phase en cours ou explicitement demandés ; ne pas anticiper les autres.
-- **Architecture cible : `docs/ARCHITECTURE.md`** (monolithe modulaire, frontières
-  strictes, registres). Tout nouveau code respecte les frontières ; les migrations
-  se font par petites étapes **sans changer les golden**.
-- **UX : `docs/UX.md`.** Toute interface respecte ses principes (2 gestes au plus,
-  cibles ≥ 48 px, texte ≥ 14 px, jamais la couleur seule, retours plafonnés).
-- **Équilibrage entre choix de spécialisation** : toute nouvelle option de
-  spécialisation, talent ou build passe la batterie d'équilibrage (E08 et
-  `docs/EQUILIBRAGE.md` §8) ; aucune option n'est livrée sans ses mesures.
+  ajoutée à `docs/DECISIONS.md` (daté, numéroté, statut) et rattachée à un ticket.
+  On ne supprime pas une décision : on la remplace par une nouvelle qui la cite.
+  Information manquante = « À préciser » (le dire) ; hypothèse à moi = « Proposition ».
+- **Un ticket = une unité de travail.** Critères cochés seulement s'ils sont vrais
+  et testés ; définition de « terminé » dans `docs/specs/README.md`. Après tout
+  changement de ticket ou de statut : `npm run specs:index`.
+  `tools/specs/specs.test.ts` échoue si les specs sont incohérentes.
+- **Dans ce dépôt, « Terminé » signifie fait, testé et revu ICI.** Les tickets
+  réalisés en Phaser ont été remis à « À faire » (voir epic E14).
+- **Spécifier n'autorise pas à implémenter.** Ne développer que les tickets de la
+  phase en cours ou explicitement demandés.
+- **UX : `docs/UX.md`.** Deux gestes au plus, cibles ≥ 48 px, texte ≥ 14 px,
+  jamais la couleur seule, retours plafonnés. **Modèles 3D : `docs/ART_3D.md`.**
+- **Équilibrage entre choix de spécialisation** : toute option, talent ou build
+  passe la batterie d'équilibrage (E08 et `docs/EQUILIBRAGE.md` §8).
 
 ## Équilibrage et valeurs lisibles (OBLIGATOIRE)
 
-- **`docs/EQUILIBRAGE.md`** définit ce qu'est un jeu équilibré pour ce projet
-  (6 critères mesurables, profils de joueurs de référence, boutons de réglage,
-  procédure). Le lire avant de toucher à `src/data/*.json`, à une règle de
-  combat ou au bot de référence, et rendre compte de l'avant/après des mesures.
-  Ne jamais relâcher une borne d'équilibrage pour faire passer un test.
-- **Valeurs à hauteur humaine.** Tout nombre affiché au joueur est **tronqué**
-  (jamais arrondi vers le haut), sans décimales inutiles, abrégé si long
-  (`7000`, `12,3k`, `4,9s`) : toujours via `src/ui/format.ts`
-  (`formatNumber`, `formatSeconds`, `formatRatio`), jamais de `toFixed`,
-  `Math.round` ou nombre brut dans un texte affiché. Dans les données JSON,
-  toute quantité de jeu est un entier rond ; seuls `multiplier` et les ratios
-  (`…Ratio`) peuvent être décimaux (vérifié par un test).
+- **`docs/EQUILIBRAGE.md`** définit l'équilibre (6 critères mesurables, profils de
+  joueurs de référence, boutons de réglage, procédure). Le lire avant de toucher
+  à `core/content/*.json`, à une règle de combat ou au bot de référence ;
+  rendre compte de l'avant/après. Ne jamais relâcher une borne pour faire passer
+  un test. Le portage doit **retrouver à l'identique** les mesures de la version Phaser.
+- **Valeurs à hauteur humaine.** Tout nombre affiché est **tronqué** (jamais arrondi
+  vers le haut), sans décimales inutiles, abrégé si long (`7000`, `12,3k`,
+  `4,9s`), via le formatage de `core/Healer.Ui` ; jamais de `ToString("F1")`,
+  `Mathf.Round` ou nombre brut dans un texte affiché. Dans les JSON, toute
+  quantité de jeu est un entier rond ; seuls `multiplier` et les ratios peuvent
+  être décimaux (vérifié par test).
 
 ## Protocole de non-régression (OBLIGATOIRE)
 
 Les tests détectent les régressions ; l'utilisateur veut **comprendre chacune**.
 
-- `npm run check` = types + tests + build. Doit être vert avant de conclure.
-- Les combats de référence sont figés dans `src/testing/golden/*.txt` (un
-  événement par ligne) et comparés à chaque `npm test`. Un test d'équilibrage
-  vérifie aussi que le combat reste gagnable et tendu avec le bot de référence.
+- `npm run check` = specs + tests du cœur (`dotnet test`) + (en option) Unity en
+  mode batch. Doit être vert avant de conclure. Il **échoue** si un outil requis
+  manque : ne jamais le contourner.
+- Les combats de référence sont figés dans **`core/golden/*.txt`** (un événement par
+  ligne) et comparés à chaque test. Un test d'équilibrage vérifie que le combat
+  reste gagnable et tendu avec le bot de référence.
 - **Quand un test échoue après une modification :**
   1. Ne JAMAIS modifier un test, une valeur d'équilibrage attendue ou les
-     fichiers golden pour « faire passer ». Ne pas contourner le test.
-  2. Rapporter à l'utilisateur : quel test, ce qui était attendu, ce qui est
-     obtenu, **quelle modification en est la cause**, et un verdict argumenté :
-     changement **voulu** (conséquence normale de la demande) ou **accidentel**.
-  3. Accidentel : corriger le code. Voulu : attendre l'accord de l'utilisateur,
-     puis `npm run test:update-golden`, et résumer ce qui a changé.
-- Changement de règle voulu : annoncer à l'avance que les golden vont bouger et pourquoi.
-- Nouvelle mécanique → nouveau test + nouveau scénario dans `src/testing/scenarios.ts`.
-- Bug corrigé → ajouter un test qui échouait avant la correction.
-- `src/testing/architecture.test.ts` interdit dans `src/sim/` : import de Phaser,
-  `Math.random`, `Date.now`/`performance.now`, accès DOM. Ne pas l'affaiblir.
+     fichiers golden pour « faire passer ».
+  2. Rapporter : quel test, attendu, obtenu, **quelle modification en est la cause**,
+     et un verdict argumenté : **voulu** ou **accidentel**.
+  3. Accidentel : corriger. Voulu : attendre l'accord de l'utilisateur, puis
+     régénérer les références et résumer ce qui a changé.
+- Nouvelle mécanique → nouveau test + nouveau scénario ; bug corrigé → test qui
+  échouait avant.
+- Le cœur ne doit jamais référencer Unity ni l'horloge/l'aléa système : ne pas
+  affaiblir les tests d'architecture (E14-T09).
 
 ## Développement local
 
-**Ne jamais lancer le serveur de développement comme tâche d'arrière-plan
-suivie par la session** (outil Bash/PowerShell en `run_in_background`) : la
-session paraît alors occupée en permanence et ne rend pas la main à
-l'utilisateur (décision D-021). Le lancer **détaché** (`Start-Process` caché,
-journal dans `%TEMP%\healer-game-vite.log`), ou laisser l'utilisateur utiliser
-`lancer-le-jeu.bat`. Ne jamais laisser une tâche suivie tourner à la fin d'un tour.
-
-`npm run dev` (Vite, http://localhost:5173, port verrouillé) recharge la page
-automatiquement à chaque modification de fichier, y compris dans un navigateur
-externe : ne pas demander à l'utilisateur de rafraîchir, et ne pas relancer le
-serveur après chaque changement.
+- Unity : Éditeur ouvert sur `unity/HealerGame` ; les scripts se recompilent à
+  l'enregistrement. Cœur : `dotnet test core/Healer.Combat.Tests`.
+- **Ne jamais lancer une tâche longue comme tâche d'arrière-plan suivie par la
+  session** : elle empêche de rendre la main à l'utilisateur (D-021). Lancer
+  **détaché** (`Start-Process` caché, journal dans `%TEMP%`) et surveiller le
+  journal. Ne jamais laisser une tâche suivie active à la fin d'un tour.
+- **Installer un logiciel ou télécharger un fichier exige l'accord explicite de
+  l'utilisateur** (nom, source, taille). Ne **jamais** saisir d'identifiant, de mot
+  de passe ni de clé (compte Unity, licence : c'est l'utilisateur qui les saisit).
 
 ## Workflow attendu pour toute modification
 
-1. Avant de commencer, lancer `npm test` pour confirmer l'état de référence.
-2. Modifier le code. Si l'équilibrage change (nouveaux nombres dans les JSON
-   de `src/data/`, nouvelles compétences...), utiliser ou étendre
-   `src/sim/referenceHealerBot.ts` : c'est un bot de soin "raisonnable" servant
-   à vérifier qu'un combat reste gagnable (et pas trivial) sans avoir à jouer
-   à la main à chaque changement.
-3. `npm run check` (types + tests + build) doit passer avant de considérer une
-   tâche terminée. Ajouter un test quand on change une règle de combat
-   (dégâts, mana, cooldown, condition de victoire/défaite). En cas d'échec,
-   appliquer le protocole de non-régression ci-dessus.
-5. Ne pas committer `node_modules/`, `dist/`, ni le dossier `android/` généré
-   sauf si des fichiers natifs y ont été modifiés intentionnellement.
+1. Lire le ticket et `docs/DECISIONS.md` ; lancer `npm run check` pour l'état de référence.
+2. Appliquer le préambule (A : remise en cause, B : équilibrage).
+3. Modifier. Si l'équilibrage change, utiliser ou étendre le bot de référence.
+4. `npm run check` doit passer ; ajouter les tests ; expliquer toute régression.
+5. Mettre à jour le ticket, `docs/REVUES.md`, `docs/DECISIONS.md`, l'index, puis committer.
 
-## Pièges connus de cet environnement
+## Pièges connus
 
-- Les identifiants (`id`) dans les JSON de `src/data/` sont référencés en dur
-  ailleurs (ex. `"healer"` dans `BattleScene.ts`, `"tank"` dans les tests).
-  Renommer un id casse ces références — grep avant de renommer.
-- `Battle.step(dtMs)` traite les attaques automatiques et le tick du boss une
-  seule fois par appel : ne jamais appeler `step()` avec un `dtMs` plus grand
-  que les intervalles définis dans les données (`tickMs` du boss, intervalle
-  d'attaque des alliés), sous peine de "sauter" des actions. La scène passe par
-  `FixedStepper` (pas fixe de `FIXED_STEP_MS`), et un test vérifie que ce pas
-  reste inférieur aux intervalles des données. Les tests utilisent des pas de ~100ms.
-- Les événements de combat (`sim/events.ts`) alimentent les tests golden : si on
-  change leur format ou leur ordre d'émission, les golden changent — c'est un
-  changement à signaler à l'utilisateur, pas à régénérer en silence.
+- `Battle.Step(dtMs)` ne traite qu'une action par appel : ne jamais l'appeler avec un
+  `dt` plus grand que les intervalles des données. Le client passe par `FixedStepper`
+  (pas de 50 ms) ; un test vérifie que le pas reste inférieur aux intervalles.
+- Les événements de combat alimentent les golden : changer leur format ou leur ordre
+  change les golden — à signaler, pas à régénérer en silence.
+- Les identifiants (`id`) des JSON sont référencés en dur ailleurs (`healer`, `tank`) :
+  chercher avant de renommer.
+- Le MCP donne accès à l'Éditeur : ne rien y faire qui ne soit reconstruisible par
+  script ou versionné.

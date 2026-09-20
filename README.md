@@ -1,103 +1,58 @@
-# Healer Game — Prototype (Phase 1)
+# Healer Game — version Unity + MCP
 
-Prototype de combat pour un jeu gacha où l'on incarne un·e soigneur·se en
-temps réel. Le reste de l'équipe (tank, 2 DPS) est en auto-battle : le
-joueur ne gère que les soins, boucliers et purges, pendant qu'un boss
-télégraphie ses grosses attaques.
+Jeu de combat en temps réel où l'on incarne uniquement le **soigneur** (le reste de
+l'équipe est en auto-battle). Cette version refait le jeu avec **Unity** (C#, 3D
+stylisée) piloté avec un serveur **MCP**, en reprenant toutes les règles, la
+documentation et la mécanique de test de la version Phaser.
 
-Ceci correspond à la **phase 1** du plan : un seul écran, sans monétisation,
-pour vérifier que le combat est amusant avant d'aller plus loin.
+> Ce dépôt (https://github.com/Bakou9/healer-game) ne contient que le jeu Unity. L'ancienne
+> version **Phaser** (TypeScript) en a été retirée (D-045) ; elle reste dans l'historique Git,
+> à l'étiquette `phaser-archive`.
 
-## Démarrer
+## Où en est-on ?
 
-Prérequis : [Node.js](https://nodejs.org) (LTS, 20 ou plus).
+| Élément | État |
+|---|---|
+| Documents, specs (14 epics, 142 tickets), décisions, registre des revues | repris et adaptés |
+| Cœur C# pur (`core/Healer.Combat`) | **porté ; reproduit à l'identique les 7 combats de référence** |
+| Tests C# (`core/Healer.Combat.Tests`) | 157 tests : conformité golden, règles, équilibrage, données, architecture, entrées, mise en page |
+| Environnement | SDK .NET installé ; Unity Hub installé ; Éditeur Unity 6.3 LTS en cours d'installation |
+| Projet Unity (`unity/HealerGame`, Unity 6.3 LTS) | **créé** ; licence Unity Personal active |
+| **Jeu Unity jouable** (scène 3D, modèles « figurine », interface, exécutable Windows) | **oui** : voir `docs/TESTER_LE_JEU.md` |
+| MCP | à choisir (D-028) |
 
-```bash
-npm install
-npm run dev
-```
+## Documents à lire
 
-Ouvre ensuite l'URL affichée (en général `http://localhost:5173`) dans un
-navigateur. Le jeu tourne aussi bien à la souris (clic) qu'au tactile.
+- `CLAUDE.md` : règles de travail (préambule systématique : remise en question des specs, question d'équilibrage à chaque ticket).
+- `docs/MIGRATION_UNITY.md` : correspondance Phaser → Unity (chemins, commandes, concepts).
+- `docs/ARCHITECTURE_UNITY.md` : cœur C# pur partagé, Unity en couche de présentation.
+- `docs/UNITY_SETUP.md` : installation et choix du MCP.
+- `docs/ART_3D.md` : guide des modèles 3D « user friendly ».
+- `docs/specs/README.md` : vision, epics, tickets. `docs/DECISIONS.md` : journal des décisions. `docs/REVUES.md` : registre des revues.
+- `docs/EQUILIBRAGE.md`, `docs/UX.md`, `docs/PATTERNS_JEU_VIDEO.md` : équilibre, UX, patterns (repris de la version Phaser).
 
-## Comment on joue
-
-- Le tank et les DPS attaquent automatiquement.
-- Le boss télégraphie sa grosse attaque de zone quelques secondes à l'avance
-  (texte d'avertissement + contour rouge).
-- Le joueur choisit une compétence de soin en bas de l'écran :
-  - **Soin de zone** se lance immédiatement sur tout le groupe.
-  - **Soin**, **Bouclier**, **Purge** demandent une cible : appuyer sur le
-    bouton "arme" la compétence, puis un tap sur un allié la lance sur lui.
-- Chaque compétence a un coût en mana et un temps de recharge, affichés sur
-  son bouton.
-
-## Structure du projet
-
-```
-src/
-  sim/            Simulation de combat, en TypeScript pur, sans Phaser.
-    Battle.ts           La classe principale : step(dt), issueCommand(...), getters d'état.
-    rng.ts              PRNG déterministe (seedé) pour un combat rejouable à l'identique.
-    encounter.ts        Assemble alliés + boss + seed en une "rencontre".
-    referenceHealerBot.ts  Un bot de soin "raisonnable", utilisé pour vérifier l'équilibrage.
-    Battle.test.ts      Tests (déterminisme, victoire/défaite, mana, bouclier, télégraphie).
-  scenes/
-    BattleScene.ts  Rendu Phaser + gestion des taps. Ne fait AUCUN calcul de jeu :
-                    il lit l'état de Battle et lui envoie des commandes.
-  data/
-    characters.json, skills.json, boss1.json   Toutes les valeurs de jeu (pas de code en dur).
-  main.ts           Point d'entrée, config Phaser.
-```
-
-**Pourquoi séparer `sim/` du rendu ?** La simulation est testable sans
-navigateur, rejouable à l'identique (même seed + mêmes commandes = même
-résultat), et réutilisable telle quelle si un jour la validation des combats
-doit se faire côté serveur (indispensable pour un gacha, afin d'éviter la
-triche sur les tirages et les récompenses).
-
-## Documents de référence
-
-- `CLAUDE.md` : règles de travail (architecture, non-régression, valeurs lisibles).
-- `docs/PATTERNS_JEU_VIDEO.md` : patterns de développement à appliquer.
-- `docs/specs/README.md` : spécifications (vision, 13 epics, tickets) ; `docs/DECISIONS.md` : journal des décisions.
-- `docs/ARCHITECTURE.md` (architecture modulaire cible) et `docs/UX.md` (audit et principes UX).
-- `docs/EQUILIBRAGE.md` : ce qu'est un combat équilibré ici, mesures et réglages.
-
-## Scripts utiles
+## Commandes
 
 | Commande | Effet |
 |---|---|
-| `npm run dev` | Lance le serveur de développement (rechargement à chaud) |
-| `npm test` | Lance les tests de la simulation (Vitest) |
-| `npm run check` | Types + tests + build : à passer avant de considérer un changement terminé |
-| `npm run test:update-golden` | Régénère les combats de référence (uniquement après validation d'un changement voulu) |
-| `npm run specs:index` | Régénère l'index des spécifications après un changement de ticket |
-| `npm run typecheck` | Vérifie les types TypeScript sans rien construire |
-| `npm run build` | Vérifie les types puis construit `dist/` (web + base pour Android) |
+| `npm install` | installe l'outillage Node (cohérence des specs) |
+| `npm run check` | specs + tests du cœur C# (`dotnet test`) : **doit être vert avant de conclure** |
+| `npm run specs:index` | régénère l'index des specs après un changement de ticket |
+| `dotnet test core/Healer.Combat.Tests` | tests du cœur seuls (secondes) |
 
-## Publier sur Android (test)
+Prérequis : Node.js 20, SDK .NET 8. Pour Unity : Unity 6 (6000.x) et un MCP (voir
+`docs/UNITY_SETUP.md`).
 
-1. Installer [Android Studio](https://developer.android.com/studio) (inclut le SDK).
-2. `npm run cap:add:android` — génère le dossier `android/` (à committer).
-3. `npm run cap:sync` — build web + copie dans le projet Android.
-4. `npm run cap:open:android` — ouvre Android Studio pour lancer sur un
-   appareil ou un émulateur, ou produire un AAB à envoyer sur Google Play
-   Console (test fermé).
+## Structure
 
-À tester tôt sur un vrai téléphone d'entrée de gamme : c'est le principal
-risque de cette stack (performances dans la WebView Android).
-
-## Et pour Steam ?
-
-Pas encore dans ce prototype. Le plan (voir la conversation) prévoit un
-enrobage Electron ou Tauri une fois le vertical slice (phase 2) prêt, avec
-`steamworks.js` pour l'intégration Steamworks.
-
-## Prochaines étapes (phase 2)
-
-- Plus de niveaux, plus de personnages avec des synergies.
-- Un arbre de compétences pour le soigneur.
-- Sauvegarde locale.
-- Premiers vrais visuels (les rectangles colorés sont volontairement
-  temporaires : l'important est de valider le gameplay avant l'art).
+```
+CLAUDE.md, README.md
+docs/                 specs, décisions, équilibrage, UX, architecture, art 3D
+core/
+  content/*.json      contenu de jeu (source de vérité partagée, repris de Phaser)
+  golden/*.txt        combats de référence (spécification de conformité)
+  Healer.Combat/      simulation, RNG, pas fixe, contenu, bot de référence (C# pur)
+  Healer.Combat.Tests/  tests C#
+tools/                Node : cohérence des specs, orchestration des vérifications
+unity/                projet Unity (à créer, voir docs/UNITY_SETUP.md)
+```

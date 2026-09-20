@@ -5,7 +5,7 @@ titre: Phases de boss (table de transitions en données)
 type: Feature
 priorité: P1
 phase: 1
-statut: Terminé
+statut: À faire
 taille: M
 dépendances: E01-T03
 ---
@@ -13,12 +13,14 @@ dépendances: E01-T03
 # E01-T06 — Phases de boss (table de transitions en données)
 
 ## Contexte
+> **Portage Unity :** réalisé dans la version Phaser (dépôt `Bakou9/healer-game`, commit 91d7beb). À refaire et re-valider dans ce dépôt (epic E14).
+
 Faire évoluer le combat au lieu de répéter le même pattern 83 s.
 
 ## Critères d'acceptation
-- [x] `phases[]` dans les données (seuil, rythme, pattern)
-- [x] Une seule transition par phase, au bon seuil
-- [x] Événement `bossPhaseChanged`
+- [ ] `phases[]` dans les données (seuil, rythme, pattern)
+- [ ] Une seule transition par phase, au bon seuil
+- [ ] Événement `bossPhaseChanged`
 
 ## Tests automatiques exigés
 `effects.test.ts` (phases), goldens.
