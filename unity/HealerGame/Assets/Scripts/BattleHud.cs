@@ -47,6 +47,7 @@ namespace Healer.Client
             }
             ScreenMap.Refresh();
             DrawCinemaVignette();
+            if (Event.current.type == EventType.MouseUp) _ctl.ReleaseSkill();
             if (_flow.Screen != AppScreen.Battle) return;
             DrawDangerVignette();
             var previous = GUI.matrix;
@@ -239,7 +240,12 @@ namespace Healer.Client
                 }
                 if (!_ctl.HasCast && _ctl.Selection.Selected != null && s.Id == "heal_single") Guide(r, "2");
                 KeyCap(r, BattleKeys.SkillLabel(i));
-                if (Hit(r, UiAction.TapSkill)) _ctl.TapSkill(s);
+                var ev = Event.current;
+                if (ev.type == EventType.MouseDown && ev.button == 0 && r.Contains(ev.mousePosition) && InputGate.Allows(_flow.Screen, _ctl.State, UiAction.TapSkill))
+                {
+                    _ctl.PressSkill(s, true); // lancer tout de suite ; maintenu, le sort s'enchaîne
+                    ev.Use();
+                }
             }
         }
 
@@ -324,6 +330,42 @@ namespace Healer.Client
 
         // ---- Fin de combat -----------------------------------------------------------------------
 
+        private static Color RoleColor(UnitState a) =>
+            a.Role == "tank" ? Palette.Tank : a.Role == "healer" ? Palette.Healer : (a.Id == "dps2" ? Palette.Mage : Palette.Archer);
+
+        /// <summary>Dégâts infligés au boss par chaque membre : barre proportionnelle, valeur tronquée et part en %.</summary>
+        private void DrawDamagePanel()
+        {
+            var p = R(Layout.EndDamagePanel);
+            Fill(p, new Color(Panel.r, Panel.g, Panel.b, 0.96f), 14);
+            Outline(p, PanelStroke, 2, 14);
+            var s = _ctl.Stats;
+            Text(new Rect(p.x + 20, p.y + 8, p.width - 40, 28), "Dégâts infligés au boss", Layout.Font.Strong, Color.white, TextAnchor.MiddleLeft, true);
+            var members = _ctl.Battle.GetAllies().Where(a => s.DamageByAlly.ContainsKey(a.Id)).OrderByDescending(a => s.DamageByAlly[a.Id]).ToList();
+            if (members.Count == 0)
+            {
+                Text(new Rect(p.x + 20, p.y + 60, p.width - 40, 30), "Aucun dégât infligé", Layout.Font.Body, Muted, TextAnchor.MiddleLeft);
+                return;
+            }
+            double max = s.DamageByAlly[members[0].Id];
+            float valueW = 150f, nameW = 110f;
+            float barX = p.x + 20 + nameW, barMax = p.width - 40 - nameW - valueW;
+            for (int i = 0; i < members.Count; i++)
+            {
+                var a = members[i];
+                double dmg = s.DamageByAlly[a.Id];
+                float y = p.y + 46 + i * 42;
+                Text(new Rect(p.x + 20, y, nameW, 30), a.Name, Layout.Font.Body, Color.white, TextAnchor.MiddleLeft, true);
+                var bar = new Rect(barX, y + 5, barMax, 20);
+                Fill(bar, new Color(0, 0, 0, 0.5f), 5);
+                var c = RoleColor(a);
+                Fill(new Rect(bar.x, bar.y, Mathf.Max(4f, bar.width * (float)(dmg / max)), bar.height), new Color(c.r, c.g, c.b, 1f), 5);
+                int percent = (int)(s.DamageShare(a.Id) * 100); // tronqué, jamais arrondi vers le haut
+                Text(new Rect(barX + barMax + 8, y, valueW - 8, 30), $"{Format.Number(dmg)}  ({percent} %)", Layout.Font.Body, Color.white, TextAnchor.MiddleRight, true);
+            }
+            Text(new Rect(p.x + 20, p.yMax - 32, p.width - 40, 26), "Total : " + Format.Number(s.DamageToBoss), Layout.Font.Small, Muted, TextAnchor.MiddleRight);
+        }
+
         private void DrawEnd()
         {
             var result = _ctl.Battle.GetResult();
@@ -341,9 +383,10 @@ namespace Healer.Client
             if (win && reward != null) UiKit.Stars(new Rect(w / 2 - 200, 92, 400, 64), reward.Stars, 56);
 
             var s = _ctl.Stats;
-            var panel = new Rect(w / 2 - 300, 170, 600, 236);
+            var panel = R(Layout.EndStatsPanel);
             Fill(panel, new Color(Panel.r, Panel.g, Panel.b, 0.96f), 14);
             Outline(panel, PanelStroke, 2, 14);
+            DrawDamagePanel();
             string[] labels = { "Durée du combat", "Soins effectifs", "Dégâts encaissés", "dont absorbés par boucliers", "Sorts lancés", "Alliés K.O.", "Poisons et brûlures purgés" };
             string[] values =
             {

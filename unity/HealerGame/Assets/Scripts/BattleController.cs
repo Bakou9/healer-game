@@ -26,6 +26,11 @@ namespace Healer.Client
         private double _sinceDecisionMs;
         private Action? _unsubscribe;
         private List<string>? _owned;
+        private readonly HoldRepeat _hold = new HoldRepeat();
+        private bool _heldByPointer;
+
+        /// <summary>Horloge du combat au dernier lancer : tant qu'elle n'a pas avancé, la commande n'est pas encore traitée et on n'en réémet pas.</summary>
+        private double _lastCastClock = -1;
         private Healer.Combat.Progress.Loadout? _loadout;
 
         public bool Paused { get; private set; }
@@ -94,6 +99,8 @@ namespace Healer.Client
             _loadout = loadout?.Clone();
             Started = false;
             _pausedByFocus = false;
+            _hold.ReleaseAll();
+            _lastCastClock = -1;
             StartBattle(seed);
             Restarted?.Invoke();
         }
@@ -131,8 +138,43 @@ namespace Healer.Client
             Debug.Log(Paused ? "[Healer] état : pause" : "[Healer] état : reprise");
         }
 
+        /// <summary>Vrai tant que le doigt ou le bouton gauche de la souris est appuyé.</summary>
+        private static bool PointerDown() =>
+            (UnityEngine.InputSystem.Mouse.current != null && UnityEngine.InputSystem.Mouse.current.leftButton.isPressed)
+            || (UnityEngine.InputSystem.Touchscreen.current != null && UnityEngine.InputSystem.Touchscreen.current.primaryTouch.press.isPressed);
+
+        /// <summary>Appui sur un sort : le lance tout de suite ; s'il est maintenu, il s'enchaîne (HoldRepeat, D-050).</summary>
+        public void PressSkill(SkillDef skill, bool byPointer)
+        {
+            TapSkill(skill);
+            _hold.Press(skill.Id);
+            _heldByPointer = byPointer;
+        }
+
+        public void ReleaseSkill(SkillDef? skill = null)
+        {
+            if (skill == null) _hold.ReleaseAll();
+            else _hold.Release(skill.Id);
+        }
+
+        private void RepeatHeldSkill()
+        {
+            if (_hold.HeldSkillId == null || _battle == null) return;
+            if (_heldByPointer && !PointerDown()) { _hold.ReleaseAll(); return; }
+            var skill = _content.Skills.FirstOrDefault(s => s.Id == _hold.HeldSkillId);
+            if (skill == null) { _hold.ReleaseAll(); return; }
+            if (_battle.GetClock() <= _lastCastClock) return; // la commande précédente n'a pas encore été traitée
+            var resolution = _selection.Resolve(skill.Target == "all", _battle.CanUseSkillNow(HealerId, skill.Id));
+            if (_hold.ShouldCast(State, resolution))
+            {
+                Debug.Log($"[Healer] geste : sort {skill.Id} → Cast (maintenu, cible {resolution.TargetId ?? "-"})");
+                Cast(skill, resolution);
+            }
+        }
+
         private void Update()
         {
+            RepeatHeldSkill();
             if (_battle == null || !Started || Paused || _battle.GetResult() != BattleResults.Ongoing) return;
             double dtMs = Time.deltaTime * 1000.0 * TimeScale;
             _stepper.Advance(dtMs, step =>
@@ -172,10 +214,16 @@ namespace Healer.Client
                     _hintUntilMs = _battle.GetClock() + HintDurationMs;
                     break;
                 case CastKind.Cast:
-                    HasCast = true;
-                    _battle.IssueCommand(new Command { TimeMs = _battle.GetClock(), SkillId = skill.Id, TargetId = resolution.TargetId });
+                    Cast(skill, resolution);
                     break;
             }
+        }
+
+        private void Cast(SkillDef skill, CastResolution resolution)
+        {
+            HasCast = true;
+            _lastCastClock = _battle.GetClock();
+            _battle.IssueCommand(new Command { TimeMs = _battle.GetClock(), SkillId = skill.Id, TargetId = resolution.TargetId });
         }
 
         // ---- Événements ---------------------------------------------------------------------------

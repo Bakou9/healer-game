@@ -8,10 +8,11 @@
 #   E : menu de pause -> « Quitter le niveau » -> retour au choix du niveau -> retour au menu
 #   F : atelier -> acheter de l'équipement, choisir et changer un talent, or insuffisant, palier verrouillé,
 #       sauvegarde sur disque, relance : l'équipement et le talent sont appliqués au combat
+#   G : maintenir un sort (souris puis clavier) l'enchaîne ; re-toucher un allié ne le désélectionne pas
 # Toutes les parties utilisent un dossier de sauvegarde temporaire : la vraie sauvegarde n'est jamais touchée.
 # À lancer quand personne n'utilise souris ni clavier. Code de sortie 1 si une vérification échoue.
-# Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E|F]
-param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F")][string]$Scenario = "all")
+# Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E|F|G]
+param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G")][string]$Scenario = "all")
 $ErrorActionPreference = "Stop"
 Add-Type @"
 using System;
@@ -26,6 +27,10 @@ public static class Win {
   [DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, UIntPtr extra);
   [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
   public static void Click(int x, int y) { SetCursorPos(x, y); System.Threading.Thread.Sleep(120); mouse_event(0x0002, 0, 0, 0, UIntPtr.Zero); System.Threading.Thread.Sleep(80); mouse_event(0x0004, 0, 0, 0, UIntPtr.Zero); }
+  public static void MouseDown(int x, int y) { SetCursorPos(x, y); System.Threading.Thread.Sleep(120); mouse_event(0x0002, 0, 0, 0, UIntPtr.Zero); }
+  public static void MouseUp() { mouse_event(0x0004, 0, 0, 0, UIntPtr.Zero); }
+  public static void KeyDown(byte scan) { keybd_event(0, scan, 8, UIntPtr.Zero); }
+  public static void KeyUp(byte scan) { keybd_event(0, scan, 8 | 2, UIntPtr.Zero); }
   public static void Key(byte scan) { keybd_event(0, scan, 8, UIntPtr.Zero); System.Threading.Thread.Sleep(80); keybd_event(0, scan, 8 | 2, UIntPtr.Zero); }
 }
 "@
@@ -63,6 +68,16 @@ function Tap($lx, $ly, $label) {
   Write-Output ("  clic {0} : logique ({1},{2}) -> écran ({3},{4})" -f $label, $lx, $ly, $sx, $sy)
   [Win]::Click($sx, $sy); Start-Sleep -Milliseconds 800
 }
+function HoldMouse($lx, $ly, $seconds, $label) {
+  $sx = [int]($script:origin.X + $script:offX + $lx * $script:scale); $sy = [int]($script:origin.Y + $script:offY + $ly * $script:scale)
+  Write-Output ("  maintenir {0} pendant {1} s : logique ({2},{3})" -f $label, $seconds, $lx, $ly)
+  [Win]::MouseDown($sx, $sy); Start-Sleep -Milliseconds ([int]($seconds * 1000)); [Win]::MouseUp(); Start-Sleep -Milliseconds 600
+}
+function HoldKey($scan, $seconds, $label) {
+  Write-Output "  maintenir la touche $label pendant $seconds s"
+  [Win]::KeyDown([byte]$scan); Start-Sleep -Milliseconds ([int]($seconds * 1000)); [Win]::KeyUp([byte]$scan); Start-Sleep -Milliseconds 600
+}
+function Count($lines, $pattern) { return @($lines | Select-String -Pattern $pattern).Count }
 function Press($scan, $label) { Write-Output "  touche $label"; [Win]::Key([byte]$scan); Start-Sleep -Milliseconds 800 }
 function Stop-Game() { try { $null = $script:p.CloseMainWindow(); if (-not $script:p.WaitForExit(6000)) { Stop-Process -Id $script:p.Id -Force } } catch {}; Start-Sleep -Milliseconds 800 }
 function Log() { if (Test-Path $plog) { Get-Content $plog -Encoding UTF8 | ForEach-Object { $_ } } else { @() } }
@@ -242,6 +257,31 @@ $f2 = Log
 Expect $f2 "sauvegarde : chargée" "la sauvegarde est rechargée"
 Expect $f2 "équipe : tank atk 39 " "l'Épée niveau 3 donne +12 % d'attaque au Garde (35 -> 39)"
 Expect $f2 "Soin 15 mana" "le talent Soins vifs baisse le coût du Soin (18 -> 15)"
+}
+
+# ---- Scénario G -----------------------------------------------------------------------------
+if (Want "G") {
+Write-Output "Scénario G : sélection stable, maintenir un sort à la souris puis au clavier"
+Start-Game @("-healer-profile-dir", (New-ProfileDir "G"))
+Tap $menuPlay[0] $menuPlay[1] "Jouer (menu)"
+Tap $level1[0] $level1[1] "niveau 1"
+Tap $fightPlay[0] $fightPlay[1] "Jouer (combat)"
+Tap 144 148 "carte Garde"
+Tap 144 148 "carte Garde (encore)"
+Press 0x02 "1 (Garde)"
+Press 0x02 "1 (Garde, encore)"
+HoldMouse 1136 190 5 "le sort Soin (souris)"
+$g1 = Log
+$mouseCasts = Count $g1 "geste : sort heal_single → Cast"
+HoldKey 0x10 4 "A (Soin, clavier AZERTY)"
+Stop-Game
+$g2 = Log
+$totalCasts = Count $g2 "geste : sort heal_single → Cast"
+Forbid $g2 "cible = aucune" "re-toucher un allié (carte ou touche 1) ne le désélectionne jamais"
+Check ($mouseCasts -ge 3) "maintenir le sort à la souris 5 s l'enchaîne (lancers : $mouseCasts, au moins 3 attendus)"
+Check ($mouseCasts -le 6) "la recharge est respectée (lancers : $mouseCasts, au plus 6 en 5 s)"
+Check (($totalCasts - $mouseCasts) -ge 2) "maintenir la touche 4 s l'enchaîne aussi (lancers supplémentaires : $($totalCasts - $mouseCasts))"
+Expect $g2 "geste : sort heal_single → Cast \(cible tank\)" "le sort maintenu vise la cible sélectionnée"
 }
 
 if ($failures.Count -gt 0) { Write-Output ""; Write-Output "$($failures.Count) vérification(s) en échec."; exit 1 }

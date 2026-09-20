@@ -186,12 +186,36 @@ namespace Healer.Combat.Tests
         }
 
         [Test]
-        public void Retoucher_l_allie_selectionne_annule_la_selection()
+        public void Retoucher_l_allie_selectionne_le_garde_selectionne()
+        {
+            // Changement voulu (D-050) : l'ancien comportement désélectionnait au second toucher.
+            var sel = new TargetSelection();
+            sel.Tap("tank", true);
+            sel.Tap("tank", true);
+            Assert.That(sel.Selected, Is.EqualTo("tank"));
+            sel.Tap("tank", true);
+            sel.Tap("tank", true);
+            Assert.That(sel.Selected, Is.EqualTo("tank"), "quel que soit le nombre de touchers");
+        }
+
+        [Test]
+        public void Retoucher_l_allie_selectionne_ne_change_pas_la_resolution_d_un_sort()
         {
             var sel = new TargetSelection();
             sel.Tap("tank", true);
             sel.Tap("tank", true);
-            Assert.That(sel.Selected, Is.Null);
+            var r = sel.Resolve(false, true);
+            Assert.That(r.Kind, Is.EqualTo(CastKind.Cast));
+            Assert.That(r.TargetId, Is.EqualTo("tank"));
+        }
+
+        [Test]
+        public void Retoucher_un_allie_devenu_KO_ne_le_selectionne_pas_et_garde_l_ancienne_cible()
+        {
+            var sel = new TargetSelection();
+            sel.Tap("tank", true);
+            sel.Tap("dps1", false);
+            Assert.That(sel.Selected, Is.EqualTo("tank"));
         }
 
         [Test]

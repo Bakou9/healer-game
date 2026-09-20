@@ -80,11 +80,12 @@ namespace Healer.Client
                 if (kb.tabKey.wasPressedThisFrame) CycleTarget(allies.ToList(), kb.shiftKey.isPressed ? -1 : 1);
             }
 
-            if (InputGate.Allows(state, UiAction.TapSkill))
+            var skills = ctl.Skills;
+            for (int i = 0; i < SkillKeys.Length && i < skills.Count; i++)
             {
-                var skills = ctl.Skills;
-                for (int i = 0; i < SkillKeys.Length && i < skills.Count; i++)
-                    if (kb[SkillKeys[i]].wasPressedThisFrame) ctl.TapSkill(skills[i]);
+                if (kb[SkillKeys[i]].wasReleasedThisFrame) ctl.ReleaseSkill(skills[i]);
+                // Appui : lance tout de suite ; maintenue, la touche enchaîne le sort (HoldRepeat).
+                else if (kb[SkillKeys[i]].wasPressedThisFrame && InputGate.Allows(state, UiAction.TapSkill)) ctl.PressSkill(skills[i], false);
             }
         }
 

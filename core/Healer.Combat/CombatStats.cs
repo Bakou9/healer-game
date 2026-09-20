@@ -22,7 +22,16 @@ namespace Healer.Combat
         public string Result { get; private set; } = BattleResults.Ongoing;
         public IReadOnlyDictionary<string, int> CastsBySkill => _castsBySkill;
 
+        /// <summary>Dégâts infligés au boss par chaque allié (identifiant → total). Un allié qui n'a rien infligé est absent.</summary>
+        public IReadOnlyDictionary<string, double> DamageByAlly => _damageByAlly;
+
+        private readonly Dictionary<string, double> _damageByAlly = new Dictionary<string, double>();
+
         private readonly Dictionary<string, int> _castsBySkill = new Dictionary<string, int>();
+
+        /// <summary>Part (0 à 1) des dégâts totaux infligés par un allié ; 0 s'il n'a rien infligé ou si personne n'a rien infligé.</summary>
+        public double DamageShare(string allyId) =>
+            DamageToBoss <= 0 || !_damageByAlly.TryGetValue(allyId, out var d) ? 0 : d / DamageToBoss;
 
         /// <summary>S'abonne au combat. Renvoie l'action de désabonnement.</summary>
         public Action Attach(Battle battle) => battle.Subscribe(Apply);
@@ -45,6 +54,7 @@ namespace Healer.Combat
                     break;
                 case "bossDamaged":
                     DamageToBoss += e.Amount;
+                    _damageByAlly[e.SourceId] = (_damageByAlly.TryGetValue(e.SourceId, out var d) ? d : 0) + e.Amount;
                     break;
                 case "unitDied":
                     Deaths++;

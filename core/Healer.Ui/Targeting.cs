@@ -35,11 +35,15 @@ namespace Healer.Ui
     {
         public string? Selected { get; private set; }
 
-        /// <summary>Toucher une carte : sélectionne l'allié, ou annule si c'est déjà lui. Un allié K.O. ne se sélectionne pas.</summary>
+        /// <summary>
+        /// Toucher une carte (ou son raccourci) : sélectionne l'allié. Le re-toucher le garde sélectionné (D-050 :
+        /// on ne désélectionne plus, un geste répété par réflexe ne doit jamais faire perdre la cible). Un allié K.O.
+        /// ne se sélectionne pas.
+        /// </summary>
         public void Tap(string unitId, bool isAlive)
         {
             if (!isAlive) return;
-            Selected = Selected == unitId ? null : unitId;
+            Selected = unitId;
         }
 
         /// <summary>À appeler à chaque image : abandonne la sélection d'un allié qui n'est plus vivant.</summary>

@@ -169,6 +169,10 @@ namespace Healer.Ui
             return new Rect(tier.X + option * (w + Gap), tier.Y + TalentHeaderH, w, tier.H - TalentHeaderH);
         }
 
+        /// <summary>Bilan de combat : statistiques à gauche, dégâts infligés par membre à droite.</summary>
+        public static readonly Rect EndStatsPanel = new Rect(100, 170, 500, 236);
+        public static readonly Rect EndDamagePanel = new Rect(620, 170, 560, 236);
+
         public const double EndButtonW = 220;
 
         /// <summary>Boutons de fin de combat (Recommencer, Niveau suivant, Carte), centrés sur une rangée.</summary>
