@@ -40,6 +40,9 @@ namespace Healer.Client
         private readonly Dictionary<string, UnitView> _units = new Dictionary<string, UnitView>();
         private UnitView _boss = null!;
         private Renderer[] _bossGlow = null!;
+        private Color _coreCalm = Palette.CoreCalm, _coreFury = Palette.CoreFury;
+        private string _bossId = "";
+        private float _bossScaleFactor = 1f;
         private Light _coreLight = null!;
         private Transform _backdrop = null!;
         private float _shake;
@@ -350,9 +353,7 @@ namespace Healer.Client
 
         private void BuildModels()
         {
-            var golem = ModelFactory.Golem();
-            _boss = MakeView("boss", golem, BossScale);
-            _bossGlow = golem.GetComponentsInChildren<Renderer>().Where(r => r.name is "Core" or "EyeL" or "EyeR" or "Rune").ToArray();
+            SetBoss(_ctl.Level?.BossId ?? "boss1");
 
             var allies = _ctl.Battle.GetAllies();
             for (int i = 0; i < allies.Count; i++)
@@ -366,6 +367,20 @@ namespace Healer.Client
         }
 
         /// <summary>Position logique (x) de chaque allié dans la scène : en ligne devant le boss (les cartes sont dans la colonne gauche).</summary>
+        /// <summary>Affiche le boss d'un niveau (modèle, couleurs lumineuses, échelle). Sans effet si c'est déjà lui.</summary>
+        public void SetBoss(string bossId)
+        {
+            if (_boss != null && _bossId == bossId) return;
+            if (_boss != null) Destroy(_boss.Root);
+            var model = ModelFactory.ForBoss(bossId);
+            _bossId = bossId;
+            _bossScaleFactor = ModelFactory.BossScaleFactor(bossId);
+            (_coreCalm, _coreFury) = ModelFactory.BossColors(bossId);
+            _boss = MakeView("boss", model, BossScale * _bossScaleFactor);
+            _bossGlow = model.GetComponentsInChildren<Renderer>().Where(r => r.name is "Core" or "EyeL" or "EyeR" or "Rune").ToArray();
+            _bossHit = _bossStrike = _phaseBurst = 0;
+        }
+
         private readonly Dictionary<string, float> _stageX = new Dictionary<string, float>();
 
         private void ResetVisuals()
@@ -415,8 +430,8 @@ namespace Healer.Client
             var br = _boss.Root.transform;
             br.position = bp + new Vector3(bossShake, breathe * 0.05f, -_bossStrike * 1.6f);
             br.rotation = Quaternion.Euler(_bossStrike * 14f, 180f, 0f);
-            br.localScale = new Vector3(1f + _bossHit * 0.04f, 1f - _bossHit * 0.03f + breathe * 0.008f, 1f + _bossHit * 0.04f) * BossScale;
-            Color core = phase.Index > 0 ? Palette.CoreFury : Palette.CoreCalm;
+            br.localScale = new Vector3(1f + _bossHit * 0.04f, 1f - _bossHit * 0.03f + breathe * 0.008f, 1f + _bossHit * 0.04f) * BossScale * _bossScaleFactor;
+            Color core = phase.Index > 0 ? _coreFury : _coreCalm;
             float pulse = bigAttack ? 0.7f + 0.3f * Mathf.Sin(t * 22f) : 0.8f + 0.2f * Mathf.Sin(t * 3.2f);
             _phaseBurst = Mathf.Max(0f, _phaseBurst - dt * 1.5f);
             for (int i = 0; i < _boss.Renderers.Length; i++)
@@ -546,7 +561,7 @@ namespace Healer.Client
                 case "bossPhaseChanged":
                     _phaseBurst = 1f;
                     _shake = 1f;
-                    Burst(_impact, _boss.Root.transform.position + Vector3.up * 1.7f, Palette.CoreFury, 40, 5f);
+                    Burst(_impact, _boss.Root.transform.position + Vector3.up * 1.7f, _coreFury, 40, 5f);
                     break;
             }
         }

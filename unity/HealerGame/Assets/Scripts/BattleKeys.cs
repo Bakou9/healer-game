@@ -7,60 +7,81 @@ using UnityEngine.InputSystem;
 namespace Healer.Client
 {
     /// <summary>
-    /// Raccourcis clavier (PC). Ne calcule rien : traduit une touche en geste du contrôleur, exactement comme
-    /// un toucher (TapAlly / TapSkill). Les touches sont physiques (même position sur QWERTY et AZERTY) ; le
-    /// HUD affiche le libellé réel de la disposition de l'utilisateur.
-    ///   1-4 : cibler l'allié n° 1-4      Q W E R (A Z E R en AZERTY) : lancer le sort n° 1-4
-    ///   Tab : allié suivant              Espace / Entrée : Jouer, puis Rejouer en fin de combat
-    ///   Échap / P : pause                M : son
+    /// Raccourcis clavier (PC). Ne calcule rien : traduit une touche en geste, exactement comme un clic ou un
+    /// toucher, et passe par la même règle (InputGate). Les touches sont physiques (même position sur QWERTY et
+    /// AZERTY) ; le HUD affiche le libellé réel de la disposition de l'utilisateur.
+    ///   Menu : Entrée / Espace = Jouer.   Choix du niveau : 1-9 = niveau, Échap = retour.
+    ///   Combat : 1-4 cibler · Q W E R (A Z E R en AZERTY) sorts · Tab allié suivant · Espace / Entrée jouer, pause,
+    ///   enchaîner ou rejouer · Échap / P pause (ou retour à la carte avant et après le combat) · M son.
     /// </summary>
     public sealed class BattleKeys : MonoBehaviour
     {
         private static readonly Key[] AllyKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4 };
         private static readonly Key[] NumpadKeys = { Key.Numpad1, Key.Numpad2, Key.Numpad3, Key.Numpad4 };
         private static readonly Key[] SkillKeys = { Key.Q, Key.W, Key.E, Key.R };
+        private static readonly Key[] LevelKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5, Key.Digit6, Key.Digit7, Key.Digit8, Key.Digit9 };
 
-        private BattleController _ctl = null!;
+        private GameFlow _flow = null!;
 
-        public void Init(BattleController controller) => _ctl = controller;
+        public void Init(GameFlow flow) => _flow = flow;
 
         /// <summary>Libellé de la touche du n-ième allié / sort, ou null s'il n'y a pas de clavier (mobile).</summary>
         public static string? AllyLabel(int index) => Keyboard.current != null && index >= 0 && index < AllyKeys.Length ? (index + 1).ToString() : null;
-        public static string? SkillLabel(int index) => Label(SkillKeys, index);
 
-        private static string? Label(Key[] keys, int index)
+        public static string? SkillLabel(int index)
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null || index < 0 || index >= keys.Length) return null;
-            return keyboard[keys[index]].displayName.ToUpperInvariant();
+            if (keyboard == null || index < 0 || index >= SkillKeys.Length) return null;
+            return keyboard[SkillKeys[index]].displayName.ToUpperInvariant();
         }
+
+        public static string? LevelLabel(int index) => Keyboard.current != null && index >= 0 && index < LevelKeys.Length ? (index + 1).ToString() : null;
 
         private void Update()
         {
             var kb = Keyboard.current;
-            if (kb == null || _ctl == null || _ctl.Battle == null) return;
-
+            if (kb == null || _flow == null || _flow.Ctl.Battle == null) return;
             bool confirm = kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame;
-            var state = _ctl.State;
+            bool back = kb.escapeKey.wasPressedThisFrame || kb.backspaceKey.wasPressedThisFrame;
+
+            switch (_flow.Screen)
+            {
+                case AppScreen.MainMenu:
+                    if (confirm) _flow.OpenLevels();
+                    return;
+                case AppScreen.LevelSelect:
+                    if (back) _flow.BackToMenu();
+                    for (int i = 0; i < LevelKeys.Length && i < _flow.Content.Levels.Count; i++)
+                        if (kb[LevelKeys[i]].wasPressedThisFrame) _flow.StartLevel(_flow.Content.Levels[i].Id);
+                    return;
+            }
+
+            var ctl = _flow.Ctl;
+            var state = ctl.State;
+            bool victory = ctl.Battle.GetResult() == BattleResults.Victory;
 
             // Toutes les touches passent par la même règle que la souris et le toucher (InputGate).
-            if (confirm) Run(InputGate.ConfirmAction(state));
-            if ((kb.escapeKey.wasPressedThisFrame || kb.pKey.wasPressedThisFrame) && InputGate.Allows(state, UiAction.TogglePause)) Run(UiAction.TogglePause);
+            if (confirm) Run(InputGate.ConfirmAction(state, victory, _flow.NextLevel != null));
+            if (kb.escapeKey.wasPressedThisFrame || kb.pKey.wasPressedThisFrame)
+            {
+                if (InputGate.Allows(state, UiAction.TogglePause)) Run(UiAction.TogglePause);
+                else if (kb.escapeKey.wasPressedThisFrame && InputGate.Allows(state, UiAction.BackToMap)) Run(UiAction.BackToMap);
+            }
 
-            state = _ctl.State;
-            var allies = _ctl.Battle.GetAllies();
+            state = ctl.State;
+            var allies = ctl.Battle.GetAllies();
             if (InputGate.Allows(state, UiAction.TapAlly))
             {
                 for (int i = 0; i < AllyKeys.Length && i < allies.Count; i++)
-                    if (kb[AllyKeys[i]].wasPressedThisFrame || kb[NumpadKeys[i]].wasPressedThisFrame) _ctl.TapAlly(allies[i].Id);
+                    if (kb[AllyKeys[i]].wasPressedThisFrame || kb[NumpadKeys[i]].wasPressedThisFrame) ctl.TapAlly(allies[i].Id);
                 if (kb.tabKey.wasPressedThisFrame) CycleTarget(allies.ToList(), kb.shiftKey.isPressed ? -1 : 1);
             }
 
             if (InputGate.Allows(state, UiAction.TapSkill))
             {
-                var skills = _ctl.Skills;
+                var skills = ctl.Skills;
                 for (int i = 0; i < SkillKeys.Length && i < skills.Count; i++)
-                    if (kb[SkillKeys[i]].wasPressedThisFrame) _ctl.TapSkill(skills[i]);
+                    if (kb[SkillKeys[i]].wasPressedThisFrame) ctl.TapSkill(skills[i]);
             }
         }
 
@@ -68,9 +89,11 @@ namespace Healer.Client
         {
             switch (action)
             {
-                case UiAction.StartFight: _ctl.StartFight(); break;
-                case UiAction.TogglePause: _ctl.TogglePause(); break;
-                case UiAction.Restart: _ctl.Restart(); break;
+                case UiAction.StartFight: _flow.Ctl.StartFight(); break;
+                case UiAction.TogglePause: _flow.Ctl.TogglePause(); break;
+                case UiAction.Restart: _flow.Restart(); break;
+                case UiAction.NextLevel: _flow.NextLevelNow(); break;
+                case UiAction.BackToMap: _flow.LeaveBattle(); break;
             }
         }
 
@@ -78,12 +101,12 @@ namespace Healer.Client
         {
             int count = allies.Count;
             if (count == 0) return;
-            int current = allies.FindIndex(a => a.Id == _ctl.Selection.Selected);
+            int current = allies.FindIndex(a => a.Id == _flow.Ctl.Selection.Selected);
             for (int n = 1; n <= count; n++)
             {
                 var candidate = allies[((current < 0 ? (step > 0 ? -1 : 0) : current) + step * n % count + count) % count];
                 if (!candidate.Alive) continue;
-                _ctl.TapAlly(candidate.Id);
+                _flow.Ctl.TapAlly(candidate.Id);
                 return;
             }
         }

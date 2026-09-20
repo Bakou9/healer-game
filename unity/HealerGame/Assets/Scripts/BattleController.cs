@@ -25,6 +25,7 @@ namespace Healer.Client
         private double _hintUntilMs;
         private double _sinceDecisionMs;
         private Action? _unsubscribe;
+        private List<string>? _owned;
 
         public bool Paused { get; private set; }
 
@@ -65,6 +66,10 @@ namespace Healer.Client
         public bool Autoplay { get; set; }
 
         public Battle Battle => _battle;
+        public GameContent Content => _content;
+
+        /// <summary>Niveau en cours (boss, récompenses, seuils d'étoiles).</summary>
+        public LevelDef? Level { get; private set; }
         public TargetSelection Selection => _selection;
         public IReadOnlyList<SkillDef> Skills => _content.Skills;
         public bool HintActive => _battle != null && _battle.GetClock() < _hintUntilMs;
@@ -79,16 +84,25 @@ namespace Healer.Client
         public event Action<BattleEvent>? EventEmitted;
         public event Action? Restarted;
 
-        public void Begin(GameContent content, uint seed)
+        /// <summary>Prépare un combat pour un niveau avec l'équipe possédée par le joueur ; il ne démarre qu'au « Jouer ».</summary>
+        public void StartLevel(GameContent content, LevelDef level, IEnumerable<string>? owned, uint seed)
         {
             _content = content;
+            Level = level;
+            _owned = owned?.ToList();
+            Started = false;
+            _pausedByFocus = false;
             StartBattle(seed);
+            Restarted?.Invoke();
         }
+
+        /// <summary>Arrête le guidage du premier geste (joueur qui a déjà gagné).</summary>
+        public void SkipGuidance() => HasCast = true;
 
         private void StartBattle(uint seed)
         {
             _unsubscribe?.Invoke();
-            _battle = new Battle(_content.CreateEncounter(seed));
+            _battle = new Battle(_content.CreateEncounter(Level!.BossId, seed, _owned));
             Stats = new CombatStats();
             Stats.Attach(_battle);
             _stepper = new FixedStepper();

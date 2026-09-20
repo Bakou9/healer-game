@@ -264,3 +264,21 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - **Mobile** : chaque colonne est atteignable du pouce depuis son bord (testé : colonnes dans le quart de l'écran de chaque côté, aucune carte à droite, aucun sort à gauche, ≥ 72 px de haut par bouton). Le geste reste « toucher un allié, toucher un sort » ; le clavier (D-041) est inchangé.
 - **Tests** : 163 tests du cœur verts, golden inchangés (aucune règle de combat touchée, aucun impact d'équilibrage). Tests de mise en page réécrits à dessein car ils décrivaient la disposition verticale : ordre vertical des zones → zones sans chevauchement et ordre gauche / centre / droite ; « sorts dans la moitié basse » → « sorts dans la colonne de droite ». Les tests d'entrée (InputGate) sont conservés ; le garde-fou « Jouer chevauche une carte » devient « plus aucun chevauchement ». Bout en bout (`npm run e2e`) adapté aux nouvelles zones et vert.
 - **À valider avec l'utilisateur** : essai sur téléphone réel en paysage (taille des boutons au pouce), et si les cartes doivent rester aussi grandes (elles peuvent afficher plus d'informations : effets, buffs).
+
+## D-047 — On commence en premium ; l'architecture garde la porte ouverte au gacha
+- **Décision (utilisateur, après discussion)** : jeu **acheté une fois** d'abord ; passage possible à un modèle gacha plus tard. Précise la vision (« gacha »).
+- **Trois garde-fous d'architecture, dès maintenant** (peu coûteux, évitent de tout refaire) :
+  1. **Inventaire séparé des définitions** : `PlayerProfile.OwnedCharacters` dit ce que le joueur possède ; `CreateEncounter(boss, graine, possédés)` n'aligne que ces personnages (le soigneur est toujours présent). En premium il les possède tous ; un gacha n'aura qu'à remplir cet inventaire autrement. Posséder tout le monde ne change pas un seul événement de combat (testé).
+  2. **Un seul point d'entrée pour l'argent** : `Wallet.Grant` / `TrySpend`, avec une raison obligatoire et un registre. Aucune récompense ni dépense n'y échappe (testé).
+  3. **Équilibrage indépendant de la collection** : chaque boss doit rester gagnable avec les mêmes personnages ; le nombre de personnages exigés par niveau reste faible.
+- **Ce qui demandera un vrai chantier au passage gacha** : serveur (comptes, sauvegarde en ligne, tirages côté serveur), achats intégrés, règles légales sur les tirages, économie (monnaies, taux, pitié), contenu régulier.
+
+## D-048 — Jalon 1 : campagne de 3 niveaux, étoiles, récompenses, sauvegarde, menus
+- **Contenu** (JSON, aucune règle en dur) : 3 boss et 3 niveaux (`core/content/boss2.json`, `boss3.json`, `levels.json`, effets `venom` et `burn`). Niveau n+1 verrouillé tant que le niveau n n'est pas terminé.
+  - Golem Ancestral (référence, inchangé) ; **Reine des Marais** : coups faibles, venin très dangereux (la Purge est indispensable) ; **Seigneur de Cendre** : attaques de zone rapides (télégraphe 1,2 s), brûlures, trois phases.
+- **Étoiles** : 1 = victoire ; 2 = sans allié K.O. ; 3 = en plus sous un seuil de dégâts encaissés par niveau (boucliers et purges le font baisser). Or : première victoire + bonus par étoile nouvelle, puis répétition.
+- **Sauvegarde** : profil JSON versionné, tolérant (fichier illisible mis de côté, jamais écrasé en silence ; version future refusée ; niveau sauté par un fichier bricolé refusé), écriture atomique.
+- **Navigation** : menu principal → choix du niveau → combat → bilan (étoiles, or, déblocages, Recommencer / Niveau suivant / Carte). Toutes les entrées (souris, toucher, clavier) passent par `InputGate`, étendu aux écrans de l'application.
+- **Équilibrage** : les 3 boss passent les MÊMES bornes que le premier (§9 d'EQUILIBRAGE.md), réglées par balayage automatique (`ZBalayage`, outil explicite). Aucune borne relâchée. Golden d'origine inchangés ; deux nouveaux golden (boss 2 et 3) créés par ce projet.
+- **Tests** : 317 tests du cœur (163 avant) + 5 scénarios de bout en bout (35 vérifications, dont sauvegarde sur disque et relance du jeu).
+- **À valider avec l'utilisateur** : voir QUESTIONS_EN_ATTENTE.md (usage de l'or, durée des combats, boss avec limite de temps…).

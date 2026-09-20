@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using Healer.Combat;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -28,7 +29,9 @@ namespace Healer.Client
 #else
             string Read(string name) => File.ReadAllText(Path.Combine(dir, name));
 #endif
-            return GameContent.FromJson(Read("characters.json"), Read("skills.json"), Read("effects.json"), Read("boss1.json"));
+            string levels = Read("levels.json");
+            var bosses = GameContent.LevelBossIds(levels).Select(id => Read(id + ".json")).ToList();
+            return GameContent.FromJson(Read("characters.json"), Read("skills.json"), Read("effects.json"), bosses, levels);
         }
     }
 }

@@ -15,6 +15,7 @@ namespace Healer.Client
     public sealed class BattleHud : MonoBehaviour
     {
         private BattleController _ctl = null!;
+        private GameFlow _flow = null!;
         private GUIStyle _label = null!;
 
         private static readonly Color Panel = Palette.Hex("161926");
@@ -22,7 +23,11 @@ namespace Healer.Client
         private static readonly Color Selected = Palette.Hex("E0BE6A");
         private static readonly Color Muted = Palette.Hex("9A9FB4");
 
-        public void Init(BattleController controller) => _ctl = controller;
+        public void Init(BattleController controller, GameFlow flow)
+        {
+            _ctl = controller;
+            _flow = flow;
+        }
 
         private static Rect R(Healer.Ui.Rect r) => new Rect((float)r.X, (float)r.Y, (float)r.W, (float)r.H);
 
@@ -42,6 +47,7 @@ namespace Healer.Client
             }
             ScreenMap.Refresh();
             DrawCinemaVignette();
+            if (_flow.Screen != AppScreen.Battle) return;
             DrawDangerVignette();
             var previous = GUI.matrix;
             GUI.matrix = Matrix4x4.TRS(new Vector3(ScreenMap.OffsetX, ScreenMap.OffsetY, 0), Quaternion.identity, new Vector3(ScreenMap.Scale, ScreenMap.Scale, 1));
@@ -75,7 +81,7 @@ namespace Healer.Client
         }
 
         /// <summary>Zone cliquable. Passe par InputGate : hors de son état, un élément ne capte AUCUN clic (un écran modal recouvre les cartes).</summary>
-        private bool Hit(Rect r, UiAction action) => InputGate.Allows(_ctl.State, action) && GUI.Button(r, GUIContent.none, GUIStyle.none);
+        private bool Hit(Rect r, UiAction action) => InputGate.Allows(_flow.Screen, _ctl.State, action) && GUI.Button(r, GUIContent.none, GUIStyle.none);
 
         private Texture2D? _vignette;
 
@@ -268,8 +274,9 @@ namespace Healer.Client
             if (_ctl.Started) return;
             Fill(new Rect(-2000, -2000, 5000, 5000), new Color(0.03f, 0.04f, 0.09f, 0.86f), 0);
             float w = (float)Layout.GameW;
-            Text(new Rect(0, 70, w, 56), "Healer Game", 48, Color.white, TextAnchor.MiddleCenter, true);
-            Text(new Rect(0, 128, w, 30), "Soignez votre équipe face au " + _ctl.Battle.GetBossName(), Layout.Font.Strong, Muted, TextAnchor.MiddleCenter);
+            var level = _flow.CurrentLevel;
+            Text(new Rect(0, 60, w, 56), level?.Name ?? "Healer Game", 44, Color.white, TextAnchor.MiddleCenter, true);
+            Text(new Rect(0, 120, w, 30), "Soignez votre équipe face au " + _ctl.Battle.GetBossName(), Layout.Font.Strong, Muted, TextAnchor.MiddleCenter);
             var panel = new Rect(w / 2 - 300, 180, 600, 260);
             Fill(panel, new Color(Panel.r, Panel.g, Panel.b, 0.96f), 14);
             Outline(panel, PanelStroke, 2, 14);
@@ -279,23 +286,40 @@ namespace Healer.Client
                 "2  Touchez un sort à DROITE pour le lancer sur lui",
                 "Soin de zone : sans cible, pour toute l'équipe",
                 "Bouclier : à poser AVANT l'attaque annoncée",
-                "Purge : retire le poison (phase 2)",
+                "Purge : retire poisons et brûlures",
                 "Le mana est limité : ne le gaspillez pas",
             };
             for (int i = 0; i < tips.Length; i++)
                 Text(new Rect(panel.x + 22, panel.y + 14 + i * 38, panel.width - 44, 34), tips[i], Layout.Font.Body, i < 2 ? Selected : Color.white, TextAnchor.MiddleLeft, i < 2);
             var btn = R(Layout.StartButton);
-            Fill(btn, Palette.Hex("245C43"), 8);
-            Outline(btn, Palette.Hex("5FB98D"), 2, 8);
-            Text(btn, "Jouer", 26, Color.white, TextAnchor.MiddleCenter, true);
+            UiKit.Button(btn, "Jouer", 26, Palette.Hex("245C43"), Palette.Hex("5FB98D"));
             if (Keyboard.current != null)
             {
                 string sorts = string.Join(" ", new[] { 0, 1, 2, 3 }.Select(BattleKeys.SkillLabel));
                 Text(new Rect(0, 556, w, 24), "Clavier : 1-4 cibler · " + sorts + " sorts · Tab suivant", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
-                Text(new Rect(0, 580, w, 24), "Espace : jouer / pause · M : son", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
+                Text(new Rect(0, 580, w, 24), "Espace : jouer / pause · Échap : retour · M : son", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
             }
             else Text(new Rect(0, 560, w, 24), "Touchez Jouer pour commencer", Layout.Font.Small, Muted, TextAnchor.MiddleCenter);
+            var back = R(Layout.BackButton);
+            UiKit.Button(back, "← Carte", Layout.Font.Body, Palette.Hex("22273B"), Palette.Hex("6F7698"));
+            if (Hit(back, UiAction.BackToMap)) _flow.LeaveBattle();
             if (Hit(btn, UiAction.StartFight)) _ctl.StartFight();
+        }
+
+        // ---- Pause -------------------------------------------------------------------------------
+
+        private void DrawPause()
+        {
+            if (!_ctl.Paused) return;
+            Fill(new Rect(-2000, -2000, 5000, 5000), new Color(0, 0, 0, 0.6f), 0);
+            float w = (float)Layout.GameW;
+            Text(new Rect(0, 230, w, 60), "PAUSE", 44, Color.white, TextAnchor.MiddleCenter, true);
+            var resume = R(Layout.PauseResume);
+            var leave = R(Layout.PauseLeave);
+            UiKit.Button(resume, "Reprendre", Layout.Font.Title, Palette.Hex("245C43"), Palette.Hex("5FB98D"));
+            UiKit.Button(leave, "Quitter le niveau", Layout.Font.Body, Palette.Hex("22273B"), Palette.Hex("6F7698"));
+            if (Hit(resume, UiAction.TogglePause)) _ctl.TogglePause();
+            if (Hit(leave, UiAction.BackToMap)) _flow.LeaveBattle();
         }
 
         // ---- Fin de combat -----------------------------------------------------------------------
@@ -305,20 +329,22 @@ namespace Healer.Client
             var result = _ctl.Battle.GetResult();
             if (result == BattleResults.Ongoing)
             {
-                if (_ctl.Paused) Text(new Rect(0, (float)Layout.GameH / 2 - 20, (float)Layout.GameW, 40), "PAUSE", 36, Color.white, TextAnchor.MiddleCenter, true);
+                DrawPause();
                 return;
             }
-            var full = new Rect(-2000, -2000, 5000, 5000);
-            Fill(full, new Color(0, 0, 0, 0.78f), 0);
+            Fill(new Rect(-2000, -2000, 5000, 5000), new Color(0, 0, 0, 0.8f), 0);
             bool win = result == BattleResults.Victory;
             float w = (float)Layout.GameW;
-            Text(new Rect(0, 60, w, 54), win ? "Victoire !" : "Défaite…", 44, win ? Palette.Heal : Palette.Damage, TextAnchor.MiddleCenter, true);
+            var reward = _flow.LastReward;
+            var level = _flow.CurrentLevel;
+            Text(new Rect(0, 30, w, 54), win ? "Victoire !" : "Défaite…", 44, win ? Palette.Heal : Palette.Damage, TextAnchor.MiddleCenter, true);
+            if (win && reward != null) UiKit.Stars(new Rect(w / 2 - 200, 92, 400, 64), reward.Stars, 56);
 
             var s = _ctl.Stats;
-            var panel = new Rect(w / 2 - 300, 130, 600, 236);
+            var panel = new Rect(w / 2 - 300, 170, 600, 236);
             Fill(panel, new Color(Panel.r, Panel.g, Panel.b, 0.96f), 14);
             Outline(panel, PanelStroke, 2, 14);
-            string[] labels = { "Durée du combat", "Soins effectifs", "Dégâts encaissés", "dont absorbés par boucliers", "Sorts lancés", "Alliés K.O.", "Poisons purgés" };
+            string[] labels = { "Durée du combat", "Soins effectifs", "Dégâts encaissés", "dont absorbés par boucliers", "Sorts lancés", "Alliés K.O.", "Poisons et brûlures purgés" };
             string[] values =
             {
                 Format.Seconds(s.DurationMs), Format.Number(s.HealingDone), Format.Number(s.DamageTaken),
@@ -330,14 +356,44 @@ namespace Healer.Client
                 Text(row, labels[i], Layout.Font.Body, i == 3 ? Muted : Color.white, TextAnchor.MiddleLeft);
                 Text(row, values[i], Layout.Font.Body, i == 5 && s.Deaths > 0 ? Palette.Damage : Palette.Heal, TextAnchor.MiddleRight, true);
             }
-            if (!win)
-                Text(new Rect(w / 2 - 300, 376, 600, 50), "Astuce : posez un Bouclier pendant l'annonce de l'attaque de zone,\net Purgez le poison en phase 2.", Layout.Font.Small, Muted, TextAnchor.UpperCenter);
 
-            var btn = R(Layout.RestartButton);
-            Fill(btn, Palette.Hex("333652"), 12);
-            Outline(btn, Palette.Hex("8A90B4"), 3, 12);
-            Text(btn, "Recommencer", Layout.Font.Title, Color.white, TextAnchor.MiddleCenter, true);
-            if (Hit(btn, UiAction.Restart)) _ctl.Restart();
+            float y = 418;
+            if (win && reward != null)
+            {
+                Text(new Rect(0, y, w, 30), "+" + Format.Number(reward.GoldGained) + " or" + (reward.FirstClear ? "  ·  première victoire !" : ""), Layout.Font.Title, UiKit.Gold, TextAnchor.MiddleCenter, true);
+                y += 30;
+                if (reward.NewStars > 0) { Text(new Rect(0, y, w, 24), reward.NewStars + (reward.NewStars > 1 ? " nouvelles étoiles" : " nouvelle étoile"), Layout.Font.Body, Selected, TextAnchor.MiddleCenter); y += 24; }
+                if (reward.NewBestTime) { Text(new Rect(0, y, w, 24), "Nouveau record de temps !", Layout.Font.Body, Selected, TextAnchor.MiddleCenter); y += 24; }
+                foreach (var id in reward.UnlockedLevelIds)
+                {
+                    Text(new Rect(0, y, w, 24), "Niveau débloqué : " + _flow.Content.LevelById(id).Name, Layout.Font.Body, Palette.Heal, TextAnchor.MiddleCenter, true);
+                    y += 24;
+                }
+                if (level != null && reward.Stars < 3)
+                    Text(new Rect(0, Mathf.Max(y + 6, 520), w, 40),
+                        "★ victoire   ★★ sans allié K.O.   ★★★ et moins de " + Format.Number(level.ThreeStarMaxDamageTaken) + " dégâts encaissés",
+                        Layout.Font.Small, Muted, TextAnchor.UpperCenter);
+            }
+            else if (!win)
+                Text(new Rect(w / 2 - 320, 430, 640, 60), "Astuce : posez un Bouclier pendant l'annonce de l'attaque de zone,\net Purgez poisons et brûlures dès qu'ils apparaissent.", Layout.Font.Body, Muted, TextAnchor.UpperCenter);
+
+            var next = win ? _flow.NextLevel : null;
+            var actions = new System.Collections.Generic.List<(string label, UiAction action, bool primary)> { ("Recommencer", UiAction.Restart, !win || next == null) };
+            if (next != null) actions.Add(("Niveau suivant", UiAction.NextLevel, true));
+            actions.Add(("Carte", UiAction.BackToMap, false));
+            var rects = Layout.EndButtonRects(actions.Count);
+            for (int i = 0; i < actions.Count; i++)
+            {
+                var r = R(rects[i]);
+                var (label, action, primary) = actions[i];
+                UiKit.Button(r, label, Layout.Font.Title, primary ? Palette.Hex("245C43") : Palette.Hex("22273B"), primary ? Palette.Hex("5FB98D") : Palette.Hex("6F7698"));
+                if (Hit(r, action))
+                {
+                    if (action == UiAction.Restart) _flow.Restart();
+                    else if (action == UiAction.NextLevel) _flow.NextLevelNow();
+                    else _flow.LeaveBattle();
+                }
+            }
         }
     }
 }

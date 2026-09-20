@@ -156,3 +156,26 @@ Progression entre combats, puissance des personnages, gacha, économie : **pas
 encore** (voir `CLAUDE.md`, « phases »). Quand ces sujets arrivent, ce fichier
 devra définir l'équilibre *entre* combats (courbe de puissance, « power creep »,
 gratuit vs payant : E06-T09, E08-T13), pas seulement *dans* un combat.
+
+
+## 9. Campagne : équilibrage de chaque boss (jalon 1, D-048)
+
+Les bornes du §2 et du §4 s'appliquent **à chaque boss** (`BossRosterBalanceTests`, 100 combats par profil). Un boss se règle, on ne relâche jamais une borne. Outil de réglage : `ZBalayage` (test explicite) balaie atk, multiplicateur et télégraphe de l'attaque de zone, dégâts de l'effet.
+
+| Boss | Profil | Victoires | Un allié K.O. | PV minimum moyen | Durée |
+|---|---|---|---|---|---|
+| Golem Ancestral | attentif | 100 % | 1 % | 0,28 | 83-86 s |
+| | lent (1,5 s) | 100 % | 11 % | 0,16 | 83-98 s |
+| | sans Purge | 100 % | 8 % | 0,18 | 83-110 s |
+| Reine des Marais | attentif | 100 % | 9 % | 0,31 | 74-90 s |
+| | lent | 100 % | 19 % | 0,21 | 74-88 s |
+| | sans Purge | 91 % | 62 % | 0,04 | 74-150 s |
+| Seigneur de Cendre | attentif | 100 % | 1 % | 0,35 | 102-104 s |
+| | lent | 100 % | 15 % | 0,17 | 102-114 s |
+| | sans Purge | 100 % | 5 % | 0,23 | 102-112 s |
+
+Pour tous : sans soigneur ou en spammant un seul sort, 0 % de victoire.
+
+**Étoiles** (seuil de dégâts encaissés pour la 3ᵉ étoile : 3700 / 2000 / 3000) : un joueur attentif obtient au moins 2 étoiles dans 85 % des combats et 3 étoiles dans 20 à 85 % ; un joueur lent en obtient moins, et ignorer poisons et brûlures fait perdre les 3 étoiles (testé pour chaque boss).
+
+**Identité des boss** : le 2ᵉ punit l'oubli de la Purge (91 % de victoires sans Purge, mais 62 % de morts) ; le 3ᵉ punit la lenteur (télégraphe de 1,2 s) et enchaîne trois phases.

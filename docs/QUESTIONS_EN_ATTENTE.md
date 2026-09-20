@@ -15,3 +15,14 @@ avec ma recommandation. À passer en revue ensemble au retour, puis à consigner
 8. **Android** : le module est installé ; on tente un APK de test sur un vrai téléphone ? (nécessite le téléphone en mode développeur)
 
 - **Android** : `BuildAndroid` est écrit mais non exécuté. Installer le module Android (SDK/NDK/JDK, plusieurs Go) via Unity Hub pour produire un APK de test téléphone ? À valider avec vous.
+
+
+## Jalon 1 (campagne) — à trancher ensemble
+
+1. **À quoi sert l'or ?** Il s'accumule mais rien ne s'achète encore. Jalon 2 : équipement et talents ? Cela change le rythme de gain (aujourd'hui 100 à 220 or par première victoire).
+2. **Pas de limite de temps** : un combat où l'équipe ne peut pas finir le boss dure indéfiniment (constaté avec une équipe réduite à 2 personnages). Faut-il une « rage » du boss après ~2 minutes ? À décider avant d'introduire des équipes réduites (gacha) : c'est une règle de combat qui changerait les golden.
+3. **Durée des combats** : 75 à 105 s (borne du projet : 60 à 120 s). Trop long pour du mobile en trajet ?
+4. **Critères d'étoiles** : victoire / sans K.O. / peu de dégâts encaissés. Le 3ᵉ critère dépend du bon usage des boucliers et des purges. Vous convient-il, ou préférez-vous un critère de vitesse ou de mana ?
+5. **Direction artistique des boss 2 et 3** (modèles procéduraux) : à juger à l'œil ; la Reine des Marais est la moins aboutie (bras en bâtons).
+6. **Niveaux à venir** : combien pour une première version vendable (10 ? 30 ?), et faut-il des niveaux « héroïques » (mêmes boss, plus durs) ?
+7. **Prix cible du jeu premium** (Steam, mobile) : influe sur la quantité de contenu attendue.

@@ -61,6 +61,16 @@ namespace Healer.Combat
                 Parse<List<LevelDef>>(levelsJson, "levels.json"));
         }
 
+        /// <summary>Identifiants des boss utilisés par les niveaux, dans l'ordre et sans doublon : le client sait quels fichiers lire.</summary>
+        public static List<string> LevelBossIds(string levelsJson)
+        {
+            var seen = new HashSet<string>();
+            var ids = new List<string>();
+            foreach (var l in Parse<List<LevelDef>>(levelsJson, "levels.json"))
+                if (seen.Add(l.BossId)) ids.Add(l.BossId);
+            return ids;
+        }
+
         private static T Parse<T>(string json, string label)
         {
             try

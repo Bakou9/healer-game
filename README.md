@@ -15,7 +15,7 @@ documentation et la mécanique de test de la version Phaser.
 |---|---|
 | Documents, specs (14 epics, 142 tickets), décisions, registre des revues | repris et adaptés |
 | Cœur C# pur (`core/Healer.Combat`) | **porté ; reproduit à l'identique les 7 combats de référence** |
-| Tests C# (`core/Healer.Combat.Tests`) | 157 tests : conformité golden, règles, équilibrage, données, architecture, entrées, mise en page |
+| Tests C# (`core/Healer.Combat.Tests`) | 317 tests : conformité golden, règles, équilibrage de chaque boss, progression, sauvegarde, navigation, entrées, mise en page |
 | Environnement | SDK .NET installé ; Unity Hub installé ; Éditeur Unity 6.3 LTS en cours d'installation |
 | Projet Unity (`unity/HealerGame`, Unity 6.3 LTS) | **créé** ; licence Unity Personal active |
 | **Jeu Unity jouable** (scène 3D, modèles « figurine », interface, exécutable Windows) | **oui** : voir `docs/TESTER_LE_JEU.md` |

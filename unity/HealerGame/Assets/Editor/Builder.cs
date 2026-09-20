@@ -126,6 +126,8 @@ namespace Healer.EditorTools
                 if (missing.Count > 0) throw new Exception($"{name} : parties manquantes : {string.Join(", ", missing)}");
             }
             Check("Golem", ModelFactory.Golem(), BossBudget, "Core", "Eyes", "Runes", "Head", "Torso");
+            Check("Reine des Marais", ModelFactory.SwampQueen(), BossBudget, "Core", "Eyes", "Runes", "Head", "Torso");
+            Check("Seigneur de Cendre", ModelFactory.AshLord(), BossBudget, "Core", "Eyes", "Runes", "Head", "Torso");
             Check("Garde", ModelFactory.Tank(), CharacterBudget, "Shield", "Helmet", "Eyes");
             Check("Archère", ModelFactory.Archer(), CharacterBudget, "Bow", "Quiver", "Eyes");
             Check("Mage", ModelFactory.Mage(), CharacterBudget, "Hat", "Staff", "Orb", "Eyes");

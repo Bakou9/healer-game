@@ -13,11 +13,13 @@ namespace Healer.Client
         private readonly Dictionary<string, AudioClip> _clips = new Dictionary<string, AudioClip>();
         private readonly Dictionary<string, float> _lastPlayed = new Dictionary<string, float>();
         private bool _wasTelegraphing;
-        public bool Muted { get; private set; }
+        private GameFlow? _flow;
+        public bool Muted => _flow != null && _flow.Profile.Settings.Muted;
 
-        public void Init(BattleController controller)
+        public void Init(BattleController controller, GameFlow flow)
         {
             _ctl = controller;
+            _flow = flow;
             _source = gameObject.AddComponent<AudioSource>();
             _source.playOnAwake = false;
             _source.spatialBlend = 0f;
@@ -43,7 +45,7 @@ namespace Healer.Client
         private void Update()
         {
             var keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.mKey.wasPressedThisFrame) Muted = !Muted;
+            if (keyboard != null && keyboard.mKey.wasPressedThisFrame && _flow != null) _flow.ToggleMute();
             if (_ctl == null || _ctl.Battle == null) return;
             var telegraph = _ctl.Battle.GetTelegraph();
             bool telegraphing = telegraph != null && telegraph.Type == "bigAttack";

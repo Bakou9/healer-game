@@ -228,6 +228,119 @@ namespace Healer.Client
             return root;
         }
 
+        // ---- Autres boss -----------------------------------------------------------------------
+
+        /// <summary>Couleurs lumineuses d'un boss : (calme, fureur).</summary>
+        public static (Color calm, Color fury) BossColors(string id)
+        {
+            switch (id)
+            {
+                case "boss2": return (Palette.Hex("9CFF5A"), Palette.Hex("E45CFF"));
+                case "boss3": return (Palette.Hex("FFA13D"), Palette.Hex("FF3B2A"));
+                default: return (Palette.CoreCalm, Palette.CoreFury);
+            }
+        }
+
+        public static float BossScaleFactor(string id) => id == "boss2" ? 0.95f : 1f;
+
+        public static GameObject ForBoss(string id)
+        {
+            switch (id)
+            {
+                case "boss2": return SwampQueen();
+                case "boss3": return AshLord();
+                default: return Golem();
+            }
+        }
+
+        /// <summary>Reine des Marais : bulbe de marais, buste élancé, couronne d'épines, tentacules et cœur toxique.</summary>
+        public static GameObject SwampQueen()
+        {
+            var root = new GameObject("SwampQueen");
+            var t = root.transform;
+            var moss = LitMaterial(Palette.Hex("3F5A3A"));
+            var dark = LitMaterial(Palette.Hex("263A2B"));
+            var light = LitMaterial(Palette.Hex("6C8A52"));
+            var bark = LitMaterial(Palette.Hex("4B3A2C"));
+            var sphere = MeshKit.Sphere(6, 8);
+            var cyl = MeshKit.Cylinder(8);
+            var cone = MeshKit.Cone(6);
+            var cube = MeshKit.Cube();
+
+            Part(t, "Bulb", sphere, dark, new Vector3(0, 0.9f, 0), S(2.7f, 1.8f, 2.5f));
+            Part(t, "Torso", sphere, moss, new Vector3(0, 2.15f, 0), S(1.5f, 1.9f, 1.2f));
+            Part(t, "Chest", sphere, light, new Vector3(0, 2.3f, 0.28f), S(0.95f, 0.8f, 0.7f));
+            Part(t, "Head", sphere, moss, new Vector3(0, 3.4f, 0.05f), S(0.9f, 0.85f, 0.85f));
+            for (int i = 0; i < 5; i++)
+            {
+                int d = Mathf.Abs(i - 2);
+                Part(t, "Thorn", cone, bark, new Vector3((i - 2) * 0.28f, 3.9f + (2 - d) * 0.1f, 0f), S(0.16f, 0.55f + 0.12f * (2 - d), 0.16f), new Vector3(0, 0, (i - 2) * -12f));
+            }
+            foreach (float side in new[] { -1f, 1f })
+            {
+                Part(t, "Tentacle", cyl, moss, new Vector3(side * 1.15f, 2.4f, 0.2f), S(0.3f, 1.7f, 0.3f), new Vector3(0, 0, side * -22f));
+                Part(t, "Tentacle", cyl, dark, new Vector3(side * 1.75f, 1.3f, 0.45f), S(0.24f, 1.6f, 0.24f), new Vector3(0, 0, side * -52f));
+                Part(t, "TentacleTip", sphere, light, new Vector3(side * 2.2f, 0.55f, 0.55f), S(0.34f, 0.34f, 0.34f));
+            }
+            var glow = GlowMaterial(Palette.Hex("9CFF5A"));
+            Part(t, "Core", sphere, glow, new Vector3(0, 2.25f, 0.72f), S(0.55f, 0.55f, 0.4f));
+            var eyes = new GameObject("Eyes");
+            eyes.transform.SetParent(t, false);
+            Part(eyes.transform, "EyeL", cube, glow, new Vector3(-0.25f, 3.42f, 0.42f), S(0.22f, 0.1f, 0.08f));
+            Part(eyes.transform, "EyeR", cube, glow, new Vector3(0.25f, 3.42f, 0.42f), S(0.22f, 0.1f, 0.08f));
+            var runes = new GameObject("Runes");
+            runes.transform.SetParent(t, false);
+            for (int i = 0; i < 6; i++)
+            {
+                float a = (i - 2.5f) * 0.42f;
+                Part(runes.transform, "Rune", sphere, glow, new Vector3(Mathf.Sin(a) * 1.15f, 0.75f + 0.12f * (i % 2), Mathf.Cos(a) * 1.05f), S(0.2f, 0.2f, 0.2f));
+            }
+            return root;
+        }
+
+        /// <summary>Seigneur de Cendre : géant de roche noire fissurée de lave, cornes, épaules hérissées.</summary>
+        public static GameObject AshLord()
+        {
+            var root = new GameObject("AshLord");
+            var t = root.transform;
+            var stone = LitMaterial(Palette.Hex("3A3540"));
+            var dark = LitMaterial(Palette.Hex("231F27"));
+            var light = LitMaterial(Palette.Hex("55505F"));
+            var horn = LitMaterial(Palette.Hex("C9BFAE"));
+            var sphere = MeshKit.Sphere(6, 8);
+            var cyl = MeshKit.Cylinder(8);
+            var cone = MeshKit.Cone(6);
+            var cube = MeshKit.Cube();
+
+            Part(t, "LegL", cyl, dark, new Vector3(-0.55f, 0.55f, 0), S(0.7f, 1.1f, 0.7f));
+            Part(t, "LegR", cyl, dark, new Vector3(0.55f, 0.55f, 0), S(0.7f, 1.1f, 0.7f));
+            Part(t, "Torso", sphere, stone, new Vector3(0, 1.95f, 0), S(2.1f, 2.1f, 1.5f));
+            Part(t, "Belly", sphere, dark, new Vector3(0, 1.45f, 0.35f), S(1.3f, 1.1f, 0.8f));
+            foreach (float side in new[] { -1f, 1f })
+            {
+                Part(t, "Shoulder", sphere, light, new Vector3(side * 1.35f, 2.65f, 0), S(1.1f, 1.0f, 1.1f));
+                Part(t, "ShoulderSpike", cone, horn, new Vector3(side * 1.5f, 3.2f, 0), S(0.3f, 0.75f, 0.3f), new Vector3(0, 0, side * -18f));
+                Part(t, "Arm", cyl, stone, new Vector3(side * 1.55f, 1.6f, 0), S(0.65f, 1.6f, 0.65f));
+                Part(t, "Fist", sphere, light, new Vector3(side * 1.55f, 0.6f, 0.1f), S(0.95f, 0.9f, 0.95f));
+                Part(t, "Horn", cone, horn, new Vector3(side * 0.45f, 4.05f, 0), S(0.22f, 0.85f, 0.22f), new Vector3(0, 0, side * -26f));
+            }
+            Part(t, "Head", sphere, stone, new Vector3(0, 3.4f, 0.05f), S(1.0f, 0.95f, 0.95f));
+            Part(t, "Brow", cube, dark, new Vector3(0, 3.55f, 0.46f), S(0.8f, 0.1f, 0.14f));
+
+            var glow = GlowMaterial(Palette.Hex("FFA13D"));
+            Part(t, "Core", sphere, glow, new Vector3(0, 2.0f, 0.74f), S(0.7f, 0.7f, 0.5f));
+            var eyes = new GameObject("Eyes");
+            eyes.transform.SetParent(t, false);
+            Part(eyes.transform, "EyeL", cube, glow, new Vector3(-0.28f, 3.4f, 0.5f), S(0.24f, 0.11f, 0.1f));
+            Part(eyes.transform, "EyeR", cube, glow, new Vector3(0.28f, 3.4f, 0.5f), S(0.24f, 0.11f, 0.1f));
+            var runes = new GameObject("Runes");
+            runes.transform.SetParent(t, false);
+            foreach (float side in new[] { -1f, 1f })
+                for (int i = 0; i < 3; i++)
+                    Part(runes.transform, "Rune", cube, glow, new Vector3(side * (0.55f + 0.12f * i), 1.5f + 0.35f * i, 0.72f), S(0.08f, 0.5f, 0.06f), new Vector3(0, 0, side * 14f));
+            return root;
+        }
+
         public static GameObject ForCharacter(string id, string role)
         {
             switch (id)
