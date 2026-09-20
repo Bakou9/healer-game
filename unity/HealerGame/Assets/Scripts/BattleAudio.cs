@@ -74,6 +74,7 @@ namespace Healer.Client
                 case "unitDamaged": if (e.Amount > 0) Play("hit", 0.6f); break;
                 case "bossAction": Play(e.Action == "bigAttack" ? "boom" : "bossTick", e.Action == "bigAttack" ? 0.9f : 0.5f); break;
                 case "bossPhaseChanged": Play("roar", 0.8f); break;
+                case "bossEnraged": Play("roar", 0.6f); break;
                 case "battleEnded": Play(e.Result == BattleResults.Victory ? "victory" : "defeat", 0.7f); break;
             }
         }

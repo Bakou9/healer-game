@@ -352,6 +352,34 @@ namespace Healer.Combat
             Emit(new BattleEvent { Type = "bossPhaseChanged", TimeMs = now, Phase = _boss.PhaseIndex, Name = next.Name });
         }
 
+        private int _enrageLevel;
+
+        /// <summary>Palier d'enrage atteint à cet instant (0 = pas enragé ou pas d'enrage pour ce boss).</summary>
+        private int EnrageLevelAt(double now)
+        {
+            var e = _boss.Def.Enrage;
+            if (e == null || e.EveryMs <= 0 || now < e.AfterMs) return 0;
+            return (int)Math.Floor((now - e.AfterMs) / e.EveryMs) + 1;
+        }
+
+        /// <summary>Multiplicateur de dégâts directs du boss dû à l'enrage (1 = aucun).</summary>
+        public double GetEnrageMultiplier()
+        {
+            var e = _boss.Def.Enrage;
+            return e == null ? 1 : 1 + EnrageLevelAt(_clock) * e.Pct / 100.0;
+        }
+
+        /// <summary>Palier d'enrage actuel (0 = calme) : l'interface l'affiche.</summary>
+        public int GetEnrageLevel() => EnrageLevelAt(_clock);
+
+        private void CheckEnrage(double now)
+        {
+            int level = EnrageLevelAt(now);
+            if (level <= _enrageLevel) return;
+            _enrageLevel = level;
+            Emit(new BattleEvent { Type = "bossEnraged", TimeMs = now, Phase = level, Amount = level * _boss.Def.Enrage!.Pct });
+        }
+
         private void RunBossTick(double now)
         {
             if (now < _boss.NextTickAt) return;
@@ -361,7 +389,7 @@ namespace Healer.Combat
             if (action.HitsAll == true) targets = alive;
             else targets = alive.Count > 0 ? new List<Unit> { _rng.PickRandom(alive) } : new List<Unit>();
             // Arrondi « demi vers le haut » comme Math.round en JavaScript (et non l'arrondi bancaire de C#).
-            double dmg = Math.Floor(_boss.Def.Atk * (action.Multiplier ?? 1) + 0.5);
+            double dmg = Math.Floor(_boss.Def.Atk * (action.Multiplier ?? 1) * (1 + EnrageLevelAt(now) * (_boss.Def.Enrage?.Pct ?? 0) / 100.0) + 0.5);
             Emit(new BattleEvent { Type = "bossAction", TimeMs = now, Action = action.Type, HitsAll = action.HitsAll == true });
             foreach (var t in targets)
             {
@@ -400,6 +428,7 @@ namespace Healer.Combat
             RunEffects(_clock);
             RunAllyAttacks(_clock);
             CheckBossPhase(_clock);
+            CheckEnrage(_clock);
             RunBossTick(_clock);
             CheckEnd();
         }

@@ -19,7 +19,7 @@
     "id": "burn",
     "name": "Brûlure",
     "kind": "damageOverTime",
-    "damagePerTick": 34,
+    "damagePerTick": 36,
     "tickMs": 1000,
     "durationMs": 6000
   }

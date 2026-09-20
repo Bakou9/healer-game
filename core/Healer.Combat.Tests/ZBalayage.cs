@@ -32,25 +32,37 @@ namespace Healer.Combat.Tests
             string bossId = Environment.GetEnvironmentVariable("HEALER_BOSS") ?? "boss2";
             string effectId = bossId == "boss2" ? "venom" : "burn";
             var found = new List<string>();
-            foreach (double atk in new[] { 34.0, 38, 42, 46 })
-            foreach (double big in new[] { 2.0, 2.4, 2.8 })
-            foreach (double bigMs in new[] { 1000.0, 1200, 1400 })
-            foreach (double eff in new[] { 14.0, 18, 22, 26, 30, 34 })
+            foreach (double speed in new[] { 1.0 })
+            foreach (double enrageAfter in new[] { 55000.0, 65000, 75000 })
+            foreach (double enragePct in new[] { 3.0, 5, 7 })
+            foreach (double atk in new[] { 28.0, 31, 34 })
+            foreach (double big in new[] { 2.2, 2.4 })
+            foreach (double bigMs in new[] { 1000.0 })
+            foreach (double eff in new[] { 28.0, 32, 36 })
             {
                 var c = Fixtures.FullContent();
                 var boss = c.BossById(bossId);
                 boss.Atk = atk;
+                boss.Enrage = new EnrageDef { AfterMs = enrageAfter, EveryMs = 10000, Pct = enragePct };
+                var baseBoss = Fixtures.FullContent().BossById(bossId);
+                boss.TickMs = Math.Round(baseBoss.TickMs * speed);
+                for (int i = 0; i < (boss.Phases?.Count ?? 0); i++) boss.Phases![i].TickMs = Math.Round(baseBoss.Phases![i].TickMs * speed);
                 void Patch(List<BossActionDef> p) { foreach (var a in p.Where(x => x.Type == "bigAttack")) { a.Multiplier = big; a.TelegraphMs = bigMs; } }
                 Patch(boss.Pattern); foreach (var ph in boss.Phases ?? new List<BossPhaseDef>()) Patch(ph.Pattern);
                 c.Effects.Single(e => e.Id == effectId).DamagePerTick = eff;
 
                 var att = Measure(c, bossId, b => ReferenceHealerBot.Run(b, 150000));
-                if (att.Win < 0.97 || att.Death > 0.08 || att.Low < 0.18 || att.Low > 0.40 || att.MinMs < 62000 || att.MaxMs > 115000) continue;
+                if (Environment.GetEnvironmentVariable("HEALER_VERBOSE") != null) TestContext.Progress.WriteLine($"  ? enrage={enrageAfter / 1000:0}s/{enragePct}% atk={atk} big={big} bigMs={bigMs} eff={eff} | att win={att.Win:0.00} mort={att.Death:0.00} pv={att.Low:0.00} durée={att.MinMs / 1000:0}-{att.MaxMs / 1000:0}");
+                if (att.Win < 0.97 || att.Death > 0.09 || att.Low < 0.18 || att.Low > 0.32 || att.MinMs < 62000 || att.MaxMs > 115000) continue;
+                var lazy = Measure(c, bossId, x => ZMesureStrategies.Limited(x, new[] { "heal_aoe", "heal_single" }, 0.75));
+                if (lazy.Death < 0.25) continue;
+                var zone = Measure(c, bossId, x => ZMesureStrategies.Limited(x, new[] { "heal_aoe" }, 0.75));
+                if (zone.Win > 0.75) continue;
                 var slow = Measure(c, bossId, b => ReferenceHealerBot.Run(b, 150000, new ReferenceHealerOptions { DecisionEveryMs = 1500 }));
-                if (att.Low - slow.Low < 0.06) continue;
+                if (att.Low - slow.Low < 0.05) continue;
                 var np = Measure(c, bossId, b => ReferenceHealerBot.Run(b, 150000, new ReferenceHealerOptions { Purge = false }));
-                if (att.Low - np.Low < 0.06 || np.Death <= att.Death + 0.03) continue;
-                found.Add($"atk={atk} big={big} bigMs={bigMs} eff={eff} | att win={att.Win:0.00} mort={att.Death:0.00} pv={att.Low:0.00} durée={att.MinMs / 1000:0}-{att.MaxMs / 1000:0} | lent pv={slow.Low:0.00} | sansPurge pv={np.Low:0.00} mort={np.Death:0.00}");
+                if (att.Low - np.Low < 0.05 || np.Death < att.Death + 0.05) continue;
+                found.Add($"enrage={enrageAfter / 1000:0}s/{enragePct}% atk={atk} big={big} bigMs={bigMs} eff={eff} | att win={att.Win:0.00} mort={att.Death:0.00} pv={att.Low:0.00} durée={att.MinMs / 1000:0}-{att.MaxMs / 1000:0} | lent pv={slow.Low:0.00} | sansPurge pv={np.Low:0.00} mort={np.Death:0.00} | paresseux gagne={lazy.Win:0.00} mort={lazy.Death:0.00} | zone gagne={zone.Win:0.00}");
             }
             TestContext.Progress.WriteLine($"{bossId} : {found.Count} combinaison(s) valides");
             foreach (var f in found.Take(12)) TestContext.Progress.WriteLine("  " + f);

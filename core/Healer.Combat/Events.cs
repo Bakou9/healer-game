@@ -54,6 +54,8 @@ namespace Healer.Combat
                     return $"{head} {UnitId} {EffectId} {Num(Amount)} (absorbé {Num(Absorbed)})";
                 case "effectEnded":
                     return $"{head} {UnitId} {EffectId} {Reason}";
+                case "bossEnraged":
+                    return $"{head} {Phase} +{Num(Amount)}%";
                 case "bossPhaseChanged":
                     return $"{head} {Phase} {Name}";
                 case "battleEnded":

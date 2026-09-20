@@ -250,6 +250,10 @@ namespace Healer.Client
                 case "unitDied":
                     LastAction = $"{time}  {AllyName(e.UnitId)} est K.O.";
                     break;
+                case "bossEnraged":
+                    LastAction = $"{time}  Le boss s'enrage : +{Format.Number(e.Amount)} % de dégâts";
+                    Debug.Log($"[Healer] état : boss enragé palier {e.Phase} (+{Format.Number(e.Amount)} %)");
+                    break;
                 case "bossPhaseChanged":
                     LastAction = $"{time}  Le boss passe en phase « {e.Name} »";
                     break;

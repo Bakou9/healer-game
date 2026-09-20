@@ -73,6 +73,20 @@ namespace Healer.Combat
         public double TickMs { get; set; }
         public List<BossActionDef> Pattern { get; set; } = new List<BossActionDef>();
         public List<BossPhaseDef>? Phases { get; set; }
+
+        /// <summary>Enrage optionnel : passé un certain temps, les dégâts directs du boss montent par paliers. Absent = aucun.</summary>
+        public EnrageDef? Enrage { get; set; }
+    }
+
+    /// <summary>
+    /// Enrage d'un boss : à AfterMs, puis toutes les EveryMs, ses attaques infligent Pct % de dégâts de plus (cumulés :
+    /// au n-ième palier, +n × Pct %). Pousse à finir le combat plutôt qu'à survivre indéfiniment (D-050).
+    /// </summary>
+    public class EnrageDef
+    {
+        public double AfterMs { get; set; }
+        public double EveryMs { get; set; }
+        public double Pct { get; set; }
     }
 
     public class EncounterDef

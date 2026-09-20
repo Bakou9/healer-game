@@ -33,12 +33,20 @@ namespace Healer.Combat.Progress
                 ["owned"] = new JArray(p.OwnedCharacters),
                 ["wallet"] = balances,
                 ["ledger"] = JArray.FromObject(p.Wallet.Ledger),
-                ["settings"] = new JObject { ["muted"] = p.Settings.Muted },
+                ["settings"] = new JObject
+                {
+                    ["muted"] = p.Settings.Muted,
+                    ["musicVolume"] = p.Settings.MusicVolume,
+                    ["sfxVolume"] = p.Settings.SfxVolume,
+                    ["screenShake"] = p.Settings.ScreenShake,
+                },
                 ["equipment"] = new JObject(p.Loadout.Equipment.OrderBy(k => k.Key, StringComparer.Ordinal).Select(k => new JProperty(k.Key, k.Value))),
                 ["talents"] = new JObject(p.Loadout.Talents.OrderBy(k => k.Key).Select(k => new JProperty(k.Key.ToString(), k.Value))),
             };
             return root.ToString(Formatting.Indented);
         }
+
+        private static int Clamp(int volume) => Math.Max(0, Math.Min(100, volume));
 
         /// <summary>Lit un profil. Renvoie false (et un profil neuf) si le texte est vide, illisible ou d'une version future.</summary>
         public static bool TryLoad(string? json, GameContent content, out PlayerProfile profile, out string error)
@@ -68,6 +76,9 @@ namespace Healer.Combat.Progress
                 if (root["wallet"] is JObject wallet)
                     foreach (var kv in wallet) loaded.Wallet.Restore(kv.Key, kv.Value?.Value<int>() ?? 0, kv.Key == Wallet.Gold ? ledger : null);
                 loaded.Settings.Muted = root["settings"]?.Value<bool?>("muted") ?? false;
+                loaded.Settings.MusicVolume = Clamp(root["settings"]?.Value<int?>("musicVolume") ?? Settings.DefaultMusic);
+                loaded.Settings.SfxVolume = Clamp(root["settings"]?.Value<int?>("sfxVolume") ?? Settings.DefaultSfx);
+                loaded.Settings.ScreenShake = root["settings"]?.Value<bool?>("screenShake") ?? true;
                 if (root["equipment"] is JObject equipment)
                     foreach (var kv in equipment) loaded.Loadout.Equipment[kv.Key] = kv.Value?.Value<int>() ?? 0;
                 if (root["talents"] is JObject talents)

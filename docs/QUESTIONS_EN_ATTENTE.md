@@ -35,3 +35,10 @@ avec ma recommandation. À passer en revue ensemble au retour, puis à consigner
 3. **Le jeu devient nettement plus facile avec tout au maximum** (PV minimum 0,63 à 0,74 contre 0,28 à 0,35). Voulez-vous des niveaux « héroïques » pour garder de la tension aux joueurs avancés (jalon suivant) ?
 4. **Le grind** : ~20 parcours complets pour tout acheter (~1 h 30 à 2 h avec seulement 3 niveaux). Acceptable pour une première version, mais il faudra plus de niveaux pour que ce soit un plaisir et non une corvée.
 5. **Talents uniquement pour le soigneur** : les autres personnages n'ont que de l'équipement. À élargir quand on introduira d'autres soigneurs ou des classes.
+
+
+## Retours de jeu (D-050) — à trancher ensemble
+
+1. **Le Seigneur de Cendre est-il maintenant assez intense ?** Il l'est plus qu'avant (mesuré), mais je ne peux pas juger la sensation. Ce que je peux ajouter pour de vrai : (a) des **attaques focalisées** (« Frappe du bourreau » sur l'allié le moins protégé, télégraphiée), (b) des **effets à purger vite** (un effet qui s'aggrave chaque seconde), (c) des **adds** ou un **second front** (deux cibles à protéger), (d) un **enrage plus tôt** pour les niveaux difficiles. Chacune est une nouvelle mécanique → nouveaux golden → votre accord.
+2. **Faut-il punir les morts alliées plus que par les étoiles ?** Aujourd'hui un allié K.O. ne coûte qu'une étoile ; il réduit aussi les dégâts. Une mort pourrait coûter du temps, de l'or, ou fermer une récompense.
+3. **Critiques, résistances, armure en %, esquive** : voulez-vous ces mécaniques (docs/MECANIQUES.md §1 les liste comme absentes) ? Elles enrichissent l'équipement mais exigent tout un rééquilibrage et des choix de conception.

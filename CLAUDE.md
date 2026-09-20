@@ -114,6 +114,12 @@ adopte un.
 
 ## Équilibrage et valeurs lisibles (OBLIGATOIRE)
 
+- **`docs/MECANIQUES.md`** décrit chaque règle, formule et valeur du jeu (et ce qui n'existe pas). **Toute modification de règle ou
+  de valeur le met à jour dans le même commit** ; une règle absente de ce fichier est considérée comme inexistante.
+- **Une borne d'équilibrage doit aussi punir les mauvais choix** : ne pas seulement mesurer le joueur de référence complet, mais
+  vérifier qu'une stratégie paresseuse (un seul sort, pas de bouclier ni de purge) échoue sur les boss avancés
+  (`StrategyDiversityTests`, D-050).
+
 - **`docs/EQUILIBRAGE.md`** définit l'équilibre (6 critères mesurables, profils de
   joueurs de référence, boutons de réglage, procédure). Le lire avant de toucher
   à `core/content/*.json`, à une règle de combat ou au bot de référence ;

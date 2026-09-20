@@ -128,7 +128,7 @@ namespace Healer.Combat.Tests
 
     public class AppScreenGateTests
     {
-        private static readonly UiAction[] Menu = { UiAction.MenuPlay, UiAction.MenuWorkshop, UiAction.MenuToggleSound, UiAction.MenuQuit };
+        private static readonly UiAction[] Menu = { UiAction.MenuPlay, UiAction.MenuWorkshop, UiAction.MenuSettings, UiAction.MenuToggleSound, UiAction.MenuQuit };
         private static readonly UiAction[] Levels = { UiAction.PickLevel, UiAction.BackToMenu };
 
         [Test]
@@ -176,7 +176,7 @@ namespace Healer.Combat.Tests
         public void Un_combat_en_arriere_plan_ne_capte_rien_hors_de_l_ecran_de_combat()
         {
             // Même si l'état du combat est « en cours », les cartes et sorts ne réagissent pas sous un menu.
-            foreach (var screen in new[] { AppScreen.MainMenu, AppScreen.LevelSelect, AppScreen.Workshop })
+            foreach (var screen in new[] { AppScreen.MainMenu, AppScreen.LevelSelect, AppScreen.Workshop, AppScreen.Settings })
                 foreach (var a in new[] { UiAction.TapAlly, UiAction.TapSkill, UiAction.TogglePause, UiAction.StartFight, UiAction.Restart })
                     Assert.That(InputGate.Allows(screen, ScreenState.Playing, a), Is.False, screen + " / " + a);
         }

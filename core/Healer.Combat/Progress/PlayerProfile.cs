@@ -15,7 +15,20 @@ namespace Healer.Combat.Progress
 
     public sealed class Settings
     {
+        public const int DefaultMusic = 60;
+        public const int DefaultSfx = 80;
+
+        /// <summary>Coupe tout le son (touche M, bouton du menu) sans perdre les volumes choisis.</summary>
         public bool Muted { get; set; }
+
+        /// <summary>Volume de la musique, 0 à 100 (par pas de 10).</summary>
+        public int MusicVolume { get; set; } = DefaultMusic;
+
+        /// <summary>Volume des effets sonores, 0 à 100 (par pas de 10).</summary>
+        public int SfxVolume { get; set; } = DefaultSfx;
+
+        /// <summary>Secousse de caméra : la désactiver aide les joueurs sensibles au mouvement.</summary>
+        public bool ScreenShake { get; set; } = true;
     }
 
     /// <summary>

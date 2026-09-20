@@ -130,6 +130,14 @@ namespace Healer.Client
             if (hp > 0) Fill(new Rect(bar.x, bar.y, Mathf.Max(8f, bar.width * (float)(hp / max)), bar.height), phase.Index > 0 ? Palette.Hex("FF6A3D") : Palette.Hex("D9455F"), 6);
             Outline(bar, new Color(0, 0, 0, 0.6f), 2, 6);
 
+            int enrage = b.GetEnrageLevel();
+            if (enrage > 0)
+            {
+                int pct = (int)((b.GetEnrageMultiplier() - 1) * 100 + 1e-6); // tronqué
+                float pulse = 0.75f + 0.25f * Mathf.Sin(Time.unscaledTime * 6f);
+                Text(new Rect(24, 14, 270, 30), $"ENRAGÉ  +{pct} %", Layout.Font.Strong, new Color(Palette.Danger.r, Palette.Danger.g, Palette.Danger.b, pulse), TextAnchor.MiddleLeft, true);
+            }
+
             var pause = R(Layout.PauseButton);
             Fill(pause, new Color(Panel.r, Panel.g, Panel.b, 0.85f), 8);
             Outline(pause, PanelStroke, 1.5f, 8);

@@ -29,6 +29,7 @@ documentation et la mécanique de test de la version Phaser.
 - `docs/UNITY_SETUP.md` : installation et choix du MCP.
 - `docs/ART_3D.md` : guide des modèles 3D « user friendly ».
 - `docs/specs/README.md` : vision, epics, tickets. `docs/DECISIONS.md` : journal des décisions. `docs/REVUES.md` : registre des revues.
+- `docs/MECANIQUES.md` : **référence complète des mécaniques** (formules, valeurs, sorts, effets, boss, progression, et ce qui n'existe pas : critiques, résistances, armure en %…).
 - `docs/EQUILIBRAGE.md`, `docs/UX.md`, `docs/PATTERNS_JEU_VIDEO.md` : équilibre, UX, patterns (repris de la version Phaser).
 
 ## Commandes

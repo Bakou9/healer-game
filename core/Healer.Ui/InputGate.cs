@@ -18,6 +18,8 @@ namespace Healer.Ui
         LevelSelect,
         /// <summary>Atelier : équipement et talents achetés avec l'or.</summary>
         Workshop,
+        /// <summary>Réglages : volumes et confort.</summary>
+        Settings,
         Battle,
     }
 
@@ -35,6 +37,7 @@ namespace Healer.Ui
         // Menu principal
         MenuPlay,
         MenuWorkshop,
+        MenuSettings,
         MenuToggleSound,
         MenuQuit,
         // Choix du niveau
@@ -43,6 +46,8 @@ namespace Healer.Ui
         // Atelier
         BuyEquipment,
         PickTalent,
+        // Réglages
+        AdjustSetting,
     }
 
     /// <summary>
@@ -78,7 +83,9 @@ namespace Healer.Ui
             switch (screen)
             {
                 case AppScreen.MainMenu:
-                    return action == UiAction.MenuPlay || action == UiAction.MenuWorkshop || action == UiAction.MenuToggleSound || action == UiAction.MenuQuit;
+                    return action == UiAction.MenuPlay || action == UiAction.MenuWorkshop || action == UiAction.MenuSettings || action == UiAction.MenuToggleSound || action == UiAction.MenuQuit;
+                case AppScreen.Settings:
+                    return action == UiAction.AdjustSetting || action == UiAction.BackToMenu;
                 case AppScreen.Workshop:
                     return action == UiAction.BuyEquipment || action == UiAction.PickTalent || action == UiAction.BackToMenu;
                 case AppScreen.LevelSelect:

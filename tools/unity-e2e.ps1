@@ -8,11 +8,12 @@
 #   E : menu de pause -> « Quitter le niveau » -> retour au choix du niveau -> retour au menu
 #   F : atelier -> acheter de l'équipement, choisir et changer un talent, or insuffisant, palier verrouillé,
 #       sauvegarde sur disque, relance : l'équipement et le talent sont appliqués au combat
+#   H : le Seigneur de Cendre s'enrage si le combat s'éternise (l'enrage est un réglage du boss)
 #   G : maintenir un sort (souris puis clavier) l'enchaîne ; re-toucher un allié ne le désélectionne pas
 # Toutes les parties utilisent un dossier de sauvegarde temporaire : la vraie sauvegarde n'est jamais touchée.
 # À lancer quand personne n'utilise souris ni clavier. Code de sortie 1 si une vérification échoue.
-# Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E|F|G]
-param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G")][string]$Scenario = "all")
+# Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E|F|G|H]
+param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G","H")][string]$Scenario = "all")
 $ErrorActionPreference = "Stop"
 Add-Type @"
 using System;
@@ -282,6 +283,23 @@ Check ($mouseCasts -ge 3) "maintenir le sort à la souris 5 s l'enchaîne (lance
 Check ($mouseCasts -le 6) "la recharge est respectée (lancers : $mouseCasts, au plus 6 en 5 s)"
 Check (($totalCasts - $mouseCasts) -ge 2) "maintenir la touche 4 s l'enchaîne aussi (lancers supplémentaires : $($totalCasts - $mouseCasts))"
 Expect $g2 "geste : sort heal_single → Cast \(cible tank\)" "le sort maintenu vise la cible sélectionnée"
+}
+
+# ---- Scénario H -----------------------------------------------------------------------------
+if (Want "H") {
+Write-Output "Scénario H : le Seigneur de Cendre s'enrage, le Golem (tutoriel) jamais"
+Start-Game @("-healer-timescale", "40", "-healer-level", "l3", "-healer-profile-dir", (New-ProfileDir "H"))
+Press 0x39 "Espace (jouer)"
+Start-Sleep -Seconds 6
+Stop-Game
+$h1 = Log
+Expect $h1 "état : boss enragé palier 1 .\+5 %." "le palier 1 d'enrage arrive (+5 %)"
+Start-Game @("-healer-timescale", "40", "-healer-level", "l1", "-healer-profile-dir", (New-ProfileDir "H2"))
+Press 0x39 "Espace (jouer)"
+Start-Sleep -Seconds 6
+Stop-Game
+$h2 = Log
+Forbid $h2 "boss enragé" "le Golem, boss tutoriel, ne s'enrage jamais"
 }
 
 if ($failures.Count -gt 0) { Write-Output ""; Write-Output "$($failures.Count) vérification(s) en échec."; exit 1 }

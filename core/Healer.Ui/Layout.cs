@@ -106,10 +106,11 @@ namespace Healer.Ui
         // ---- Autres écrans (menu principal, choix du niveau, fin de combat, pause) ----
 
         /// <summary>Boutons du menu principal, empilés au centre : Jouer, Son, Quitter.</summary>
-        public static readonly Rect MenuPlay = new Rect(GameW / 2 - 160, 290, 320, 64);
-        public static readonly Rect MenuWorkshop = new Rect(GameW / 2 - 160, 370, 320, 56);
-        public static readonly Rect MenuSound = new Rect(GameW / 2 - 160, 442, 320, 56);
-        public static readonly Rect MenuQuit = new Rect(GameW / 2 - 160, 514, 320, 56);
+        public static readonly Rect MenuPlay = new Rect(GameW / 2 - 160, 270, 320, 64);
+        public static readonly Rect MenuWorkshop = new Rect(GameW / 2 - 160, 346, 320, 56);
+        public static readonly Rect MenuSettings = new Rect(GameW / 2 - 160, 414, 320, 56);
+        public static readonly Rect MenuSound = new Rect(GameW / 2 - 160, 482, 320, 56);
+        public static readonly Rect MenuQuit = new Rect(GameW / 2 - 160, 550, 320, 56);
 
         /// <summary>Bouton « retour » en haut à gauche des écrans secondaires.</summary>
         public static readonly Rect BackButton = new Rect(SafeSide, SafeTop, 150, MinTouch);
@@ -172,6 +173,21 @@ namespace Healer.Ui
         /// <summary>Bilan de combat : statistiques à gauche, dégâts infligés par membre à droite.</summary>
         public static readonly Rect EndStatsPanel = new Rect(100, 170, 500, 236);
         public static readonly Rect EndDamagePanel = new Rect(620, 170, 560, 236);
+
+        // ---- Réglages : une rangée par réglage (volumes par − et +, secousse par un interrupteur) ----
+
+        public const int SettingsRows = 3;
+
+        /// <summary>Rangée d'un réglage (libellé à gauche, commandes à droite).</summary>
+        public static Rect SettingsRow(int index) => new Rect(GameW / 2 - 320, 160 + index * 96, 640, 80);
+
+        /// <summary>Bouton « − » (ou l'interrupteur entier pour un réglage à deux états) d'une rangée.</summary>
+        public static Rect SettingsMinus(int index) => new Rect(SettingsRow(index).Right - 300, SettingsRow(index).Y + 16, 64, 48);
+
+        /// <summary>Barre de niveau au centre de la rangée.</summary>
+        public static Rect SettingsBar(int index) => new Rect(SettingsRow(index).Right - 228, SettingsRow(index).Y + 28, 148, 24);
+
+        public static Rect SettingsPlus(int index) => new Rect(SettingsRow(index).Right - 72, SettingsRow(index).Y + 16, 64, 48);
 
         public const double EndButtonW = 220;
 

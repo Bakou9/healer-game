@@ -209,3 +209,29 @@ Joueur de référence : bot attentif (500 ms), 100 combats. Mesure : PV minimum 
 **Limite connue** : le bot de référence utilise peu le Soin de zone ; la valeur d'Onde de vie repose sur son usage réel, à valider avec un vrai joueur. Les talents dépendent du bot : à réajuster si le bot évolue.
 
 **Économie** : premier niveau d'équipement (50 or) dès la première victoire (100 or) ; équipement complet 4 720 or, talents 950 or, soit ~20 parcours complets de la campagne (rejouer : 50 / 80 / 120 or) au-delà des premières victoires (740 or au maximum).
+
+
+## 11. Stratégies limitées et enrage (D-050)
+
+**Défaut constaté** : les bornes du §2 et du §4 mesuraient le bot complet (bouclier, purge, soins). Un joueur humain qui n'utilise que le soin de zone gagnait le dernier boss sans y penser : rien ne l'en empêchait. Les bornes ne parlaient que de « l'équipe survit-elle avec un bon joueur », jamais de « un mauvais choix est-il puni ».
+
+**Nouveaux profils de référence** (`ZMesureStrategies.Limited`, décision toutes les 500 ms) :
+- **zone seul (< 75 %)** : soin de zone dès qu'un allié est sous 75 % et que le sort est prêt ; rien d'autre ;
+- **paresseux** : soin de zone ou soin simple selon les blessés, **jamais de bouclier ni de purge**.
+
+**Bornes ajoutées** (`StrategyDiversityTests`, pour tout boss sauf le premier, tutoriel) :
+- le soin de zone seul gagne ≤ 75 % des combats ;
+- le profil paresseux perd un allié dans ≥ 25 % des combats ;
+- l'écart de morts paresseux − attentif ≥ 15 points ;
+- le dernier boss perd ≥ 25 % des combats en soin de zone seul.
+
+| Boss (100 combats) | soin de zone seul | paresseux : allié K.O. | attentif : PV min. |
+|---|---|---|---|
+| Golem (exempté) | 100 % de victoires | 2 % | 0,28 |
+| Reine des Marais | 70 % | 59 % | 0,31 |
+| Seigneur de Cendre (avant) | 84 % | 7 % | 0,35 |
+| Seigneur de Cendre (après, avec enrage) | 53 % | 39 % | 0,26 |
+
+**Enrage** : mécanique générique (données : `afterMs`, `everyMs`, `pct`). Choix de la valeur par balayage de paramètres avec les contraintes du §4 **plus** celles ci-dessus. Deux constats : accélérer simplement le boss fait basculer le jeu d'un coup (un joueur attentif perd trop d'alliés) ; l'enrage, lui, punit précisément les combats qui s'éternisent, donc les stratégies lentes ou passives, sans toucher au joueur attentif qui finit à 102-114 s.
+
+**Limite** : le bot attentif meurt dans 10 % des combats sur ce boss (exactement la borne). Durcir davantage exige de nouvelles mécaniques (attaques ciblées sur un allié précis, purges plus urgentes…), pas seulement des chiffres.
