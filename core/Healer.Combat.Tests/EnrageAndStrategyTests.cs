@@ -230,5 +230,22 @@ namespace Healer.Combat.Tests
             double LazyLoss(string b) => 1 - Play(b, "zone", x => ZMesureStrategies.Limited(x, new[] { "heal_aoe" }, 0.75)).win;
             Assert.That(LazyLoss(ids.Last()), Is.GreaterThanOrEqualTo(0.25), "au moins 25 % de défaites en soin de zone seul");
         }
+
+        // Retour de playtest (D-056) : « il suffit de spammer le Soin de zone, avec quelques purges ». Cette stratégie
+        // n'était couverte par aucune borne (zone seul = sans purge ; paresseux = sans purge non plus).
+        [TestCaseSource(nameof(AdvancedBosses))]
+        public void Le_soin_de_zone_en_boucle_avec_des_purges_ne_suffit_pas_a_gagner_presque_tout_le_temps(string boss)
+        {
+            var spam = Play(boss, "zone-boucle-purge", b => ZMesureSpamZone.ZoneSpam(b, true));
+            Assert.That(spam.win, Is.LessThanOrEqualTo(0.60), $"{boss} : le soin de zone en boucle avec purges gagne {spam.win:0%} des combats");
+        }
+
+        [Test]
+        public void Le_dernier_boss_punit_nettement_le_soin_de_zone_en_boucle_avec_purges()
+        {
+            var last = AdvancedBosses().Last();
+            var spam = Play(last, "zone-boucle-purge", b => ZMesureSpamZone.ZoneSpam(b, true));
+            Assert.That(spam.win, Is.LessThanOrEqualTo(0.40), $"{last} : {spam.win:0%} de victoires");
+        }
     }
 }

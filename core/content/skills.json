@@ -13,10 +13,10 @@
     "id": "heal_aoe",
     "name": "Soin de zone",
     "description": "Soigne tous les alliés vivants de {heal} PV, mais coûteux et lent à recharger.",
-    "manaCost": 45,
+    "manaCost": 60,
     "cooldownMs": 5000,
     "target": "all",
-    "healAmount": 160
+    "healAmount": 140
   },
   {
     "id": "shield",

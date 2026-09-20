@@ -264,7 +264,7 @@ namespace Healer.Combat.Tests
         public void Le_jeu_de_base_sans_amelioration_garde_ses_mesures_de_reference()
         {
             // Filet : ajouter des améliorations ne doit jamais changer le combat de base.
-            Assert.That(Measure("boss1", new Loadout()).Pv, Is.EqualTo(0.32).Within(0.03));
+            Assert.That(Measure("boss1", new Loadout()).Pv, Is.EqualTo(0.28).Within(0.03));
             Assert.That(Measure("boss1", new Loadout()).Win, Is.EqualTo(1.0));
         }
     }

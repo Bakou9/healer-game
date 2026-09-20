@@ -262,3 +262,23 @@ retrouvées) et une attaque un peu plus forte, réglées ensemble par balayage s
 valeurs finales sont dans un intervalle étroit. Reine des Marais : 10 % d'allié K.O., exactement la borne.
 
 **Non rééquilibré** : talents et équipement (§10) n'utilisent pas encore critique, esquive ni armure ; ils passent leurs bornes, mesurées avec les nouveaux boss.
+
+## 13. Soin de zone en boucle (retour de playtest, D-056)
+
+**Défaut constaté** : « il suffit de spammer le Soin de zone et je gagne beaucoup de combats (modulo quelques purges) ». Les bornes du §11 couvraient « zone seul » et « paresseux » (tous deux sans purge), jamais **zone en boucle + purge** : le profil de `ZMesureSpamZone.ZoneSpam` (Soin de zone dès qu'il est prêt, sans regarder les PV ; purge dès qu'un allié est touché ; ni Soin ciblé ni Bouclier).
+
+**Mesure avant** (200 combats) : Golem 94 %, Reine 80 %, Seigneur 89 % de victoires. Le joueur attentif ne l'utilise presque pas (Soin ciblé, Soin de zone si ≥ 2 blessés) : il est donc peu touché par un durcissement du Soin de zone.
+
+**Balayage** (`ZMesureSpamZone.Varier_le_soin_de_zone`, 100 combats, soin / mana / recharge) : coût 60 seul → 6 / 57 / 53 % ; **140 / 60 / 5 s → 1 / 51 / 24 %** ; 130 / 60 / 5 s → 1 / 45 / 17 % ; une incantation sur le Soin de zone ne l'affaiblit pas (le spam gagne 87-100 %, il n'a pas besoin d'esquiver). Choix de l'utilisateur : **140 / 60 / 5 s**.
+
+**Bornes ajoutées** (`StrategyDiversityTests`, boss avancés) : zone en boucle + purges gagne ≤ 60 % ; ≤ 40 % sur le dernier boss.
+
+| 100 combats | avant | après |
+|---|---|---|
+| zone en boucle + purges : Golem / Reine / Seigneur | 94 / 80 / 89 % | 1 / 51 / 24 % |
+| attentif Golem : PV minimum | 0,32 | 0,28 |
+| lent Golem : PV minimum ; allié K.O. | 0,19 ; ~15 % | 0,13 ; 25 % |
+| sans purge Golem : PV minimum | 0,24 | 0,18 |
+| attentif Reine / Seigneur | inchangé | inchangé (0,29 / 0,30 ; K.O. 10 % / 6-7 %) |
+
+**Limite** : la Reine des Marais reste à ~50 % pour ce profil quel que soit le chiffre (son poison se règle à la purge). Durcir davantage demande des mécaniques (D-056, suite) : attaques qui visent un allié précis, effets qu'un soin de zone ne règle pas.

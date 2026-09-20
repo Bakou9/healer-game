@@ -120,7 +120,7 @@ impossible (mana insuffisant, recharge en cours, incantation déjà en cours) es
 | Sort | Mana | Incantation | Recharge | Cible | Effet de base |
 |---|---|---|---|---|---|
 | Soin (`heal_single`) | 18 | **1 s** | **aucune** | 1 allié | +170 PV |
-| Soin de zone (`heal_aoe`) | 45 | instantané | 5 s | tous les vivants | +160 PV chacun |
+| Soin de zone (`heal_aoe`) | 60 | instantané | 5 s | tous les vivants | +140 PV chacun |
 | Bouclier (`shield`) | 28 | instantané | 7 s | 1 allié | +260 de bouclier |
 | Purge (`purge`) | 12 | instantané | 5 s | 1 allié | retire **tous** les effets négatifs de la cible |
 

@@ -235,7 +235,7 @@ namespace Healer.Combat.Tests
             var l = new Loadout(); l.Equipment["healer_weapon"] = 5;
             var (_, sk) = Apply(l);
             Assert.That(Sk(sk, "heal_single").HealAmount, Is.EqualTo(Math.Floor(170 * 1.20 + 0.5)));
-            Assert.That(Sk(sk, "heal_aoe").HealAmount, Is.EqualTo(Math.Floor(160 * 1.20 + 0.5)));
+            Assert.That(Sk(sk, "heal_aoe").HealAmount, Is.EqualTo(Math.Floor(140 * 1.20 + 0.5)));
             Assert.That(Sk(sk, "shield").ShieldAmount, Is.EqualTo(260));
         }
 
@@ -255,7 +255,7 @@ namespace Healer.Combat.Tests
             var (_, sk) = Apply(l);
             Assert.That(Sk(sk, "heal_single").HealAmount, Is.EqualTo(Math.Floor(170 * 1.30 + 0.5)));
             Assert.That(Sk(sk, "heal_single").ManaCost, Is.EqualTo(Math.Floor(18 * 0.85 + 0.5)));
-            Assert.That(Sk(sk, "heal_aoe").ManaCost, Is.EqualTo(45), "les autres sorts ne changent pas");
+            Assert.That(Sk(sk, "heal_aoe").ManaCost, Is.EqualTo(60), "les autres sorts ne changent pas");
         }
 
         [Test]
@@ -264,7 +264,7 @@ namespace Healer.Combat.Tests
             var l = new Loadout(); l.Talents[1] = "thrifty";
             var (_, sk) = Apply(l);
             Assert.That(Sk(sk, "heal_single").ManaCost, Is.EqualTo(Math.Floor(18 * 0.91 + 0.5)));
-            Assert.That(Sk(sk, "heal_aoe").ManaCost, Is.EqualTo(Math.Floor(45 * 0.91 + 0.5)));
+            Assert.That(Sk(sk, "heal_aoe").ManaCost, Is.EqualTo(Math.Floor(60 * 0.91 + 0.5)));
             Assert.That(Sk(sk, "shield").ManaCost, Is.EqualTo(Math.Floor(28 * 0.91 + 0.5)));
             Assert.That(Sk(sk, "purge").ManaCost, Is.EqualTo(Math.Floor(12 * 0.91 + 0.5)));
         }

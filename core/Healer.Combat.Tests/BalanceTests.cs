@@ -110,9 +110,9 @@ namespace Healer.Combat.Tests
             // Mesures de référence du jeu ACTUEL (docs/EQUILIBRAGE.md §12, D-052). Elles ne sont plus celles de la version Phaser :
             // critiques, résistances, armure en %, esquive, menace et incantation ont volontairement déplacé l'équilibre.
             Assert.That(_attentive.WinRate, Is.EqualTo(1.0));
-            Assert.That(_attentive.AvgLowestHp, Is.EqualTo(0.32).Within(0.03));
-            Assert.That(_slow.AvgLowestHp, Is.EqualTo(0.19).Within(0.04));
-            Assert.That(_noPurge.AvgLowestHp, Is.EqualTo(0.24).Within(0.04));
+            Assert.That(_attentive.AvgLowestHp, Is.EqualTo(0.28).Within(0.03));
+            Assert.That(_slow.AvgLowestHp, Is.EqualTo(0.13).Within(0.04));
+            Assert.That(_noPurge.AvgLowestHp, Is.EqualTo(0.18).Within(0.04));
         }
     }
 }

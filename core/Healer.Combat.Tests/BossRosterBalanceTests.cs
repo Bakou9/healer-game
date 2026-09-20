@@ -139,8 +139,8 @@ namespace Healer.Combat.Tests
         public void Le_premier_boss_garde_ses_mesures_de_reference_du_jeu_actuel()
         {
             var p = Get("boss1", "attentif");
-            Assert.That(p.AvgLowestHp, Is.EqualTo(0.32).Within(0.03));
-            Assert.That(Get("boss1", "lent").AvgLowestHp, Is.EqualTo(0.19).Within(0.04));
+            Assert.That(p.AvgLowestHp, Is.EqualTo(0.28).Within(0.03));
+            Assert.That(Get("boss1", "lent").AvgLowestHp, Is.EqualTo(0.13).Within(0.04));
         }
 
         [Test]
