@@ -19,6 +19,11 @@ namespace Healer.Client
         public BattleController Ctl { get; private set; } = null!;
         public RewardResult? LastReward { get; private set; }
 
+        /// <summary>Dernier message de l'atelier (achat réussi, or insuffisant…) et l'instant où il s'efface.</summary>
+        public string Notice { get; private set; } = "";
+        public float NoticeUntil { get; private set; }
+        public bool NoticeIsError { get; private set; }
+
         private ProfileStorage _storage = null!;
         private BattleStage _stage = null!;
 
@@ -48,6 +53,66 @@ namespace Healer.Client
             if (Nav.OpenLevelSelect()) Debug.Log("[Healer] écran : choix du niveau");
         }
 
+        public void OpenWorkshop()
+        {
+            if (Nav.OpenWorkshop()) Debug.Log("[Healer] écran : atelier");
+        }
+
+        private void SetNotice(string text, bool error)
+        {
+            Notice = text;
+            NoticeIsError = error;
+            NoticeUntil = Time.realtimeSinceStartup + 3f;
+        }
+
+        public void BuyEquipment(string trackId)
+        {
+            var track = Content.Upgrades.Track(trackId);
+            var result = Workshop.BuyEquipment(Profile, Content, trackId);
+            if (result == PurchaseResult.Ok)
+            {
+                int level = Profile.Loadout.LevelOf(trackId);
+                Debug.Log($"[Healer] atelier : achat {trackId} niveau {level}");
+                SetNotice($"Acheté : {track?.Name} (niveau {level})", false);
+                _storage.Save(Profile);
+            }
+            else
+            {
+                Debug.Log($"[Healer] atelier : refus {trackId} ({result})");
+                SetNotice(Explain(result), true);
+            }
+        }
+
+        public void PickTalent(int tier, string optionId)
+        {
+            bool alreadyBought = Profile.Loadout.Talents.ContainsKey(tier);
+            var result = Workshop.PickTalent(Profile, Content, tier, optionId);
+            if (result == PurchaseResult.Ok)
+            {
+                var name = Content.Upgrades.Tier(tier)?.Options.Find(o => o.Id == optionId)?.Name;
+                Debug.Log($"[Healer] atelier : talent {tier} {optionId}");
+                SetNotice((alreadyBought ? "Talent changé : " : "Talent acquis : ") + name, false);
+                _storage.Save(Profile);
+            }
+            else
+            {
+                Debug.Log($"[Healer] atelier : refus talent {tier} {optionId} ({result})");
+                SetNotice(Explain(result), true);
+            }
+        }
+
+        private static string Explain(PurchaseResult r)
+        {
+            switch (r)
+            {
+                case PurchaseResult.NotEnoughGold: return "Or insuffisant";
+                case PurchaseResult.MaxLevel: return "Niveau maximum atteint";
+                case PurchaseResult.NeedPreviousTier: return "Choisissez d'abord le palier précédent";
+                case PurchaseResult.Locked: return "Pas encore disponible";
+                default: return "Achat impossible";
+            }
+        }
+
         public void BackToMenu()
         {
             if (Nav.BackToMenu()) Debug.Log("[Healer] écran : menu principal");
@@ -71,7 +136,11 @@ namespace Healer.Client
         private void Begin(LevelDef level)
         {
             LastReward = null;
-            Ctl.StartLevel(Content, level, Profile.OwnedCharacters, (uint)(Environment.TickCount & 0x7fffffff));
+            Ctl.StartLevel(Content, level, Profile.OwnedCharacters, Profile.Loadout, (uint)(Environment.TickCount & 0x7fffffff));
+            var (team, skills) = LoadoutApplier.Apply(Content.Upgrades, Profile.Loadout, Content.Characters, Content.Skills);
+            var tank = team.Find(c => c.Id == "tank");
+            var heal = skills.Find(s => s.Id == "heal_single");
+            Debug.Log($"[Healer] équipe : tank atk {tank?.Atk} PV {tank?.MaxHp} ; Soin {heal?.ManaCost} mana {heal?.HealAmount} PV");
             _stage.SetBoss(level.BossId);
             Debug.Log($"[Healer] niveau : {level.Id} ({level.Name})");
         }

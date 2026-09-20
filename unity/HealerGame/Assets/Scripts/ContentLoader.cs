@@ -31,7 +31,7 @@ namespace Healer.Client
 #endif
             string levels = Read("levels.json");
             var bosses = GameContent.LevelBossIds(levels).Select(id => Read(id + ".json")).ToList();
-            return GameContent.FromJson(Read("characters.json"), Read("skills.json"), Read("effects.json"), bosses, levels);
+            return GameContent.FromJson(Read("characters.json"), Read("skills.json"), Read("effects.json"), bosses, levels, Read("upgrades.json"));
         }
     }
 }

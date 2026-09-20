@@ -19,6 +19,8 @@ namespace Healer.Client
     ///   -healer-autoplay        le bot de référence joue le soin (tests de bout en bout)
     ///   -healer-profile-dir D   dossier de la sauvegarde (par défaut : dossier de données du jeu)
     ///   -healer-progress l1:3,l2:2   précharge une progression (captures)
+    ///   -healer-gold 400        ajoute de l'or au profil (tests de l'atelier)
+    ///   -healer-equip tank_weapon:3,t1:quick_heal   précharge équipement et talents (captures)
     /// Avec -healer-shots, la sauvegarde va dans un dossier temporaire : on ne touche jamais à la vraie.
     /// </summary>
     public sealed class GameBootstrap : MonoBehaviour
@@ -35,6 +37,8 @@ namespace Healer.Client
             var storage = new ProfileStorage(profileDir);
             var profile = shots != null && Arg("-healer-profile-dir") == null ? PlayerProfile.NewGame(content) : storage.Load(content);
             ApplyProgress(profile, content, Arg("-healer-progress"));
+            if (int.TryParse(Arg("-healer-gold"), out int gold) && gold > 0) profile.Wallet.Grant(Wallet.Gold, gold, "option de test");
+            ApplyEquip(profile, content, Arg("-healer-equip"));
 
             var cam = Camera.main;
             if (cam == null)
@@ -45,7 +49,7 @@ namespace Healer.Client
             }
 
             var controller = gameObject.AddComponent<BattleController>();
-            controller.StartLevel(content, content.Levels[0], profile.OwnedCharacters, (uint)(Environment.TickCount & 0x7fffffff));
+            controller.StartLevel(content, content.Levels[0], profile.OwnedCharacters, profile.Loadout, (uint)(Environment.TickCount & 0x7fffffff));
             var stage = gameObject.AddComponent<BattleStage>();
             stage.Build(cam, controller);
             var flow = gameObject.AddComponent<GameFlow>();
@@ -66,9 +70,10 @@ namespace Healer.Client
                 string dir = Arg("-healer-out") ?? Path.Combine(Application.persistentDataPath, "captures");
                 Directory.CreateDirectory(dir);
                 string? screen = Arg("-healer-screen");
-                if (screen == "menu" || screen == "levels")
+                if (screen == "menu" || screen == "levels" || screen == "workshop")
                 {
                     if (screen == "levels") flow.OpenLevels();
+                    if (screen == "workshop") flow.OpenWorkshop();
                     StartCoroutine(RealtimeCaptureRoutine(seconds, dir));
                     return;
                 }
@@ -91,6 +96,20 @@ namespace Healer.Client
                 var kv = part.Split(':');
                 if (kv.Length != 2 || !int.TryParse(kv[1], out int stars)) continue;
                 profile.Levels[kv[0]] = new LevelRecord { Completed = true, BestStars = stars, BestTimeMs = 85000, Clears = 2 };
+            }
+            profile.Repair(content);
+        }
+
+        /// <summary>Précharge équipement et talents : « tank_weapon:3,t1:quick_heal » (captures uniquement).</summary>
+        private static void ApplyEquip(PlayerProfile profile, Healer.Combat.GameContent content, string? spec)
+        {
+            if (string.IsNullOrEmpty(spec)) return;
+            foreach (var part in spec.Split(','))
+            {
+                var kv = part.Split(':');
+                if (kv.Length != 2) continue;
+                if (kv[0].StartsWith("t") && int.TryParse(kv[0].Substring(1), out int tier)) profile.Loadout.Talents[tier] = kv[1];
+                else if (int.TryParse(kv[1], out int level)) profile.Loadout.Equipment[kv[0]] = level;
             }
             profile.Repair(content);
         }

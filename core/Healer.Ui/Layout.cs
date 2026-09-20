@@ -106,9 +106,10 @@ namespace Healer.Ui
         // ---- Autres écrans (menu principal, choix du niveau, fin de combat, pause) ----
 
         /// <summary>Boutons du menu principal, empilés au centre : Jouer, Son, Quitter.</summary>
-        public static readonly Rect MenuPlay = new Rect(GameW / 2 - 160, 330, 320, 64);
-        public static readonly Rect MenuSound = new Rect(GameW / 2 - 160, 410, 320, 56);
-        public static readonly Rect MenuQuit = new Rect(GameW / 2 - 160, 482, 320, 56);
+        public static readonly Rect MenuPlay = new Rect(GameW / 2 - 160, 290, 320, 64);
+        public static readonly Rect MenuWorkshop = new Rect(GameW / 2 - 160, 370, 320, 56);
+        public static readonly Rect MenuSound = new Rect(GameW / 2 - 160, 442, 320, 56);
+        public static readonly Rect MenuQuit = new Rect(GameW / 2 - 160, 514, 320, 56);
 
         /// <summary>Bouton « retour » en haut à gauche des écrans secondaires.</summary>
         public static readonly Rect BackButton = new Rect(SafeSide, SafeTop, 150, MinTouch);
@@ -126,6 +127,46 @@ namespace Healer.Ui
             var result = new Rect[count];
             for (int i = 0; i < count; i++) result[i] = new Rect(x0 + i * (w + 28), 150, w, LevelCardH);
             return result;
+        }
+
+        // ---- Atelier : équipement à gauche (une carte par piste), talents à droite (trois paliers de deux options) ----
+
+        /// <summary>Panneau d'équipement (deux colonnes de cartes).</summary>
+        public static readonly Rect WorkshopEquipment = new Rect(SafeSide, 84, 760, 588);
+
+        /// <summary>Panneau de talents (un palier par ligne, deux options côte à côte).</summary>
+        public static readonly Rect WorkshopTalents = new Rect(SafeSide + 760 + SafeSide, 84, GameW - 2 * SafeSide - 760 - SafeSide, 588);
+
+        /// <summary>Cartes de pistes d'équipement : deux colonnes, remplies ligne par ligne.</summary>
+        public static Rect[] WorkshopEquipmentCards(int count)
+        {
+            int rows = Math.Max(1, (count + 1) / 2);
+            double w = (WorkshopEquipment.W - Gap) / 2;
+            double h = (WorkshopEquipment.H - Gap * (rows - 1)) / rows;
+            var result = new Rect[count];
+            for (int i = 0; i < count; i++)
+                result[i] = new Rect(WorkshopEquipment.X + (i % 2) * (w + Gap), WorkshopEquipment.Y + (i / 2) * (h + Gap), w, h);
+            return result;
+        }
+
+        /// <summary>Bouton « Acheter » d'une carte d'équipement, en haut à droite (cible tactile ≥ 48 px).</summary>
+        public static Rect WorkshopBuyButton(Rect card) => new Rect(card.Right - 128, card.Y + 12, 116, MinTouch);
+
+        private const double TalentHeaderH = 34;
+
+        /// <summary>Zone d'un palier de talent (titre + deux options).</summary>
+        public static Rect WorkshopTalentTier(int index, int tierCount)
+        {
+            double h = (WorkshopTalents.H - Gap * (tierCount - 1)) / tierCount;
+            return new Rect(WorkshopTalents.X, WorkshopTalents.Y + index * (h + Gap), WorkshopTalents.W, h);
+        }
+
+        /// <summary>Option (0 ou 1) d'un palier : deux cartes côte à côte sous le titre du palier.</summary>
+        public static Rect WorkshopTalentOption(int index, int tierCount, int option)
+        {
+            var tier = WorkshopTalentTier(index, tierCount);
+            double w = (tier.W - Gap) / 2;
+            return new Rect(tier.X + option * (w + Gap), tier.Y + TalentHeaderH, w, tier.H - TalentHeaderH);
         }
 
         public const double EndButtonW = 220;

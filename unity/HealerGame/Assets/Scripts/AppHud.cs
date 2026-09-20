@@ -32,8 +32,9 @@ namespace Healer.Client
             GUI.matrix = Matrix4x4.TRS(new Vector3(ScreenMap.OffsetX, ScreenMap.OffsetY, 0), Quaternion.identity, new Vector3(ScreenMap.Scale, ScreenMap.Scale, 1));
             UiKit.Fill(new Rect(-2000, -2000, 5000, 5000), new Color(0.03f, 0.04f, 0.09f, 0.72f), 0);
             if (_flow.Screen == AppScreen.MainMenu) DrawMenu();
+            else if (_flow.Screen == AppScreen.Workshop) DrawWorkshop();
             else DrawLevels();
-            DrawFooter();
+            if (_flow.Screen != AppScreen.Workshop) DrawFooter();
             GUI.matrix = previous;
         }
 
@@ -48,6 +49,10 @@ namespace Healer.Client
             var play = R(Layout.MenuPlay);
             UiKit.Button(play, "Jouer", 30, Palette.Hex("245C43"), Palette.Hex("5FB98D"));
             if (Hit(play, UiAction.MenuPlay)) _flow.OpenLevels();
+
+            var workshop = R(Layout.MenuWorkshop);
+            UiKit.Button(workshop, "Atelier", Layout.Font.Title, Palette.Hex("22273B"), UiKit.Gold);
+            if (Hit(workshop, UiAction.MenuWorkshop)) _flow.OpenWorkshop();
 
             var sound = R(Layout.MenuSound);
             UiKit.Button(sound, _flow.Profile.Settings.Muted ? "Son : coupé" : "Son : activé", Layout.Font.Title, Palette.Hex("22273B"), Palette.Hex("6F7698"));
@@ -65,6 +70,129 @@ namespace Healer.Client
 
         /// <summary>Un bouton « Quitter » n'a de sens que sur PC (les téléphones ferment l'application autrement).</summary>
         private static bool CanQuit => Application.platform != RuntimePlatform.Android && Application.platform != RuntimePlatform.IPhonePlayer;
+
+        // ---- Atelier ------------------------------------------------------------------------------
+
+        private static string StatName(string stat)
+        {
+            switch (stat)
+            {
+                case "maxHp": return "PV";
+                case "atk": return "attaque";
+                case "def": return "défense";
+                case "maxMana": return "mana max";
+                case "manaRegen": return "régénération de mana";
+                default: return stat;
+            }
+        }
+
+        private static string FieldName(string field)
+        {
+            switch (field)
+            {
+                case "healAmount": return "de soin";
+                case "shieldAmount": return "de bouclier";
+                case "manaCost": return "de coût en mana";
+                case "cooldownMs": return "de recharge";
+                default: return field;
+            }
+        }
+
+        /// <summary>« +4 % attaque », « +5 % de soin (Soin) » : décrit un effet à partir des données.</summary>
+        private string Describe(Healer.Combat.Progress.UpgradeEffect e, int times = 1)
+        {
+            int pct = e.Pct * times;
+            string sign = pct > 0 ? "+" : "";
+            if (e.Stat != null) return $"{sign}{pct} % {StatName(e.Stat)}";
+            string skill = e.Skill == "*" ? "tous les sorts" : _flow.Content.Skills.Find(s => s.Id == e.Skill)?.Name ?? e.Skill!;
+            return $"{sign}{pct} % {FieldName(e.Field!)} ({skill})";
+        }
+
+        private void DrawWorkshop()
+        {
+            float w = (float)Layout.GameW;
+            var content = _flow.Content;
+            var profile = _flow.Profile;
+            var catalog = content.Upgrades;
+            int gold = profile.Wallet.Balance(Wallet.Gold);
+
+            UiKit.Label(new Rect(0, 14, w, 44), "Atelier", 38, Color.white, TextAnchor.MiddleCenter, true);
+            UiKit.Label(new Rect(w - 300, 14, 288, 44), "Or : " + Format.Number(gold), Layout.Font.Strong, UiKit.Gold, TextAnchor.MiddleRight, true);
+            var back = R(Layout.BackButton);
+            UiKit.Button(back, "← Menu", Layout.Font.Body, Palette.Hex("22273B"), Palette.Hex("6F7698"));
+            if (Hit(back, UiAction.BackToMenu)) _flow.BackToMenu();
+
+            UiKit.Label(new Rect((float)Layout.WorkshopEquipment.X, 58, 300, 24), "Équipement", Layout.Font.Body, UiKit.Muted, TextAnchor.MiddleLeft, true);
+            UiKit.Label(new Rect((float)Layout.WorkshopTalents.X, 58, 400, 24), "Talents du soigneur (un choix par palier)", Layout.Font.Body, UiKit.Muted, TextAnchor.MiddleLeft, true);
+
+            // Équipement : une carte par piste.
+            var cards = Layout.WorkshopEquipmentCards(catalog.Equipment.Count);
+            for (int i = 0; i < catalog.Equipment.Count; i++)
+            {
+                var track = catalog.Equipment[i];
+                var r = R(cards[i]);
+                int level = profile.Loadout.LevelOf(track.Id);
+                bool maxed = level >= track.MaxLevel;
+                int cost = Workshop.NextCost(profile, track);
+                bool canBuy = !maxed && gold >= cost;
+                var character = content.Characters.Find(c => c.Id == track.CharacterId);
+                var accent = track.CharacterId == "tank" ? Palette.Tank : track.CharacterId == "healer" ? Palette.Healer : track.CharacterId == "dps2" ? Palette.Mage : Palette.Archer;
+
+                UiKit.Fill(r, new Color(UiKit.Panel.r, UiKit.Panel.g, UiKit.Panel.b, 0.94f), 10);
+                UiKit.Outline(r, maxed ? UiKit.Gold : UiKit.PanelStroke, maxed ? 2 : 1.5f, 10);
+                UiKit.Fill(new Rect(r.x + 8, r.y + 8, 6, r.height - 16), accent, 3);
+                UiKit.Label(new Rect(r.x + 24, r.y + 8, r.width - 160, 26), track.Name, Layout.Font.Strong, Color.white, TextAnchor.MiddleLeft, true);
+                UiKit.Label(new Rect(r.x + 24, r.y + 34, r.width - 160, 20), character?.Name ?? track.CharacterId, Layout.Font.Small, UiKit.Muted, TextAnchor.MiddleLeft);
+                for (int p = 0; p < track.MaxLevel; p++)
+                {
+                    var pip = new Rect(r.x + 26 + p * 24, r.y + 62, 18, 18);
+                    UiKit.Fill(pip, p < level ? UiKit.Gold : new Color(0.2f, 0.22f, 0.3f, 1f), 4);
+                }
+                string perLevel = "Par niveau : " + string.Join(", ", track.PerLevel.ConvertAll(e => Describe(e)));
+                float y = r.y + 88;
+                if (level > 0)
+                {
+                    UiKit.Label(new Rect(r.x + 24, y, r.width - 40, 20), "Actuel : " + string.Join(", ", track.PerLevel.ConvertAll(e => Describe(e, level))), Layout.Font.Small, UiKit.Selected, TextAnchor.MiddleLeft);
+                    y += 22;
+                }
+                if (!maxed) UiKit.Paragraph(new Rect(r.x + 24, y, r.width - 40, r.yMax - y - 4), perLevel, Layout.Font.Small, UiKit.Muted);
+
+                var buy = R(Layout.WorkshopBuyButton(cards[i]));
+                UiKit.Button(buy, maxed ? "Max" : Format.Number(cost) + " or", Layout.Font.Body,
+                    canBuy ? Palette.Hex("245C43") : Palette.Hex("1B1E2C"), canBuy ? Palette.Hex("5FB98D") : UiKit.PanelStroke, canBuy || maxed);
+                if (!maxed && Hit(buy, UiAction.BuyEquipment)) _flow.BuyEquipment(track.Id);
+            }
+
+            // Talents : trois paliers, deux options exclusives.
+            for (int i = 0; i < catalog.TalentTiers.Count; i++)
+            {
+                var tier = catalog.TalentTiers[i];
+                var tr = R(Layout.WorkshopTalentTier(i, catalog.TalentTiers.Count));
+                bool bought = profile.Loadout.Talents.TryGetValue(tier.Tier, out var chosen);
+                var availability = Workshop.TierAvailability(profile, content, tier.Tier);
+                bool open = bought || availability == PurchaseResult.Ok;
+                string status = bought ? "Acquis" : availability == PurchaseResult.Locked ? $"Il faut {tier.RequiresStars} étoiles (vous : {profile.TotalStars})" : availability == PurchaseResult.NeedPreviousTier ? "Choisissez d'abord le palier " + (tier.Tier - 1) : Format.Number(tier.Cost) + " or";
+                UiKit.Label(new Rect(tr.x, tr.y, tr.width, 30), $"Palier {tier.Tier}  ·  {status}", Layout.Font.Body, bought ? UiKit.Gold : (open ? Color.white : UiKit.Muted), TextAnchor.MiddleLeft, true);
+
+                for (int o = 0; o < tier.Options.Count; o++)
+                {
+                    var option = tier.Options[o];
+                    var r = R(Layout.WorkshopTalentOption(i, catalog.TalentTiers.Count, o));
+                    bool active = bought && chosen == option.Id;
+                    bool canPick = open && !active && (bought || gold >= tier.Cost);
+                    UiKit.Fill(r, new Color(UiKit.Panel.r, UiKit.Panel.g, UiKit.Panel.b, open ? 0.94f : 0.6f), 10);
+                    UiKit.Outline(r, active ? UiKit.Gold : (canPick ? Palette.Hex("6F7698") : UiKit.PanelStroke), active ? 3 : 1.5f, 10);
+                    UiKit.Label(new Rect(r.x + 12, r.y + 6, r.width - 24, 26), option.Name, Layout.Font.Strong, open ? Color.white : UiKit.Muted, TextAnchor.MiddleLeft, true);
+                    UiKit.Paragraph(new Rect(r.x + 12, r.y + 34, r.width - 24, r.height - 62), option.Description, Layout.Font.Small, open ? Palette.Hex("C9CDE0") : UiKit.Muted);
+                    string tag = active ? "Actif" : !open ? "Verrouillé" : bought ? "Changer (gratuit)" : (gold >= tier.Cost ? "Choisir" : "Or insuffisant");
+                    UiKit.Label(new Rect(r.x + 12, r.yMax - 28, r.width - 24, 22), tag, Layout.Font.Small, active ? UiKit.Gold : (canPick ? Palette.Heal : UiKit.Muted), TextAnchor.MiddleLeft, true);
+                    if (open && !active && Hit(r, UiAction.PickTalent)) _flow.PickTalent(tier.Tier, option.Id);
+                }
+            }
+
+            if (Time.realtimeSinceStartup < _flow.NoticeUntil)
+                UiKit.Label(new Rect(0, 678, w, 30), _flow.Notice, Layout.Font.Strong, _flow.NoticeIsError ? Palette.Damage : Palette.Heal, TextAnchor.MiddleCenter, true);
+        }
 
         // ---- Choix du niveau ---------------------------------------------------------------------
 

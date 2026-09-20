@@ -26,6 +26,7 @@ namespace Healer.Client
         private double _sinceDecisionMs;
         private Action? _unsubscribe;
         private List<string>? _owned;
+        private Healer.Combat.Progress.Loadout? _loadout;
 
         public bool Paused { get; private set; }
 
@@ -85,11 +86,12 @@ namespace Healer.Client
         public event Action? Restarted;
 
         /// <summary>Prépare un combat pour un niveau avec l'équipe possédée par le joueur ; il ne démarre qu'au « Jouer ».</summary>
-        public void StartLevel(GameContent content, LevelDef level, IEnumerable<string>? owned, uint seed)
+        public void StartLevel(GameContent content, LevelDef level, IEnumerable<string>? owned, Healer.Combat.Progress.Loadout? loadout, uint seed)
         {
             _content = content;
             Level = level;
             _owned = owned?.ToList();
+            _loadout = loadout?.Clone();
             Started = false;
             _pausedByFocus = false;
             StartBattle(seed);
@@ -102,7 +104,7 @@ namespace Healer.Client
         private void StartBattle(uint seed)
         {
             _unsubscribe?.Invoke();
-            _battle = new Battle(_content.CreateEncounter(Level!.BossId, seed, _owned));
+            _battle = new Battle(_content.CreateEncounter(Level!.BossId, seed, _owned, _loadout));
             Stats = new CombatStats();
             Stats.Attach(_battle);
             _stepper = new FixedStepper();

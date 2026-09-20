@@ -12,6 +12,7 @@ namespace Healer.Client
         public static readonly Color Gold = Palette.Hex("E8C25A");
 
         private static GUIStyle? _label;
+        private static GUIStyle? _paragraph;
         private static Texture2D? _star;
 
         public static void Fill(Rect r, Color c, float radius = 8f) =>
@@ -30,6 +31,18 @@ namespace Healer.Client
             GUI.Label(new Rect(r.x + 1.5f, r.y + 1.5f, r.width, r.height), s, _label);
             _label.normal.textColor = c;
             GUI.Label(r, s, _label);
+        }
+
+        /// <summary>Texte sur plusieurs lignes (retour à la ligne automatique dans le rectangle).</summary>
+        public static void Paragraph(Rect r, string s, int size, Color c, TextAnchor anchor = TextAnchor.UpperLeft)
+        {
+            _paragraph ??= new GUIStyle(GUI.skin.label) { wordWrap = true, clipping = TextClipping.Clip };
+            _paragraph.fontSize = size;
+            _paragraph.alignment = anchor;
+            _paragraph.normal.textColor = new Color(0, 0, 0, 0.7f);
+            GUI.Label(new Rect(r.x + 1.2f, r.y + 1.2f, r.width, r.height), s, _paragraph);
+            _paragraph.normal.textColor = c;
+            GUI.Label(r, s, _paragraph);
         }
 
         /// <summary>Bouton plein avec libellé centré ; renvoie sa zone pour la détection de clic.</summary>

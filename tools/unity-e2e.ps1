@@ -6,10 +6,12 @@
 #   D : victoire avec le bot -> étoiles, or, sauvegarde sur disque -> « Niveau suivant » -> relance du jeu :
 #       la progression est rechargée et le niveau 2 est jouable
 #   E : menu de pause -> « Quitter le niveau » -> retour au choix du niveau -> retour au menu
+#   F : atelier -> acheter de l'équipement, choisir et changer un talent, or insuffisant, palier verrouillé,
+#       sauvegarde sur disque, relance : l'équipement et le talent sont appliqués au combat
 # Toutes les parties utilisent un dossier de sauvegarde temporaire : la vraie sauvegarde n'est jamais touchée.
 # À lancer quand personne n'utilise souris ni clavier. Code de sortie 1 si une vérification échoue.
-# Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E]
-param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E")][string]$Scenario = "all")
+# Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E|F]
+param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F")][string]$Scenario = "all")
 $ErrorActionPreference = "Stop"
 Add-Type @"
 using System;
@@ -77,11 +79,11 @@ function Check($ok, $label) {
 }
 function Want($scn) { return ($Scenario -eq "all" -or $Scenario -eq $scn) }
 
-# Positions (Healer.Ui.Layout) : menu Jouer (640,362) ; cartes de niveau 1/2/3 au centre x = 312 / 640 / 968, y = 340 ;
+# Positions (Healer.Ui.Layout) : menu Jouer (640,322), Atelier (640,398) ; atelier : achat de la 1re carte (318,120), talents palier 1 (903,196) / (1149,196) ; cartes de niveau 1/2/3 au centre x = 312 / 640 / 968, y = 340 ;
 # Jouer du combat (640,500) ; colonne gauche = alliés (Garde 144,148) ; colonne droite = sorts (Soin 1136,190) ;
 # fin de combat : 2 boutons -> Recommencer (522,618) ; 3 boutons -> Recommencer (404,618), Niveau suivant (640,618) ;
 # pause : Quitter le niveau (640,430) ; Retour (87,32).
-$menuPlay = @(640, 362); $level1 = @(312, 340); $level2 = @(640, 340); $level3 = @(968, 340); $fightPlay = @(640, 500)
+$menuPlay = @(640, 322); $menuWorkshop = @(640, 398); $level1 = @(312, 340); $level2 = @(640, 340); $level3 = @(968, 340); $fightPlay = @(640, 500)
 
 # ---- Scénario A -----------------------------------------------------------------------------
 if (Want "A") {
@@ -197,6 +199,49 @@ Stop-Game
 $e = Log
 Expect $e "état : pause" "Échap met en pause"
 Expect $e "écran : menu principal" "le bouton Menu ramène au menu principal"
+}
+
+# ---- Scénario F -----------------------------------------------------------------------------
+if (Want "F") {
+Write-Output "Scénario F : atelier (achats, talents, or insuffisant, palier verrouillé), sauvegarde, effet en combat après relance"
+$dirF = New-ProfileDir "F"
+Start-Game @("-healer-gold", "400", "-healer-progress", "l1:2", "-healer-profile-dir", $dirF)
+Tap $menuWorkshop[0] $menuWorkshop[1] "Atelier (menu)"
+Tap 318 120 "acheter l'Épée du Garde (50 or)"
+Tap 1149 196 "talent palier 1 : Économe (150 or)"
+Tap 903 196 "talent palier 1 : Soins vifs (changement gratuit)"
+Tap 318 120 "Épée niveau 2 (80 or)"
+Tap 318 120 "Épée niveau 3 (110 or)"
+Tap 318 120 "Épée niveau 4 (150 or) : or insuffisant"
+Tap 903 395 "talent palier 2 (verrouillé : 2 étoiles seulement)"
+Press 0x01 "Échap (retour au menu)"
+Stop-Game
+$f1 = Log
+Expect $f1 "écran : atelier" "le bouton Atelier ouvre l'atelier"
+Expect $f1 "atelier : achat tank_weapon niveau 1" "un achat d'équipement réussit"
+Expect $f1 "atelier : talent 1 thrifty" "le premier choix d'un palier réussit"
+Expect $f1 "atelier : talent 1 quick_heal" "changer d'option dans un palier acheté réussit"
+Expect $f1 "atelier : achat tank_weapon niveau 3" "les niveaux s'enchaînent tant que l'or suffit"
+Expect $f1 "atelier : refus tank_weapon .NotEnoughGold." "sans assez d'or l'achat est refusé"
+Forbid $f1 "atelier : talent 2" "un palier verrouillé ne s'achète pas"
+Expect $f1 "écran : menu principal" "Échap revient au menu"
+$profileF = Join-Path $dirF "profile.json"
+Check (Test-Path $profileF) "la sauvegarde existe"
+if (Test-Path $profileF) {
+  $jf = Get-Content $profileF -Raw -Encoding UTF8 | ConvertFrom-Json
+  Check ($jf.equipment.tank_weapon -eq 3) "la sauvegarde contient l'équipement (Épée niveau 3)"
+  Check ($jf.talents.'1' -eq "quick_heal") "la sauvegarde contient le talent choisi en dernier"
+  Check ($jf.wallet.gold -eq 10) "l'or restant est exact (400 - 50 - 150 - 80 - 110 = 10)"
+}
+Write-Output "  -- relance du jeu : l'équipement et le talent sont appliqués au combat"
+Start-Game @("-healer-profile-dir", $dirF)
+Tap $menuPlay[0] $menuPlay[1] "Jouer (menu)"
+Tap $level1[0] $level1[1] "niveau 1"
+Stop-Game
+$f2 = Log
+Expect $f2 "sauvegarde : chargée" "la sauvegarde est rechargée"
+Expect $f2 "équipe : tank atk 39 " "l'Épée niveau 3 donne +12 % d'attaque au Garde (35 -> 39)"
+Expect $f2 "Soin 15 mana" "le talent Soins vifs baisse le coût du Soin (18 -> 15)"
 }
 
 if ($failures.Count -gt 0) { Write-Output ""; Write-Output "$($failures.Count) vérification(s) en échec."; exit 1 }

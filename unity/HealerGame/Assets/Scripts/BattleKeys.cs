@@ -49,6 +49,9 @@ namespace Healer.Client
                 case AppScreen.MainMenu:
                     if (confirm) _flow.OpenLevels();
                     return;
+                case AppScreen.Workshop:
+                    if (back) _flow.BackToMenu();
+                    return;
                 case AppScreen.LevelSelect:
                     if (back) _flow.BackToMenu();
                     for (int i = 0; i < LevelKeys.Length && i < _flow.Content.Levels.Count; i++)

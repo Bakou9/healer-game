@@ -19,9 +19,16 @@ namespace Healer.Ui
             return true;
         }
 
+        public bool OpenWorkshop()
+        {
+            if (Screen != AppScreen.MainMenu) return false;
+            Screen = AppScreen.Workshop;
+            return true;
+        }
+
         public bool BackToMenu()
         {
-            if (Screen != AppScreen.LevelSelect) return false;
+            if (Screen != AppScreen.LevelSelect && Screen != AppScreen.Workshop) return false;
             Screen = AppScreen.MainMenu;
             return true;
         }
@@ -29,7 +36,7 @@ namespace Healer.Ui
         /// <summary>Lance un niveau depuis le choix du niveau, ou enchaîne sur le suivant depuis un combat. Refusé si verrouillé.</summary>
         public bool StartLevel(string levelId, bool unlocked)
         {
-            if (Screen == AppScreen.MainMenu || !unlocked || string.IsNullOrEmpty(levelId)) return false;
+            if (Screen == AppScreen.MainMenu || Screen == AppScreen.Workshop || !unlocked || string.IsNullOrEmpty(levelId)) return false;
             Screen = AppScreen.Battle;
             LevelId = levelId;
             return true;

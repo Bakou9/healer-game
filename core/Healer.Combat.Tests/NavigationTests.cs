@@ -92,11 +92,43 @@ namespace Healer.Combat.Tests
             Assert.That(n.Screen, Is.EqualTo(AppScreen.Battle));
             Assert.That(n.LevelId, Is.EqualTo("l2"));
         }
+
+        [Test]
+        public void Le_menu_ouvre_l_atelier_et_le_bouton_retour_revient_au_menu()
+        {
+            var n = new Navigator();
+            Assert.That(n.OpenWorkshop(), Is.True);
+            Assert.That(n.Screen, Is.EqualTo(AppScreen.Workshop));
+            Assert.That(n.BackToMenu(), Is.True);
+            Assert.That(n.Screen, Is.EqualTo(AppScreen.MainMenu));
+        }
+
+        [Test]
+        public void L_atelier_ne_s_ouvre_que_depuis_le_menu_principal()
+        {
+            var n = new Navigator();
+            n.OpenLevelSelect();
+            Assert.That(n.OpenWorkshop(), Is.False);
+            n.StartLevel("l1", true);
+            Assert.That(n.OpenWorkshop(), Is.False);
+            Assert.That(n.Screen, Is.EqualTo(AppScreen.Battle));
+        }
+
+        [Test]
+        public void On_ne_lance_pas_de_niveau_depuis_l_atelier()
+        {
+            var n = new Navigator();
+            n.OpenWorkshop();
+            Assert.That(n.StartLevel("l1", true), Is.False);
+            Assert.That(n.Screen, Is.EqualTo(AppScreen.Workshop));
+            Assert.That(n.OpenLevelSelect(), Is.False);
+            Assert.That(n.LeaveBattle(), Is.False);
+        }
     }
 
     public class AppScreenGateTests
     {
-        private static readonly UiAction[] Menu = { UiAction.MenuPlay, UiAction.MenuToggleSound, UiAction.MenuQuit };
+        private static readonly UiAction[] Menu = { UiAction.MenuPlay, UiAction.MenuWorkshop, UiAction.MenuToggleSound, UiAction.MenuQuit };
         private static readonly UiAction[] Levels = { UiAction.PickLevel, UiAction.BackToMenu };
 
         [Test]
@@ -114,10 +146,37 @@ namespace Healer.Combat.Tests
         }
 
         [Test]
+        public void L_atelier_ne_laisse_passer_que_ses_boutons()
+        {
+            var workshop = new[] { UiAction.BuyEquipment, UiAction.PickTalent, UiAction.BackToMenu };
+            foreach (UiAction a in Enum.GetValues(typeof(UiAction)))
+                Assert.That(InputGate.Allows(AppScreen.Workshop, ScreenState.Playing, a), Is.EqualTo(workshop.Contains(a)), a.ToString());
+        }
+
+        [Test]
+        public void Les_achats_de_l_atelier_ne_sont_permis_nulle_part_ailleurs()
+        {
+            foreach (var a in new[] { UiAction.BuyEquipment, UiAction.PickTalent })
+            {
+                foreach (var screen in new[] { AppScreen.MainMenu, AppScreen.LevelSelect })
+                    Assert.That(InputGate.Allows(screen, ScreenState.Playing, a), Is.False, screen + " / " + a);
+                foreach (ScreenState s in Enum.GetValues(typeof(ScreenState)))
+                    Assert.That(InputGate.Allows(AppScreen.Battle, s, a), Is.False, "combat / " + s + " / " + a);
+            }
+        }
+
+        [Test]
+        public void Un_geste_d_atelier_ne_declenche_pas_de_geste_de_combat()
+        {
+            foreach (var a in new[] { UiAction.TapAlly, UiAction.TapSkill, UiAction.TogglePause, UiAction.StartFight, UiAction.Restart, UiAction.NextLevel })
+                Assert.That(InputGate.Allows(AppScreen.Workshop, ScreenState.Playing, a), Is.False, a.ToString());
+        }
+
+        [Test]
         public void Un_combat_en_arriere_plan_ne_capte_rien_hors_de_l_ecran_de_combat()
         {
             // Même si l'état du combat est « en cours », les cartes et sorts ne réagissent pas sous un menu.
-            foreach (var screen in new[] { AppScreen.MainMenu, AppScreen.LevelSelect })
+            foreach (var screen in new[] { AppScreen.MainMenu, AppScreen.LevelSelect, AppScreen.Workshop })
                 foreach (var a in new[] { UiAction.TapAlly, UiAction.TapSkill, UiAction.TogglePause, UiAction.StartFight, UiAction.Restart })
                     Assert.That(InputGate.Allows(screen, ScreenState.Playing, a), Is.False, screen + " / " + a);
         }
@@ -259,6 +318,89 @@ namespace Healer.Combat.Tests
         {
             // Reprendre est au-dessus : un tap rapide au même endroit ne quitte pas le niveau.
             Assert.That(Layout.PauseResume.Y, Is.LessThan(Layout.PauseLeave.Y));
+        }
+
+        // ---- Atelier ----
+
+        [TestCase(2)]
+        [TestCase(6)]
+        [TestCase(8)]
+        [TestCase(10)]
+        public void Les_cartes_d_equipement_tiennent_dans_leur_panneau_sans_chevauchement(int count)
+        {
+            var cards = Layout.WorkshopEquipmentCards(count);
+            Assert.That(cards, Has.Length.EqualTo(count));
+            for (int i = 0; i < cards.Length; i++)
+            {
+                AssertValid(cards[i], "carte d'équipement " + i);
+                Assert.That(cards[i].X, Is.GreaterThanOrEqualTo(Layout.WorkshopEquipment.X - 0.001));
+                Assert.That(cards[i].Right, Is.LessThanOrEqualTo(Layout.WorkshopEquipment.Right + 0.001));
+                Assert.That(cards[i].Bottom, Is.LessThanOrEqualTo(Layout.WorkshopEquipment.Bottom + 0.001));
+                for (int j = i + 1; j < cards.Length; j++) Assert.That(cards[i].Overlaps(cards[j]), Is.False, i + "/" + j);
+            }
+        }
+
+        [Test]
+        public void Les_cartes_d_equipement_sont_assez_hautes_pour_un_nom_des_pips_et_un_bouton()
+        {
+            foreach (var c in Layout.WorkshopEquipmentCards(8)) Assert.That(c.H, Is.GreaterThanOrEqualTo(120));
+        }
+
+        [Test]
+        public void Le_bouton_acheter_est_une_cible_tactile_valide_dans_sa_carte()
+        {
+            foreach (var card in Layout.WorkshopEquipmentCards(8))
+            {
+                var b = Layout.WorkshopBuyButton(card);
+                AssertValid(b, "bouton acheter");
+                Assert.That(b.X, Is.GreaterThanOrEqualTo(card.X));
+                Assert.That(b.Right, Is.LessThanOrEqualTo(card.Right));
+                Assert.That(b.Y, Is.GreaterThanOrEqualTo(card.Y));
+                Assert.That(b.Bottom, Is.LessThanOrEqualTo(card.Bottom));
+            }
+        }
+
+        [TestCase(1)]
+        [TestCase(3)]
+        [TestCase(4)]
+        public void Les_paliers_de_talents_tiennent_dans_leur_panneau_avec_deux_options_valides(int tiers)
+        {
+            for (int i = 0; i < tiers; i++)
+            {
+                var a = Layout.WorkshopTalentOption(i, tiers, 0);
+                var b = Layout.WorkshopTalentOption(i, tiers, 1);
+                AssertValid(a, "palier " + i + " option A");
+                AssertValid(b, "palier " + i + " option B");
+                Assert.That(a.Overlaps(b), Is.False);
+                Assert.That(b.Right, Is.LessThanOrEqualTo(Layout.WorkshopTalents.Right + 0.001));
+                Assert.That(b.Bottom, Is.LessThanOrEqualTo(Layout.WorkshopTalents.Bottom + 0.001));
+                if (i > 0) Assert.That(Layout.WorkshopTalentTier(i - 1, tiers).Overlaps(Layout.WorkshopTalentTier(i, tiers)), Is.False);
+            }
+        }
+
+        [Test]
+        public void Les_options_de_talent_sont_assez_grandes_pour_un_nom_et_une_description()
+        {
+            var o = Layout.WorkshopTalentOption(0, 3, 0);
+            Assert.That(o.W, Is.GreaterThanOrEqualTo(200));
+            Assert.That(o.H, Is.GreaterThanOrEqualTo(110));
+        }
+
+        [Test]
+        public void L_equipement_est_a_gauche_les_talents_a_droite_sans_se_toucher()
+        {
+            Assert.That(Layout.WorkshopEquipment.Overlaps(Layout.WorkshopTalents), Is.False);
+            Assert.That(Layout.WorkshopEquipment.Right, Is.LessThan(Layout.WorkshopTalents.X));
+            AssertValid(Layout.WorkshopEquipment, "panneau d'équipement");
+            AssertValid(Layout.WorkshopTalents, "panneau de talents");
+        }
+
+        [Test]
+        public void L_atelier_laisse_la_place_au_titre_au_retour_et_a_l_or()
+        {
+            Assert.That(Layout.WorkshopEquipment.Y, Is.GreaterThanOrEqualTo(Layout.BackButton.Bottom));
+            Assert.That(Layout.WorkshopTalents.Y, Is.GreaterThanOrEqualTo(Layout.BackButton.Bottom));
+            Assert.That(Layout.WorkshopEquipment.Overlaps(Layout.BackButton), Is.False);
         }
     }
 }

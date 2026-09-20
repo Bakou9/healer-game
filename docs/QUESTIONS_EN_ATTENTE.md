@@ -26,3 +26,12 @@ avec ma recommandation. À passer en revue ensemble au retour, puis à consigner
 5. **Direction artistique des boss 2 et 3** (modèles procéduraux) : à juger à l'œil ; la Reine des Marais est la moins aboutie (bras en bâtons).
 6. **Niveaux à venir** : combien pour une première version vendable (10 ? 30 ?), et faut-il des niveaux « héroïques » (mêmes boss, plus durs) ?
 7. **Prix cible du jeu premium** (Steam, mobile) : influe sur la quantité de contenu attendue.
+
+
+## Jalon 2 (atelier) — à trancher ensemble
+
+1. **Les talents sont-ils assez excitants ?** Les gains sont modestes (+0,04 à +0,22 de PV minimum) car le mana est la contrainte du jeu : tout ce qui touche au mana pèse lourd, tout ce qui touche à la quantité de soin pèse peu. Faut-il des talents plus « exotiques » (ex. Soin qui se répercute sur un second allié, bouclier qui renvoie des dégâts) ? Cela demande de nouvelles mécaniques de combat, donc de nouveaux golden.
+2. **Changer de talent est gratuit** : vous convient-il, ou préférez-vous un coût de « réinitialisation » ?
+3. **Le jeu devient nettement plus facile avec tout au maximum** (PV minimum 0,63 à 0,74 contre 0,28 à 0,35). Voulez-vous des niveaux « héroïques » pour garder de la tension aux joueurs avancés (jalon suivant) ?
+4. **Le grind** : ~20 parcours complets pour tout acheter (~1 h 30 à 2 h avec seulement 3 niveaux). Acceptable pour une première version, mais il faudra plus de niveaux pour que ce soit un plaisir et non une corvée.
+5. **Talents uniquement pour le soigneur** : les autres personnages n'ont que de l'équipement. À élargir quand on introduira d'autres soigneurs ou des classes.

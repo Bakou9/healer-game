@@ -282,3 +282,16 @@ Statuts : **Ferme** (à appliquer) · **À préciser** (information manquante) �
 - **Équilibrage** : les 3 boss passent les MÊMES bornes que le premier (§9 d'EQUILIBRAGE.md), réglées par balayage automatique (`ZBalayage`, outil explicite). Aucune borne relâchée. Golden d'origine inchangés ; deux nouveaux golden (boss 2 et 3) créés par ce projet.
 - **Tests** : 317 tests du cœur (163 avant) + 5 scénarios de bout en bout (35 vérifications, dont sauvegarde sur disque et relance du jeu).
 - **À valider avec l'utilisateur** : voir QUESTIONS_EN_ATTENTE.md (usage de l'or, durée des combats, boss avec limite de temps…).
+
+## D-049 — Jalon 2 : atelier (équipement et talents achetés avec l'or), équilibré choix par choix
+- **Décision (utilisateur)** : l'or achète des améliorations d'équipement et de talents, avec les mêmes tests d'équilibrage à chaque choix (proposition acceptée). Remplit l'inventaire prévu par D-047 ; toute dépense passe par `Wallet.TrySpend`.
+- **Équipement** : 8 pistes (arme et armure de chacun des 4 personnages), 5 niveaux (50 / 80 / 110 / 150 / 200 or), +4 % par niveau (attaque ; PV et défense ; soins pour le bâton ; PV et mana pour la robe du soigneur).
+- **Talents du soigneur** : 3 paliers (ouverts à 2, 5 et 8 étoiles, 150 / 300 / 500 or), deux options exclusives par palier ; le premier choix est payant, **changer d'option est gratuit** (on ne punit pas l'essai).
+  1. Soins vifs (Soin +30 % et −15 % de mana) ou Économe (−9 % de mana sur tous les sorts) ;
+  2. Rempart (Bouclier +70 %) ou Purge vive (Purge −30 % de mana, −10 % de recharge) ;
+  3. Flux de mana (+5 % de régénération) ou Onde de vie (Soin de zone +60 % et −45 % de mana).
+- **Règle de calcul** : les pourcentages de toutes les sources **s'additionnent** puis s'appliquent une fois à la valeur de base (pas d'effet boule de neige), arrondis au plus proche. Sans amélioration, le combat est strictement identique (testé : mêmes événements) : les golden n'ont pas bougé. Aucun effet n'est codé en dur : tout est dans `core/content/upgrades.json`.
+- **Économie** : rejouer paie désormais 50 / 80 / 120 or (doublé : avec l'ancien tarif, tout acheter aurait demandé ~60 parcours). Tout acheter = ~20 parcours complets ; la première victoire paie déjà un premier niveau d'équipement ; deux niveaux à 2 étoiles ouvrent et paient le premier talent (tests).
+- **Équilibrage** : voir docs/EQUILIBRAGE.md §10. Aucune borne du jeu de base relâchée ; les valeurs de talents ont été réglées par balayage automatique (`ZBalayageTalents`) après avoir constaté que des choix dominaient (Économe −15 % valait +0,24 de PV minimum contre +0,03 pour Soins vifs +15 %).
+- **Écran Atelier** (menu principal) : achat, niveaux en pastilles, talents, messages de retour ; jouable à la souris et au toucher ; 6 scénarios de bout en bout (dont achat, refus, palier verrouillé, sauvegarde, relance, effet en combat).
+- **À valider avec l'utilisateur** : voir QUESTIONS_EN_ATTENTE.md (§ Jalon 2).

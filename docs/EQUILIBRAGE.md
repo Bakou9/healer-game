@@ -179,3 +179,33 @@ Pour tous : sans soigneur ou en spammant un seul sort, 0 % de victoire.
 **Étoiles** (seuil de dégâts encaissés pour la 3ᵉ étoile : 3700 / 2000 / 3000) : un joueur attentif obtient au moins 2 étoiles dans 85 % des combats et 3 étoiles dans 20 à 85 % ; un joueur lent en obtient moins, et ignorer poisons et brûlures fait perdre les 3 étoiles (testé pour chaque boss).
 
 **Identité des boss** : le 2ᵉ punit l'oubli de la Purge (91 % de victoires sans Purge, mais 62 % de morts) ; le 3ᵉ punit la lenteur (télégraphe de 1,2 s) et enchaîne trois phases.
+
+
+## 10. Améliorations : équilibrage des choix et de l'économie (jalon 2, D-049)
+
+Joueur de référence : bot attentif (500 ms), 100 combats. Mesure : PV minimum moyen de l'équipe (plus haut = plus facile).
+
+| | Golem | Reine | Seigneur |
+|---|---|---|---|
+| Jeu de base | 0,28 | 0,31 | 0,35 |
+| Soins vifs (T1) | 0,43 | 0,43 | 0,48 |
+| Économe (T1) | 0,45 | 0,43 | 0,46 |
+| Rempart (T2) | 0,45 | 0,45 | 0,43 |
+| Purge vive (T2) | 0,39 | 0,53 | 0,47 |
+| Flux de mana (T3) | 0,34 | 0,35 | 0,39 |
+| Onde de vie (T3) | 0,48 | 0,31 | 0,35 |
+| Équipement maximum seul | 0,47 | 0,61 | 0,52 |
+| Tout au maximum | 0,63 | 0,74 | 0,69 |
+
+**Bornes testées** (`UpgradeBalanceTests`, `UpgradeTests`) :
+- **Chaque talent seul** : ≥ 95 % de victoires, ≤ 10 % de combats avec un allié K.O., aide d'au moins +0,02 sur un boss (sinon c'est un piège), ne rend pas le jeu trivial (≤ 0,70).
+- **Chaque paire d'un palier** : écart ≤ 0,15 sur chaque boss, écart moyen ≤ 0,05 sur la campagne, **aucune option meilleure partout** (le choix existe).
+- **Les 8 combinaisons de talents** : toutes viables (≥ 95 %), écart entre la meilleure et la pire ≤ 0,20 par boss, et la meilleure combinaison n'est pas la même partout.
+- **Équipement** : plus il y en a, plus c'est facile (niveaux 0, 2, 5 : hausse d'au moins 0,02 à chaque étape) ; aucune piste n'est inutile ; aucune ne rend le jeu trivial seule ; les combats restent d'au moins 45 s.
+- **Plafond de puissance** : tout au maximum reste gagnable (≥ 99 %) mais pas invincible (PV minimum ≤ 0,85) ; **sans soigneur : 0 % de victoire, en spammant un sort : ≤ 2 %**, même au maximum.
+
+**Honnêteté sur les bornes** : les bornes du jeu de base (§2, §4) sont fixées a priori. Certaines bornes des améliorations (écart de combinaisons 0,20, plafonds 0,65 / 0,70 / 0,85) ont été posées en connaissant l'ordre de grandeur des mesures : elles décrivent l'intention de conception (« puissant mais jamais trivial ») plutôt qu'une contrainte découverte. Les valeurs de talents ont, elles, été corrigées par les tests (choix dominants).
+
+**Limite connue** : le bot de référence utilise peu le Soin de zone ; la valeur d'Onde de vie repose sur son usage réel, à valider avec un vrai joueur. Les talents dépendent du bot : à réajuster si le bot évolue.
+
+**Économie** : premier niveau d'équipement (50 or) dès la première victoire (100 or) ; équipement complet 4 720 or, talents 950 or, soit ~20 parcours complets de la campagne (rejouer : 50 / 80 / 120 or) au-delà des premières victoires (740 or au maximum).
