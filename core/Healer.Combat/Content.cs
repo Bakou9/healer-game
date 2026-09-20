@@ -21,6 +21,9 @@ namespace Healer.Combat
         /// <summary>Équipement et talents achetables (core/content/upgrades.json).</summary>
         public UpgradeCatalog Upgrades { get; }
 
+        /// <summary>Apparence des personnages selon l'équipement (core/content/appearance.json, D-061). Vide par défaut : le client dessine alors la version de base.</summary>
+        public AppearanceCatalog Appearance { get; set; } = new AppearanceCatalog();
+
         /// <summary>Premier boss (compatibilité : les combats de référence et les tests historiques).</summary>
         public BossDef Boss => Bosses[0];
 

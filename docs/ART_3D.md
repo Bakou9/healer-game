@@ -70,3 +70,13 @@ cartes d'interface restent les cibles tactiles : on ne touche pas les modèles.
 Textures lourdes, détails minuscules illisibles à l'échelle d'un téléphone,
 dépendance à un logiciel de modélisation externe pour les modèles de départ,
 effets qui masquent l'information (docs/UX.md, principe 6).
+
+## Charte « dark fantasy » et système d'apparence modulaire (D-058, D-061)
+
+**Langage de formes** : arêtes vives et grosses facettes (jamais de sphères lisses pour le corps) ; silhouettes lisibles à 3 m d'écran : cornes, capuches, épaulières hérissées, capes en lambeaux, cristaux. Le sombre domine, le lumineux est réservé à ce qui compte (yeux, runes, cristaux, arme magique).
+**Palette** : acier terni, cuir noir, sang (`8E2B34`), os (`CFC6B0`), or vieilli (`B8924A`) ; couleurs lumineuses par rôle (soin vert, bouclier bleu, poison violet, ambre pour l'Archère). Un boss a une couleur calme et une couleur de fureur.
+**Budgets** : personnage ≤ 3 000 triangles, boss ≤ 8 000 (vérifiés par « Healer/Vérifier les modèles 3D »). **Proportions** : héros ≈ 2,9 unités avec cornes ou chapeau, tête petite, bras longs.
+
+**Modularité** : chaque héros = un **corps commun** (jambes, torse, tête, bras, pivots animables du `UnitRig`) + des **pièces d'équipement** par emplacement (`weapon`, `armor`). Le niveau acheté à l'Atelier (`{héros}_{emplacement}`) choisit un **palier** (Ordinaire 0-1, Raffiné 2-3, Légendaire 4-5 ; `core/content/appearance.json`) : forme de la pièce (cornes, halo, ailes, runes, taille de l'arme…) et **palette** (primary, secondary, accent, glow, trim). Le cœur ne fait que résoudre « quelle pièce, quel palier, quelles couleurs » (`AppearanceCatalog.Resolve`, testé) ; le client fabrique la pièce (`ModelFactory`, classe `Look`).
+**Ajouter un emplacement ou un héros** : une piste d'équipement dans `upgrades.json`, une entrée par palier dans `appearance.json`, une fonction de construction ; les tests refusent un héros ou un emplacement sans version pour chaque palier.
+**Remplacer par des pièces importées** : l'identifiant de pièce (`tank.weapon`) et la palette restent le contrat ; seule la fabrication change (mesh importé attaché au même pivot). Toute ressource importée passe par `docs/ASSETS.md` et `credits.json`.

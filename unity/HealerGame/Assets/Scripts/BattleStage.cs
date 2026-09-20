@@ -556,16 +556,36 @@ namespace Healer.Client
         {
             SetBoss(_ctl.Level?.BossId ?? "boss1");
 
+            BuildAllies();
+        }
+
+        private string _looksSignature = "";
+
+        private string LooksSignature() => string.Join("|", _ctl.Battle.GetAllies().Select(a => _ctl.AppearanceOf(a.Id).Signature()));
+
+        /// <summary>(Re)construit les héros avec l'apparence de leur équipement (D-061) : arme et armure donnent la forme et la palette.</summary>
+        private void BuildAllies()
+        {
+            foreach (var old in _units.Values) if (old.Root != null) Destroy(old.Root);
+            _units.Clear();
             var allies = _ctl.Battle.GetAllies();
             for (int i = 0; i < allies.Count; i++)
             {
                 var a = allies[i];
-                var view = MakeView(a.Id, ModelFactory.ForCharacter(a.Id, a.Role), AllyScale);
+                var view = MakeView(a.Id, ModelFactory.ForCharacter(a.Id, a.Role, _ctl.AppearanceOf(a.Id)), AllyScale);
                 view.Root.name = "Ally_" + a.Id;
                 _units[a.Id] = view;
-                _anims[a.Id] = new UnitAnimator(a.Id);
+                if (!_anims.ContainsKey(a.Id)) _anims[a.Id] = new UnitAnimator(a.Id);
                 _stageX[a.Id] = (float)Layout.AllyStageX(i, allies.Count);
             }
+            _looksSignature = LooksSignature();
+            Debug.Log("[Healer] apparence : " + _looksSignature);
+        }
+
+        /// <summary>L'équipement a pu changer entre deux combats (achat à l'Atelier) : on redessine les héros seulement si leur apparence a changé.</summary>
+        private void RefreshLooks()
+        {
+            if (_ctl.Battle != null && LooksSignature() != _looksSignature) BuildAllies();
         }
 
         /// <summary>Position logique (x) de chaque allié dans la scène : en ligne devant le boss (les cartes sont dans la colonne gauche).</summary>
@@ -588,6 +608,7 @@ namespace Healer.Client
 
         private void ResetVisuals()
         {
+            RefreshLooks();
             foreach (var v in _units.Values) { v.HitFlash = 0; v.Lunge = 0; v.HealGlow = 0; v.Root.transform.rotation = Quaternion.identity; }
             _bossHit = _bossStrike = _phaseBurst = _shake = 0;
             _bossAnim.Reset();

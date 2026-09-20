@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using Healer.Combat;
+using Healer.Combat.Progress;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -53,7 +54,9 @@ namespace Healer.Client
 #endif
             string levels = Read("levels.json");
             var bosses = GameContent.LevelBossIds(levels).Select(id => Read(id + ".json")).ToList();
-            return GameContent.FromJson(Read("characters.json"), Read("skills.json"), Read("effects.json"), bosses, levels, Read("upgrades.json"));
+            var content = GameContent.FromJson(Read("characters.json"), Read("skills.json"), Read("effects.json"), bosses, levels, Read("upgrades.json"));
+            content.Appearance = AppearanceCatalog.FromJson(Read("appearance.json"));
+            return content;
         }
     }
 }

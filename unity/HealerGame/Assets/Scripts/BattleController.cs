@@ -81,6 +81,9 @@ namespace Healer.Client
         public IReadOnlyList<SkillDef> Skills => _encounter?.Skills ?? _content.Skills;
         private EncounterDef? _encounter;
         /// <summary>Personnages du combat EN COURS, bonus d'équipement et de talents compris.</summary>
+        /// <summary>Apparence d'un héros avec l'équipement du combat en cours (arme et armure : palier et palette).</summary>
+        public Healer.Combat.Progress.AppearanceSet AppearanceOf(string characterId) => _content.Appearance.Resolve(characterId, _loadout);
+
         public IReadOnlyList<CharacterDef> Characters => _encounter?.Allies ?? (IReadOnlyList<CharacterDef>)System.Array.Empty<CharacterDef>();
         public bool HintActive => _battle != null && _battle.GetClock() < _hintUntilMs;
         public string LastAction { get; private set; } = "";

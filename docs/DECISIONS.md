@@ -406,3 +406,12 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **À préciser avec l'utilisateur** : le nom à afficher pour la conception du jeu (« Créé par … ») : je n'invente aucun nom.
 - **Question B** : aucune règle ni valeur de jeu modifiée.
 
+## D-061 — Apparence des héros selon l'équipement : système modulaire
+
+- **Date** : 2026-09-20 — **Statut** : Livrée avec les modèles procéduraux actuels ; le contrat (pièce, palier, palette) permet d'y brancher des pièces importées.
+- **Demande** : beaucoup de héros à venir, des skins qui évoluent avec les objets équipés, une direction artistique cohérente ; décision de bâtir un système modulaire indépendant de la source des modèles avant de trancher le kit final (artiste, Blender + MCP, packs CC0).
+- **Cœur** : `AppearanceCatalog` (`core/content/appearance.json`) : paliers (Ordinaire, Raffiné à partir du niveau 2, Légendaire à partir de 4) et, par héros et par emplacement (arme, armure), une pièce et une palette par palier ; `Resolve(héros, équipement)` renvoie `AppearanceSet` (pièces, paliers, signature). 9 tests : paliers, complétude pour chaque héros, correspondance avec les pistes de l'Atelier, palettes valides, indépendance entre héros, catalogue vide.
+- **Client** : les 4 héros sont reconstruits en corps commun + pièces (`ModelFactory.Look`) : Garde (cornes, crête, épaulières à pointes, cape, lame runique, bouclier à pointes), Archère (foulard, cape en lambeaux, mantelet, arc plus grand et lumineux), Mage (liserés dorés, runes de robe, cristal de chapeau, cristal de bâton et éclats), Soigneuse (ceinture, halo, ailes de lumière, croix plus grande et anneaux). La scène redessine les héros quand l'équipement a changé entre deux combats ; l'Atelier affiche « Aspect : Raffiné ». Journal `apparence : …` et scénario e2e F.
+- **Charte artistique** : ajoutée à `docs/ART_3D.md` (formes, palette, budgets, modularité, comment ajouter un emplacement ou un héros, comment remplacer par des pièces importées).
+- **Limites** : trois paliers seulement ; pas de skins « cosmétiques » indépendants de l'équipement ni d'aperçu 3D dans l'Atelier (à faire) ; les talents ne changent pas l'apparence ; les pièces restent procédurales.
+- **Question B** : aucune règle ni valeur de jeu modifiée ; 748 tests et 11 scénarios e2e verts.

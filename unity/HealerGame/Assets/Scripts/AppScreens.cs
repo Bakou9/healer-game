@@ -246,6 +246,7 @@ namespace Healer.Client
                 Txt(new Rect(r.x + 24, r.y + 34, r.width - 160, 20), character?.Name ?? track.CharacterId, Layout.Font.Small, Ui.Muted);
                 for (int p = 0; p < track.MaxLevel; p++)
                     Add(new Rect(r.x + 26 + p * 24, r.y + 62, 18, 18), p < level ? Ui.Gold : new Color(0.2f, 0.22f, 0.3f, 1f), 4);
+                Txt(new Rect(r.x + 26 + track.MaxLevel * 24 + 8, r.y + 60, 190, 22), "Aspect : " + content.Appearance.TierName(level), Layout.Font.Small, level > 0 ? Ui.Selected : Ui.Muted, TextAnchor.MiddleLeft);
                 string perLevel = "Par niveau : " + string.Join(", ", track.PerLevel.ConvertAll(e => Describe(e)));
                 float y = r.y + 88;
                 if (level > 0)

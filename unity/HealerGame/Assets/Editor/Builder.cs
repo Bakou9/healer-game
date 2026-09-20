@@ -131,7 +131,7 @@ namespace Healer.EditorTools
             Check("Garde", ModelFactory.Tank(), CharacterBudget, "Shield", "Helm", "Visor", "Head", "Torso", "ArmL", "ArmR");
             Check("Archère", ModelFactory.Archer(), CharacterBudget, "Bow", "Quiver", "Hood", "Head", "Torso", "ArmL", "ArmR");
             Check("Mage", ModelFactory.Mage(), CharacterBudget, "Hat", "Staff", "Orb", "Head", "Torso", "ArmL", "ArmR");
-            Check("Soigneuse", ModelFactory.Healer(), CharacterBudget, "Staff", "Cross", "Halo", "Head", "Torso", "ArmL", "ArmR");
+            Check("Soigneuse", ModelFactory.Healer(), CharacterBudget, "Staff", "Cross", "Head", "Torso", "ArmL", "ArmR");
             Debug.Log(report.ToString());
         }
 

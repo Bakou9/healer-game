@@ -1,0 +1,282 @@
+{
+  "tiers": [
+    {
+      "minLevel": 0,
+      "name": "Ordinaire"
+    },
+    {
+      "minLevel": 2,
+      "name": "Raffiné"
+    },
+    {
+      "minLevel": 4,
+      "name": "Légendaire"
+    }
+  ],
+  "characters": {
+    "tank": {
+      "weapon": [
+        {
+          "part": "tank.weapon",
+          "palette": {
+            "primary": "8A93A6",
+            "secondary": "59606E",
+            "accent": "8E2B34",
+            "glow": "7CC8FF",
+            "trim": "B8924A"
+          }
+        },
+        {
+          "part": "tank.weapon",
+          "palette": {
+            "primary": "A9B4C8",
+            "secondary": "5F6B80",
+            "accent": "B12F3B",
+            "glow": "7CC8FF",
+            "trim": "C9A45A"
+          }
+        },
+        {
+          "part": "tank.weapon",
+          "palette": {
+            "primary": "D5DEEE",
+            "secondary": "6C7A94",
+            "accent": "D8404E",
+            "glow": "A8E4FF",
+            "trim": "E8C25A"
+          }
+        }
+      ],
+      "armor": [
+        {
+          "part": "tank.armor",
+          "palette": {
+            "primary": "8A93A6",
+            "secondary": "59606E",
+            "accent": "8E2B34",
+            "glow": "7CC8FF",
+            "trim": "B8924A"
+          }
+        },
+        {
+          "part": "tank.armor",
+          "palette": {
+            "primary": "A9B4C8",
+            "secondary": "5F6B80",
+            "accent": "B12F3B",
+            "glow": "7CC8FF",
+            "trim": "C9A45A"
+          }
+        },
+        {
+          "part": "tank.armor",
+          "palette": {
+            "primary": "D5DEEE",
+            "secondary": "6C7A94",
+            "accent": "D8404E",
+            "glow": "A8E4FF",
+            "trim": "E8C25A"
+          }
+        }
+      ]
+    },
+    "dps1": {
+      "weapon": [
+        {
+          "part": "dps1.weapon",
+          "palette": {
+            "primary": "5B4330",
+            "secondary": "3D2E24",
+            "accent": "8E2B34",
+            "glow": "FFB347",
+            "trim": "B8924A"
+          }
+        },
+        {
+          "part": "dps1.weapon",
+          "palette": {
+            "primary": "7A5A3C",
+            "secondary": "4A3A2A",
+            "accent": "B12F3B",
+            "glow": "FFB347",
+            "trim": "C9A45A"
+          }
+        },
+        {
+          "part": "dps1.weapon",
+          "palette": {
+            "primary": "9B7448",
+            "secondary": "5B4330",
+            "accent": "D8404E",
+            "glow": "FFD27A",
+            "trim": "E8C25A"
+          }
+        }
+      ],
+      "armor": [
+        {
+          "part": "dps1.armor",
+          "palette": {
+            "primary": "41544A",
+            "secondary": "2E3A33",
+            "accent": "8E2B34",
+            "glow": "FFB347",
+            "trim": "5A4834"
+          }
+        },
+        {
+          "part": "dps1.armor",
+          "palette": {
+            "primary": "4E6A5C",
+            "secondary": "34473D",
+            "accent": "B12F3B",
+            "glow": "FFB347",
+            "trim": "6E5A40"
+          }
+        },
+        {
+          "part": "dps1.armor",
+          "palette": {
+            "primary": "3A5C52",
+            "secondary": "24393A",
+            "accent": "D8404E",
+            "glow": "FFD27A",
+            "trim": "8A7048"
+          }
+        }
+      ]
+    },
+    "dps2": {
+      "weapon": [
+        {
+          "part": "dps2.weapon",
+          "palette": {
+            "primary": "3D2E24",
+            "secondary": "2A2019",
+            "accent": "8E2B34",
+            "glow": "C78CFF",
+            "trim": "B8924A"
+          }
+        },
+        {
+          "part": "dps2.weapon",
+          "palette": {
+            "primary": "4A3A2A",
+            "secondary": "34281F",
+            "accent": "B12F3B",
+            "glow": "D8A8FF",
+            "trim": "C9A45A"
+          }
+        },
+        {
+          "part": "dps2.weapon",
+          "palette": {
+            "primary": "5B4636",
+            "secondary": "3D2E24",
+            "accent": "D8404E",
+            "glow": "F0CCFF",
+            "trim": "E8C25A"
+          }
+        }
+      ],
+      "armor": [
+        {
+          "part": "dps2.armor",
+          "palette": {
+            "primary": "3B2C66",
+            "secondary": "1A1530",
+            "accent": "8E2B34",
+            "glow": "C78CFF",
+            "trim": "B8924A"
+          }
+        },
+        {
+          "part": "dps2.armor",
+          "palette": {
+            "primary": "4A3A80",
+            "secondary": "231B40",
+            "accent": "B12F3B",
+            "glow": "D8A8FF",
+            "trim": "C9A45A"
+          }
+        },
+        {
+          "part": "dps2.armor",
+          "palette": {
+            "primary": "5B48A0",
+            "secondary": "2E2454",
+            "accent": "D8404E",
+            "glow": "F0CCFF",
+            "trim": "E8C25A"
+          }
+        }
+      ]
+    },
+    "healer": {
+      "weapon": [
+        {
+          "part": "healer.weapon",
+          "palette": {
+            "primary": "4A3A2A",
+            "secondary": "2E241A",
+            "accent": "B8924A",
+            "glow": "7CFFB2",
+            "trim": "B8924A"
+          }
+        },
+        {
+          "part": "healer.weapon",
+          "palette": {
+            "primary": "5B4636",
+            "secondary": "3A2E22",
+            "accent": "C9A45A",
+            "glow": "7CFFB2",
+            "trim": "C9A45A"
+          }
+        },
+        {
+          "part": "healer.weapon",
+          "palette": {
+            "primary": "6E5840",
+            "secondary": "463826",
+            "accent": "E8C25A",
+            "glow": "B8FFD8",
+            "trim": "E8C25A"
+          }
+        }
+      ],
+      "armor": [
+        {
+          "part": "healer.armor",
+          "palette": {
+            "primary": "D8E0DA",
+            "secondary": "2E5A48",
+            "accent": "B8924A",
+            "glow": "7CFFB2",
+            "trim": "B8924A"
+          }
+        },
+        {
+          "part": "healer.armor",
+          "palette": {
+            "primary": "E6ECE6",
+            "secondary": "3B7A5F",
+            "accent": "C9A45A",
+            "glow": "7CFFB2",
+            "trim": "C9A45A"
+          }
+        },
+        {
+          "part": "healer.armor",
+          "palette": {
+            "primary": "F4F7F2",
+            "secondary": "4CA57E",
+            "accent": "E8C25A",
+            "glow": "B8FFD8",
+            "trim": "E8C25A"
+          }
+        }
+      ]
+    }
+  }
+}

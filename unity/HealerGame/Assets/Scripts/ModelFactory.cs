@@ -125,14 +125,47 @@ namespace Healer.Client
             }
         }
 
-        /// <summary>Garde : armure de plaques noircies, casque à cornes et visière lumineuse, grand bouclier runique, épée, cape sang.</summary>
-        public static GameObject Tank()
+        /// <summary>
+        /// Apparence d'un héros selon son équipement (D-061) : palier et palette de l'arme et de l'armure, venus du cœur
+        /// (Healer.Combat.Progress.AppearanceSet). Sans données, la version de base est dessinée. Les modèles sont MODULAIRES :
+        /// un corps commun (jambes, torse, tête, bras) et des pièces d'équipement (arme, armure) qui changent de forme et de
+        /// couleur selon le palier — c'est la même mécanique que pour des pièces importées plus tard.
+        /// </summary>
+        public sealed class Look
         {
+            public readonly int WeaponTier, ArmorTier;
+            private readonly IReadOnlyDictionary<string, string>? _weapon, _armor;
+
+            public Look(Healer.Combat.Progress.AppearanceSet? set)
+            {
+                WeaponTier = set?.TierOf("weapon") ?? 0;
+                ArmorTier = set?.TierOf("armor") ?? 0;
+                if (set != null && set.Parts.TryGetValue("weapon", out var w)) _weapon = w.Palette;
+                if (set != null && set.Parts.TryGetValue("armor", out var a)) _armor = a.Palette;
+            }
+
+            /// <summary>Couleur de l'arme pour un rôle (primary, secondary, accent, glow, trim).</summary>
+            public Color W(string role, string fallback) => Pick(_weapon, role, fallback);
+            /// <summary>Couleur de l'armure pour un rôle.</summary>
+            public Color A(string role, string fallback) => Pick(_armor, role, fallback);
+
+            private static Color Pick(IReadOnlyDictionary<string, string>? palette, string role, string fallback) =>
+                Palette.Hex(palette != null && palette.TryGetValue(role, out var hex) ? hex : fallback);
+        }
+
+        /// <summary>Garde : armure de plaques noircies ; corne, crête et cape sang aux paliers supérieurs ; épée et bouclier runiques.</summary>
+        public static GameObject Tank(Look? look = null)
+        {
+            look ??= new Look(null);
+            int at = look.ArmorTier, wt = look.WeaponTier;
             var root = new GameObject("Tank");
             var t = root.transform;
             var rig = NewRig(root);
-            var steel = MetalMaterial(Steel); var plate = MetalMaterial(SteelLight); var cloth = LitMaterial(BlackCloth);
-            var red = LitMaterial(Crimson); var bone = LitMaterial(Bone); var glow = GlowMaterial(Palette.Shield);
+            var steel = MetalMaterial(look.A("secondary", "59606E")); var plate = MetalMaterial(look.A("primary", "8A93A6")); var cloth = LitMaterial(BlackCloth);
+            var red = LitMaterial(look.A("accent", "8E2B34")); var bone = LitMaterial(Bone); var trim = MetalMaterial(look.A("trim", "B8924A"));
+            var visorGlow = GlowMaterial(look.A("glow", "7CC8FF"));
+            var bladeMat = MetalMaterial(look.W("primary", "8A93A6")); var shieldMat = MetalMaterial(look.W("primary", "8A93A6")); var rimMat = MetalMaterial(look.W("secondary", "59606E"));
+            var weaponGlow = GlowMaterial(look.W("glow", "7CC8FF")); var weaponRed = LitMaterial(look.W("accent", "8E2B34"));
             Legs(t, steel, cloth);
             Part(t, "Skirt", MeshKit.Prism(6, 1.25f), cloth, V(0, 0.98f, 0), S(0.95f, 0.5f, 0.8f));
             var torso = Pivot(t, "Torso", V(0, 1.52f, 0)); rig.Torso = torso;
@@ -141,56 +174,78 @@ namespace Healer.Client
             Part(torso, "Belt", MeshKit.Prism(6, 1f), red, V(0, -0.5f, 0), S(0.86f, 0.12f, 0.7f));
             var head = Pivot(torso, "Head", V(0, 0.72f, 0)); rig.Head = head;
             Part(head, "Helm", MeshKit.Prism(8, 0.9f), steel, V(0, 0.05f, 0), S(0.6f, 0.62f, 0.6f));
-            Part(head, "Visor", MeshKit.Cube(), glow, V(0, 0.05f, 0.31f), S(0.44f, 0.07f, 0.05f));
+            Part(head, "Visor", MeshKit.Cube(), visorGlow, V(0, 0.05f, 0.31f), S(0.4f + 0.06f * at, 0.06f + 0.02f * at, 0.05f));
+            float pauldron = 0.5f + 0.1f * at;
             foreach (float side in new[] { -1f, 1f })
             {
-                Part(head, "Horn", MeshKit.Cone(4), bone, V(side * 0.3f, 0.32f, 0), S(0.13f, 0.6f, 0.13f), V(0, 0, side * -34f));
-                Part(torso, "Pauldron", MeshKit.Crystal(5, 0.35f), plate, V(side * 0.62f, 0.34f, 0), S(0.62f, 0.5f, 0.64f));
-                Part(torso, "PauldronSpike", MeshKit.Cone(4), red, V(side * 0.72f, 0.72f, 0), S(0.16f, 0.5f, 0.16f), V(0, 0, side * -22f));
+                Part(torso, "Pauldron", MeshKit.Crystal(5, 0.35f), plate, V(side * 0.62f, 0.34f, 0), S(pauldron + 0.12f, pauldron, pauldron + 0.14f));
+                if (at >= 1)
+                {
+                    Part(head, "Horn", MeshKit.Cone(4), bone, V(side * 0.3f, 0.32f, 0), S(0.13f, 0.5f + 0.15f * at, 0.13f), V(0, 0, side * -34f));
+                    Part(torso, "PauldronSpike", MeshKit.Cone(4), red, V(side * 0.72f, 0.72f, 0), S(0.16f, 0.4f + 0.12f * at, 0.16f), V(0, 0, side * -22f));
+                }
             }
-            Part(head, "Crest", MeshKit.Blade(), red, V(0, 0.42f, -0.08f), S(0.55f, 0.42f, 0.5f), V(0, 90, 0));
+            if (at >= 1) Part(head, "Crest", MeshKit.Blade(), red, V(0, 0.42f, -0.08f), S(0.55f, 0.42f, 0.5f), V(0, 90, 0));
+            if (at >= 2)
+            {
+                Part(torso, "TrimBand", MeshKit.Prism(6, 1.3f), trim, V(0, 0.42f, 0), S(0.95f, 0.06f, 0.77f));
+                Part(torso, "PlateRune", MeshKit.Crystal(4), visorGlow, V(0, 0.1f, 0.48f), S(0.16f, 0.42f, 0.1f));
+                Part(head, "HelmRing", MeshKit.Prism(8, 1f), trim, V(0, 0.27f, 0), S(0.62f, 0.05f, 0.62f));
+            }
             var armL = Pivot(torso, "ArmL", V(-0.62f, 0.3f, 0)); rig.ArmL = armL;
             Part(armL, "Upper", MeshKit.Prism(6, 0.8f), steel, V(0, -0.3f, 0), S(0.24f, 0.62f, 0.24f));
             Part(armL, "Fore", MeshKit.Prism(6, 0.9f), plate, V(0, -0.7f, 0.02f), S(0.27f, 0.5f, 0.29f));
-            Part(armL, "Shield", MeshKit.Prism(4, 2.4f, 45f), plate, V(-0.2f, -0.55f, 0.36f), S(0.42f, 1.25f, 0.16f));
-            Part(armL, "ShieldRim", MeshKit.Prism(4, 2.4f, 45f), steel, V(-0.2f, -0.55f, 0.28f), S(0.5f, 1.35f, 0.1f));
-            Part(armL, "Emblem", MeshKit.Crystal(6), glow, V(-0.2f, -0.42f, 0.47f), S(0.3f, 0.44f, 0.16f));
+            Part(armL, "Shield", MeshKit.Prism(4, 2.4f, 45f), shieldMat, V(-0.2f, -0.55f, 0.36f), S(0.42f + 0.05f * wt, 1.25f + 0.1f * wt, 0.16f));
+            Part(armL, "ShieldRim", MeshKit.Prism(4, 2.4f, 45f), rimMat, V(-0.2f, -0.55f, 0.28f), S(0.5f + 0.05f * wt, 1.35f + 0.1f * wt, 0.1f));
+            Part(armL, "Emblem", MeshKit.Crystal(6), weaponGlow, V(-0.2f, -0.42f, 0.47f), S(0.3f, 0.44f, 0.16f));
+            if (wt >= 2) foreach (float dx in new[] { -0.55f, 0.15f }) Part(armL, "ShieldSpike", MeshKit.Cone(4), weaponRed, V(dx, -0.1f, 0.4f), S(0.14f, 0.36f, 0.14f), V(90, 0, 0));
             var armR = Pivot(torso, "ArmR", V(0.62f, 0.3f, 0)); rig.ArmR = armR;
             Part(armR, "Upper", MeshKit.Prism(6, 0.8f), steel, V(0, -0.3f, 0), S(0.24f, 0.62f, 0.24f));
             Part(armR, "Fore", MeshKit.Prism(6, 0.9f), plate, V(0, -0.7f, 0.02f), S(0.27f, 0.5f, 0.29f));
             var weapon = Pivot(armR, "Weapon", V(0, -0.9f, 0.06f)); rig.Weapon = weapon;
-            Part(weapon, "Blade", MeshKit.Blade(), plate, V(0, 0, 0.78f), S(0.22f, 1.55f, 0.55f), V(90, 0, 0));
-            Part(weapon, "Guard", MeshKit.Cube(), red, V(0, 0, 0.05f), S(0.5f, 0.1f, 0.1f));
+            float length = 1.2f + 0.3f * wt;
+            Part(weapon, "Blade", MeshKit.Blade(), bladeMat, V(0, 0, 0.3f + length * 0.5f), S(0.2f + 0.05f * wt, length, 0.55f), V(90, 0, 0));
+            if (wt >= 1) Part(weapon, "BladeRune", MeshKit.Blade(), weaponGlow, V(0, 0, 0.3f + length * 0.5f), S(0.06f, length * 0.85f, 0.7f), V(90, 0, 0));
+            Part(weapon, "Guard", MeshKit.Cube(), weaponRed, V(0, 0, 0.05f), S(0.5f + 0.1f * wt, 0.1f, 0.1f));
+            if (wt >= 2) foreach (float side in new[] { -1f, 1f }) Part(weapon, "GuardSpike", MeshKit.Cone(4), weaponRed, V(side * 0.35f, 0, 0.05f), S(0.1f, 0.32f, 0.1f), V(0, 0, side * -90f));
             var cape = Pivot(torso, "Cape", V(0, 0.42f, -0.36f)); rig.Cape = cape;
-            Part(cape, "Cloth", MeshKit.Prism(4, 1.5f, 45f), red, V(0, -0.85f, -0.04f), S(0.95f, 1.7f, 0.06f));
+            Part(cape, "Cloth", MeshKit.Prism(4, 1.5f, 45f), at >= 1 ? red : cloth, V(0, -0.5f - 0.2f * at, -0.04f), S(0.95f, 1.0f + 0.35f * at, 0.06f));
+            if (at >= 2) for (int i = -1; i <= 1; i++) Part(cape, "Tatter", MeshKit.Blade(), red, V(i * 0.32f, -1.55f, -0.05f), S(0.3f, 0.5f, 0.2f), V(180, 0, 0));
             rig.Capture();
             return root;
         }
 
-        /// <summary>Archère : silhouette capuchonnée, cape en lambeaux, yeux ambrés sous la capuche, arc à branches en lames, carquois.</summary>
-        public static GameObject Archer()
+        /// <summary>Archère : silhouette capuchonnée ; foulard, cape en lambeaux puis mantelet hérissé aux paliers supérieurs ; arc de plus en plus grand et lumineux.</summary>
+        public static GameObject Archer(Look? look = null)
         {
+            look ??= new Look(null);
+            int at = look.ArmorTier, wt = look.WeaponTier;
             var root = new GameObject("Archer");
             var t = root.transform;
             var rig = NewRig(root);
-            var cloth = LitMaterial(H("41544A")); var leather = LitMaterial(H("5A4834")); var dark = LitMaterial(BlackCloth);
-            var red = LitMaterial(Crimson); var skin = LitMaterial(Palette.Skin); var wood = LitMaterial(H("5B4330"));
-            var amber = GlowMaterial(H("FFB347"));
+            var cloth = LitMaterial(look.A("primary", "41544A")); var leather = LitMaterial(look.A("trim", "5A4834")); var dark = LitMaterial(BlackCloth);
+            var red = LitMaterial(look.A("accent", "8E2B34")); var skin = LitMaterial(Palette.Skin); var wood = LitMaterial(look.W("primary", "5B4330"));
+            var eyes = GlowMaterial(look.A("glow", "FFB347")); var stringGlow = GlowMaterial(look.W("glow", "FFB347")); var woodDark = LitMaterial(look.W("secondary", "3D2E24"));
             Legs(t, leather, dark, 0.22f, 0.3f);
             var torso = Pivot(t, "Torso", V(0, 1.46f, 0)); rig.Torso = torso;
             Part(torso, "Tunic", MeshKit.Prism(6, 1.15f), cloth, V(0, 0, 0), S(0.74f, 0.98f, 0.56f));
             Part(torso, "Belt", MeshKit.Prism(6, 1f), leather, V(0, -0.5f, 0), S(0.7f, 0.1f, 0.52f));
-            Part(torso, "Scarf", MeshKit.Prism(6, 1.25f), red, V(0, 0.52f, 0.02f), S(0.58f, 0.18f, 0.5f));
+            if (at >= 1) Part(torso, "Scarf", MeshKit.Prism(6, 1.25f), red, V(0, 0.52f, 0.02f), S(0.58f, 0.18f, 0.5f));
+            if (at >= 2) foreach (float side in new[] { -1f, 1f })
+                {
+                    Part(torso, "Mantle", MeshKit.Wedge(), cloth, V(side * 0.42f, 0.5f, 0), S(0.42f, 0.28f, 0.5f), V(0, 0, side * -18f));
+                    Part(torso, "MantleSpike", MeshKit.Cone(4), leather, V(side * 0.52f, 0.7f, 0), S(0.1f, 0.4f, 0.1f), V(0, 0, side * -30f));
+                }
             var head = Pivot(torso, "Head", V(0, 0.78f, 0)); rig.Head = head;
             Part(head, "Face", MeshKit.Sphere(5, 6), skin, V(0, -0.02f, 0.05f), S(0.4f, 0.44f, 0.4f));
-            Part(head, "Hood", MeshKit.Cone(6), cloth, V(0, 0.2f, -0.03f), S(0.7f, 1.0f, 0.7f), V(-8, 0, 0));
+            Part(head, "Hood", MeshKit.Cone(6), cloth, V(0, 0.2f, -0.03f), S(0.7f, 1.0f + 0.12f * at, 0.7f), V(-8, 0, 0));
             Part(head, "Shadow", MeshKit.Prism(6, 1f), dark, V(0, 0.02f, 0.14f), S(0.5f, 0.3f, 0.3f));
-            foreach (float side in new[] { -1f, 1f }) Part(head, "Eye", MeshKit.Cube(), amber, V(side * 0.11f, 0.02f, 0.24f), S(0.1f, 0.04f, 0.04f));
+            foreach (float side in new[] { -1f, 1f }) Part(head, "Eye", MeshKit.Cube(), eyes, V(side * 0.11f, 0.02f, 0.24f), S(0.1f + 0.02f * at, 0.04f, 0.04f));
             var cape = Pivot(torso, "Cape", V(0, 0.5f, -0.3f)); rig.Cape = cape;
             Part(cape, "Cloak", MeshKit.Prism(4, 1.6f, 45f), cloth, V(0, -0.8f, -0.05f), S(0.85f, 1.7f, 0.07f));
-            for (int i = -1; i <= 1; i++) Part(cape, "Tatter", MeshKit.Blade(), cloth, V(i * 0.32f, -1.78f, -0.06f), S(0.3f, 0.55f, 0.2f), V(180, 0, 0));
+            if (at >= 1) for (int i = -1; i <= 1; i++) Part(cape, "Tatter", MeshKit.Blade(), at >= 2 ? red : cloth, V(i * 0.32f, -1.78f, -0.06f), S(0.3f, 0.55f, 0.2f), V(180, 0, 0));
             Part(torso, "Quiver", MeshKit.Prism(6, 1.1f), leather, V(0.2f, 0.05f, -0.36f), S(0.22f, 0.9f, 0.22f), V(0, 0, -16f));
-            for (int i = 0; i < 3; i++) Part(torso, "Arrow", MeshKit.Cone(4), red, V(0.26f + i * 0.05f, 0.58f + i * 0.02f, -0.36f), S(0.08f, 0.24f, 0.08f), V(0, 0, -16f));
+            for (int i = 0; i < 2 + wt; i++) Part(torso, "Arrow", MeshKit.Cone(4), red, V(0.24f + i * 0.04f, 0.58f + i * 0.02f, -0.36f), S(0.08f, 0.24f, 0.08f), V(0, 0, -16f));
             var armR = Pivot(torso, "ArmR", V(0.44f, 0.42f, 0)); rig.ArmR = armR;
             Part(armR, "Upper", MeshKit.Prism(5, 0.8f), leather, V(0, -0.28f, 0), S(0.2f, 0.56f, 0.2f));
             Part(armR, "Fore", MeshKit.Prism(5, 0.9f), cloth, V(0, -0.62f, 0.02f), S(0.22f, 0.48f, 0.22f));
@@ -198,83 +253,109 @@ namespace Healer.Client
             Part(armL, "Upper", MeshKit.Prism(5, 0.8f), leather, V(0, -0.28f, 0), S(0.2f, 0.56f, 0.2f));
             Part(armL, "Fore", MeshKit.Prism(5, 0.9f), cloth, V(0, -0.62f, 0.02f), S(0.22f, 0.48f, 0.22f));
             var bow = Pivot(armL, "Bow", V(-0.06f, -0.8f, 0.24f)); rig.Weapon = bow;
+            float limb = 1.0f + 0.2f * wt;
             Part(bow, "Grip", MeshKit.Cube(), leather, V(0, 0, 0), S(0.1f, 0.4f, 0.1f));
             foreach (float s in new[] { -1f, 1f })
-                Part(bow, "Limb", MeshKit.Blade(), wood, V(0, s * 0.62f, 0.05f), S(0.14f, 1.0f, 0.55f), V(0, 0, s > 0 ? 180f + 10f : -10f));
-            Part(bow, "String", MeshKit.Cube(), LitMaterial(H("D9D2C0")), V(0, 0, -0.14f), S(0.015f, 2.0f, 0.015f));
+            {
+                Part(bow, "Limb", MeshKit.Blade(), wt >= 2 ? woodDark : wood, V(0, s * limb * 0.62f, 0.05f), S(0.14f + 0.03f * wt, limb, 0.55f), V(0, 0, s > 0 ? 180f + 10f : -10f));
+                if (wt >= 2) Part(bow, "Tip", MeshKit.Crystal(4), stringGlow, V(0, s * limb * 1.12f, 0.05f), S(0.1f, 0.24f, 0.1f));
+            }
+            Part(bow, "String", MeshKit.Cube(), wt >= 1 ? stringGlow : LitMaterial(H("D9D2C0")), V(0, 0, -0.14f), S(0.015f + 0.008f * wt, 2.0f + 0.4f * wt, 0.015f));
             rig.Capture();
             return root;
         }
 
-        /// <summary>Mage : robe violette à liserés, chapeau tordu, yeux violets, bâton à cristal flottant entouré d'éclats.</summary>
-        public static GameObject Mage()
+        /// <summary>Mage : robe violette ; liserés dorés puis runes lumineuses et cristal de chapeau aux paliers supérieurs ; bâton dont le cristal grossit et s'entoure d'éclats.</summary>
+        public static GameObject Mage(Look? look = null)
         {
+            look ??= new Look(null);
+            int at = look.ArmorTier, wt = look.WeaponTier;
             var root = new GameObject("Mage");
             var t = root.transform;
             var rig = NewRig(root);
-            var robe = LitMaterial(H("3B2C66")); var trim = LitMaterial(H("1A1530")); var gold = MetalMaterial(Gold);
-            var skin = LitMaterial(Palette.Skin); var wood = LitMaterial(H("3D2E24")); var violet = GlowMaterial(Palette.Poison);
+            var robe = LitMaterial(look.A("primary", "3B2C66")); var trim = LitMaterial(look.A("secondary", "1A1530")); var gold = MetalMaterial(look.A("trim", "B8924A"));
+            var skin = LitMaterial(Palette.Skin); var wood = LitMaterial(look.W("primary", "3D2E24")); var orbGlow = GlowMaterial(look.W("glow", "C78CFF"));
+            var runeGlow = GlowMaterial(look.A("glow", "C78CFF")); var red = LitMaterial(look.A("accent", "8E2B34"));
             Part(t, "Robe", MeshKit.Prism(6, 0.55f), robe, V(0, 0.86f, 0), S(1.08f, 1.7f, 0.86f));
-            Part(t, "Hem", MeshKit.Prism(6, 1.02f), trim, V(0, 0.08f, 0), S(1.1f, 0.14f, 0.88f));
+            Part(t, "Hem", MeshKit.Prism(6, 1.02f), at >= 1 ? gold : trim, V(0, 0.08f, 0), S(1.1f, 0.14f, 0.88f));
+            if (at >= 2) for (int i = 0; i < 5; i++)
+                {
+                    float ang = (i - 2) * 0.5f;
+                    Part(t, "HemRune", MeshKit.Blade(), runeGlow, V(Mathf.Sin(ang) * 0.5f, 0.45f, Mathf.Cos(ang) * 0.42f), S(0.07f, 0.5f, 0.3f), V(0, ang * -57f, 0));
+                }
             var torso = Pivot(t, "Torso", V(0, 1.6f, 0)); rig.Torso = torso;
             Part(torso, "Mantle", MeshKit.Prism(6, 0.6f), trim, V(0, 0.08f, 0), S(0.98f, 0.42f, 0.74f));
             Part(torso, "Stud", MeshKit.Crystal(4), gold, V(0, 0.02f, 0.36f), S(0.16f, 0.2f, 0.12f));
+            if (at >= 1) foreach (float side in new[] { -1f, 1f }) Part(torso, "ShoulderStud", MeshKit.Crystal(4), gold, V(side * 0.46f, 0.26f, 0.08f), S(0.14f, 0.22f, 0.14f));
             var head = Pivot(torso, "Head", V(0, 0.6f, 0)); rig.Head = head;
             Part(head, "Face", MeshKit.Sphere(5, 6), skin, V(0, -0.02f, 0.05f), S(0.4f, 0.44f, 0.4f));
             Part(head, "Brim", MeshKit.Prism(8, 1f), robe, V(0, 0.2f, 0), S(1.15f, 0.07f, 1.15f));
-            Part(head, "Hat", MeshKit.Cone(6), robe, V(0, 0.82f, -0.04f), S(0.78f, 1.3f, 0.78f), V(-12, 0, 6));
-            Part(head, "Band", MeshKit.Prism(8, 1f), gold, V(0, 0.27f, 0), S(0.8f, 0.08f, 0.8f));
-            foreach (float side in new[] { -1f, 1f }) Part(head, "Eye", MeshKit.Cube(), violet, V(side * 0.1f, 0.03f, 0.22f), S(0.1f, 0.04f, 0.04f));
+            Part(head, "Hat", MeshKit.Cone(6), robe, V(0, 0.82f + 0.08f * at, -0.04f), S(0.78f, 1.3f + 0.16f * at, 0.78f), V(-12, 0, 6));
+            Part(head, "Band", MeshKit.Prism(8, 1f), at >= 1 ? gold : trim, V(0, 0.27f, 0), S(0.8f, 0.08f, 0.8f));
+            if (at >= 2) Part(head, "HatCrystal", MeshKit.Crystal(4), runeGlow, V(0.12f, 0.36f, 0.4f), S(0.12f, 0.24f, 0.12f));
+            foreach (float side in new[] { -1f, 1f }) Part(head, "Eye", MeshKit.Cube(), runeGlow, V(side * 0.1f, 0.03f, 0.22f), S(0.1f, 0.04f, 0.04f));
             var armR = Pivot(torso, "ArmR", V(0.5f, 0.2f, 0)); rig.ArmR = armR;
             Part(armR, "Sleeve", MeshKit.Prism(5, 1.4f), robe, V(0, -0.36f, 0), S(0.3f, 0.72f, 0.3f));
             Part(armR, "Hand", MeshKit.Sphere(4, 5), skin, V(0, -0.78f, 0.04f), S(0.15f, 0.15f, 0.15f));
             var staff = Pivot(armR, "Staff", V(0, -0.78f, 0.1f)); rig.Weapon = staff;
             Part(staff, "Shaft", MeshKit.Prism(5, 1f), wood, V(0, 0.5f, 0.24f), S(0.09f, 2.5f, 0.09f));
-            Part(staff, "Orb", MeshKit.Crystal(6, 0.4f), violet, V(0, 2.0f, 0.24f), S(0.34f, 0.66f, 0.34f));
-            foreach (float side in new[] { -1f, 1f }) Part(staff, "Claw", MeshKit.Blade(), wood, V(side * 0.16f, 1.78f, 0.24f), S(0.1f, 0.5f, 0.3f), V(0, 0, side * -20f));
-            for (int i = 0; i < 3; i++)
+            float orb = 1f + 0.3f * wt;
+            Part(staff, "Orb", MeshKit.Crystal(6, 0.4f), orbGlow, V(0, 2.0f, 0.24f), S(0.3f * orb, 0.6f * orb, 0.3f * orb));
+            if (wt >= 1) foreach (float side in new[] { -1f, 1f }) Part(staff, "Claw", MeshKit.Blade(), wood, V(side * 0.16f * orb, 1.78f, 0.24f), S(0.1f, 0.5f, 0.3f), V(0, 0, side * -20f));
+            for (int i = 0; i < wt * 2 - (wt > 0 ? 1 : 0); i++)
             {
-                float a = i * 2.1f;
-                Part(staff, "Shard", MeshKit.Crystal(4), violet, V(Mathf.Cos(a) * 0.36f, 1.7f + i * 0.2f, 0.24f + Mathf.Sin(a) * 0.3f), S(0.09f, 0.22f, 0.09f), V(0, 0, 20f * i));
+                float ang = i * 2.1f;
+                Part(staff, "Shard", MeshKit.Crystal(4), orbGlow, V(Mathf.Cos(ang) * 0.4f, 1.7f + i * 0.16f, 0.24f + Mathf.Sin(ang) * 0.3f), S(0.09f, 0.22f, 0.09f), V(0, 0, 20f * i));
             }
             var armL = Pivot(torso, "ArmL", V(-0.5f, 0.2f, 0)); rig.ArmL = armL;
             Part(armL, "Sleeve", MeshKit.Prism(5, 1.4f), robe, V(0, -0.36f, 0), S(0.3f, 0.72f, 0.3f));
-            Part(armL, "Book", MeshKit.Cube(), LitMaterial(Crimson), V(-0.02f, -0.8f, 0.2f), S(0.34f, 0.4f, 0.08f));
-            Part(armL, "Page", MeshKit.Cube(), violet, V(-0.02f, -0.8f, 0.25f), S(0.2f, 0.26f, 0.02f));
+            Part(armL, "Book", MeshKit.Cube(), red, V(-0.02f, -0.8f, 0.2f), S(0.34f, 0.4f, 0.08f));
+            Part(armL, "Page", MeshKit.Cube(), runeGlow, V(-0.02f, -0.8f, 0.25f), S(0.2f, 0.26f, 0.02f));
             var cape = Pivot(torso, "Cape", V(0, 0.3f, -0.34f)); rig.Cape = cape;
             Part(cape, "Drape", MeshKit.Prism(4, 1.3f, 45f), trim, V(0, -0.8f, -0.03f), S(0.8f, 1.6f, 0.05f));
             rig.Capture();
             return root;
         }
 
-        /// <summary>Soigneuse (le joueur) : robe ivoire et mantelet vert sombre, capuche, halo derrière la tête, bâton à croix de cristal.</summary>
-        public static GameObject Healer()
+        /// <summary>Soigneuse (le joueur) : robe ivoire ; ceinture et mantelet aux paliers supérieurs, puis halo et ailes de lumière ; bâton dont la croix grossit et s'entoure d'un anneau.</summary>
+        public static GameObject Healer(Look? look = null)
         {
+            look ??= new Look(null);
+            int at = look.ArmorTier, wt = look.WeaponTier;
             var root = new GameObject("Healer");
             var t = root.transform;
             var rig = NewRig(root);
-            var ivory = LitMaterial(H("D8E0DA")); var green = LitMaterial(H("2E5A48")); var gold = MetalMaterial(Gold);
-            var skin = LitMaterial(Palette.Skin); var wood = LitMaterial(H("4A3A2A")); var heal = GlowMaterial(Palette.Heal);
+            var ivory = LitMaterial(look.A("primary", "D8E0DA")); var green = LitMaterial(look.A("secondary", "2E5A48")); var gold = MetalMaterial(look.A("trim", "B8924A"));
+            var skin = LitMaterial(Palette.Skin); var wood = LitMaterial(look.W("primary", "4A3A2A")); var armorGlow = GlowMaterial(look.A("glow", "7CFFB2"));
+            var crossGlow = GlowMaterial(look.W("glow", "7CFFB2")); var weaponGold = MetalMaterial(look.W("trim", "B8924A"));
             Part(t, "Robe", MeshKit.Prism(6, 0.52f), ivory, V(0, 0.84f, 0), S(1.02f, 1.68f, 0.82f));
             Part(t, "Hem", MeshKit.Prism(6, 1.02f), gold, V(0, 0.07f, 0), S(1.04f, 0.1f, 0.84f));
             var torso = Pivot(t, "Torso", V(0, 1.58f, 0)); rig.Torso = torso;
             Part(torso, "Mantle", MeshKit.Prism(6, 0.56f), green, V(0, 0.1f, 0), S(1.0f, 0.44f, 0.76f));
-            Part(torso, "Sash", MeshKit.Prism(6, 1f), gold, V(0, -0.34f, 0), S(0.66f, 0.09f, 0.56f));
-            foreach (float side in new[] { -1f, 1f }) Part(torso, "Stud", MeshKit.Crystal(4), gold, V(side * 0.46f, 0.3f, 0.1f), S(0.14f, 0.22f, 0.14f));
+            if (at >= 1)
+            {
+                Part(torso, "Sash", MeshKit.Prism(6, 1f), gold, V(0, -0.34f, 0), S(0.66f, 0.09f, 0.56f));
+                foreach (float side in new[] { -1f, 1f }) Part(torso, "Stud", MeshKit.Crystal(4), gold, V(side * 0.46f, 0.3f, 0.1f), S(0.14f, 0.22f, 0.14f));
+            }
             var head = Pivot(torso, "Head", V(0, 0.62f, 0)); rig.Head = head;
             Part(head, "Face", MeshKit.Sphere(5, 6), skin, V(0, -0.02f, 0.06f), S(0.4f, 0.44f, 0.4f));
             Part(head, "Hood", MeshKit.Cone(6), ivory, V(0, 0.2f, -0.04f), S(0.74f, 0.98f, 0.74f), V(-6, 0, 0));
-            Part(head, "Trim", MeshKit.Prism(6, 1f), gold, V(0, -0.14f, 0.1f), S(0.52f, 0.06f, 0.4f));
-            Part(head, "Halo", MeshKit.Prism(14, 1f), heal, V(0, 0.1f, -0.34f), S(1.0f, 0.04f, 1.0f), V(90, 0, 0));
+            if (at >= 1) Part(head, "Trim", MeshKit.Prism(6, 1f), gold, V(0, -0.14f, 0.1f), S(0.52f, 0.06f, 0.4f));
+            if (at >= 2) Part(head, "Halo", MeshKit.Prism(14, 1f), armorGlow, V(0, 0.1f, -0.34f), S(1.0f, 0.04f, 1.0f), V(90, 0, 0));
+            if (at >= 2) foreach (float side in new[] { -1f, 1f })
+                    for (int i = 0; i < 3; i++)
+                        Part(torso, "Wing", MeshKit.Blade(), armorGlow, V(side * (0.5f + 0.12f * i), 0.3f - 0.18f * i, -0.42f), S(0.14f, 0.9f - 0.15f * i, 0.3f), V(20, 0, side * (-50f - 14f * i)));
             var armR = Pivot(torso, "ArmR", V(0.5f, 0.24f, 0)); rig.ArmR = armR;
             Part(armR, "Sleeve", MeshKit.Prism(5, 1.4f), ivory, V(0, -0.36f, 0), S(0.3f, 0.72f, 0.3f));
             Part(armR, "Hand", MeshKit.Sphere(4, 5), skin, V(0, -0.78f, 0.04f), S(0.15f, 0.15f, 0.15f));
             var staff = Pivot(armR, "Staff", V(0, -0.78f, 0.1f)); rig.Weapon = staff;
-            Part(staff, "Shaft", MeshKit.Prism(5, 1f), wood, V(0, 0.5f, 0.24f), S(0.09f, 2.6f, 0.09f));
+            Part(staff, "Shaft", MeshKit.Prism(5, 1f), wt >= 1 ? weaponGold : wood, V(0, 0.5f, 0.24f), S(0.09f, 2.6f, 0.09f));
             var cross = Pivot(staff, "Cross", V(0, 2.2f, 0.24f));
-            Part(cross, "Vertical", MeshKit.Crystal(4, 0.5f), heal, Vector3.zero, S(0.2f, 0.9f, 0.2f));
-            Part(cross, "Horizontal", MeshKit.Crystal(4, 0.5f), heal, Vector3.zero, S(0.2f, 0.62f, 0.2f), V(0, 0, 90f));
-            Part(cross, "Ring", MeshKit.Prism(10, 1f), gold, Vector3.zero, S(0.62f, 0.04f, 0.62f), V(90, 0, 0));
+            float size = 1f + 0.25f * wt;
+            Part(cross, "Vertical", MeshKit.Crystal(4, 0.5f), crossGlow, Vector3.zero, S(0.2f * size, 0.9f * size, 0.2f * size));
+            Part(cross, "Horizontal", MeshKit.Crystal(4, 0.5f), crossGlow, Vector3.zero, S(0.2f * size, 0.62f * size, 0.2f * size), V(0, 0, 90f));
+            if (wt >= 1) Part(cross, "Ring", MeshKit.Prism(10, 1f), weaponGold, Vector3.zero, S(0.62f * size, 0.04f, 0.62f * size), V(90, 0, 0));
+            if (wt >= 2) Part(cross, "RingOuter", MeshKit.Prism(12, 1f), crossGlow, Vector3.zero, S(1.1f, 0.03f, 1.1f), V(90, 0, 0));
             var armL = Pivot(torso, "ArmL", V(-0.5f, 0.24f, 0)); rig.ArmL = armL;
             Part(armL, "Sleeve", MeshKit.Prism(5, 1.4f), ivory, V(0, -0.36f, 0), S(0.3f, 0.72f, 0.3f));
             Part(armL, "Hand", MeshKit.Sphere(4, 5), skin, V(0, -0.78f, 0.04f), S(0.15f, 0.15f, 0.15f));
@@ -454,16 +535,17 @@ namespace Healer.Client
             return root;
         }
 
-        public static GameObject ForCharacter(string id, string role)
+        public static GameObject ForCharacter(string id, string role, Healer.Combat.Progress.AppearanceSet? appearance = null)
         {
+            var look = new Look(appearance);
             switch (id)
             {
-                case "tank": return Tank();
-                case "dps1": return Archer();
-                case "dps2": return Mage();
-                case "healer": return Healer();
+                case "tank": return Tank(look);
+                case "dps1": return Archer(look);
+                case "dps2": return Mage(look);
+                case "healer": return Healer(look);
             }
-            return role == "tank" ? Tank() : role == "healer" ? Healer() : Archer();
+            return role == "tank" ? Tank(look) : role == "healer" ? Healer(look) : Archer(look);
         }
 
         public static int TriangleCount(GameObject model)
