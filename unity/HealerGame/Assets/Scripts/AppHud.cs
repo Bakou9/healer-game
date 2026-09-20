@@ -22,7 +22,7 @@ namespace Healer.Client
         private static Rect R(Healer.Ui.Rect r) => new Rect((float)r.X, (float)r.Y, (float)r.W, (float)r.H);
 
         private bool Hit(Rect r, UiAction action) =>
-            InputGate.Allows(_flow.Screen, ScreenState.Playing, action) && GUI.Button(r, GUIContent.none, GUIStyle.none);
+            InputGate.Allows(_flow.Screen, ScreenState.Playing, action) && PointerInput.Tapped(r);
 
         private void OnGUI()
         {

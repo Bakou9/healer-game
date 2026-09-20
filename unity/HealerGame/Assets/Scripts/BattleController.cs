@@ -50,7 +50,7 @@ namespace Healer.Client
         /// <summary>Met le jeu en pause quand la fenêtre perd le focus (on ne perd pas un combat en changeant de fenêtre).</summary>
         private void OnApplicationFocus(bool hasFocus)
         {
-            if (Autoplay || !Started || _battle == null) return;
+            if (Autoplay || E2eInput.Active || !Started || _battle == null) return;
             if (!hasFocus)
             {
                 // Ne réactive pas seul une pause voulue par le joueur : on ne reprendra que celle-ci.

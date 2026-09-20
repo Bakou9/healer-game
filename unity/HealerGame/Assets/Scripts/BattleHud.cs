@@ -48,7 +48,7 @@ namespace Healer.Client
             }
             ScreenMap.Refresh();
             DrawCinemaVignette();
-            if (Event.current.type == EventType.MouseUp) _ctl.ReleaseSkill();
+            if (PointerInput.ReleasedThisFrame) _ctl.ReleaseSkill();
             if (_flow.Screen != AppScreen.Battle) return;
             DrawDangerVignette();
             var previous = GUI.matrix;
@@ -83,7 +83,7 @@ namespace Healer.Client
         }
 
         /// <summary>Zone cliquable. Passe par InputGate : hors de son état, un élément ne capte AUCUN clic (un écran modal recouvre les cartes).</summary>
-        private bool Hit(Rect r, UiAction action) => InputGate.Allows(_flow.Screen, _ctl.State, action) && GUI.Button(r, GUIContent.none, GUIStyle.none);
+        private bool Hit(Rect r, UiAction action) => InputGate.Allows(_flow.Screen, _ctl.State, action) && PointerInput.Tapped(r);
 
         private Texture2D? _vignette;
 
@@ -264,12 +264,8 @@ namespace Healer.Client
                 }
                 if (!_ctl.HasCast && _ctl.Selection.Selected != null && s.Id == "heal_single") Guide(r, "2");
                 KeyCap(r, BattleKeys.SkillLabel(i));
-                var ev = Event.current;
-                if (ev.type == EventType.MouseDown && ev.button == 0 && r.Contains(ev.mousePosition) && InputGate.Allows(_flow.Screen, _ctl.State, UiAction.TapSkill))
-                {
+                if (InputGate.Allows(_flow.Screen, _ctl.State, UiAction.TapSkill) && PointerInput.Pressed(r))
                     _ctl.PressSkill(s, true); // lancer tout de suite ; maintenu, le sort s'enchaîne
-                    ev.Use();
-                }
             }
         }
 

@@ -16,6 +16,8 @@ namespace Healer.Client
     ///   -healer-out DOSSIER     dossier des captures
     ///   -healer-speed 6         accélération du temps pendant les captures
     ///   -healer-timescale 30    accélération du temps en jeu normal (tests de bout en bout : tools/unity-e2e.ps1)
+    ///   -healer-e2e FICHIER     entrées injectées par le script de test (souris et clavier virtuels, sans focus ; voir E2eInput)
+    ///   -healer-sound           avec -healer-e2e : laisse le son (par défaut les tests sont silencieux)
     ///   -healer-autoplay        le bot de référence joue le soin (tests de bout en bout)
     ///   -healer-profile-dir D   dossier de la sauvegarde (par défaut : dossier de données du jeu)
     ///   -healer-progress l1:3,l2:2   précharge une progression (captures)
@@ -61,6 +63,9 @@ namespace Healer.Client
             flow.Audio = audio;
             gameObject.AddComponent<BattleMusic>().Init(flow);
             gameObject.AddComponent<BattleKeys>().Init(flow);
+            string? e2e = Arg("-healer-e2e");
+            if (e2e != null) gameObject.AddComponent<E2eInput>().Init(e2e);
+            if (e2e != null && !args.Contains("-healer-sound")) AudioListener.volume = 0f; // tests de bout en bout silencieux, sauf -healer-sound
 
             Debug.Log("[Healer] jeu prêt"); // signal lu par les tests de bout en bout (le démarrage à froid est plus long)
             if (float.TryParse(Arg("-healer-timescale"), out var fast)) controller.TimeScale = fast;

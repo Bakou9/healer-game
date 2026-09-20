@@ -1,4 +1,7 @@
-﻿# Tests de bout en bout du jeu Windows, avec la VRAIE souris et le VRAI clavier (fenêtre du jeu uniquement).
+﻿# Tests de bout en bout du jeu Windows. Par défaut les gestes sont INJECTÉS dans le jeu (souris et clavier virtuels de
+# l'Input System, option -healer-e2e) : la fenêtre n'a pas besoin de focus, votre souris et votre clavier restent libres,
+# et les scénarios tournent en parallèle (-Jobs). Avec -RealInput, on pilote la VRAIE souris et le VRAI clavier de Windows
+# (un seul scénario à la fois, personne ne doit toucher à la machine) : à réserver à une vérification avant livraison.
 # Vérifie par le journal du jeu (Player.log) et par le fichier de sauvegarde que chaque geste produit son effet.
 #   A : menu -> choix du niveau -> niveau 1 -> Jouer -> cibler (colonne gauche) -> sort (colonne droite) -> pause Espace / Échap
 #   B : niveau verrouillé (clic sans effet), défaite sans joueur, clic sur Recommencer, retour à la carte
@@ -12,10 +15,11 @@
 #   I : réglages (volumes, secousse) : changés à la souris, sauvegardés, rechargés après relance
 #   G : maintenir un sort (souris puis clavier) l'enchaîne ; re-toucher un allié ne le désélectionne pas
 # Toutes les parties utilisent un dossier de sauvegarde temporaire : la vraie sauvegarde n'est jamais touchée.
-# À lancer quand personne n'utilise souris ni clavier. Code de sortie 1 si une vérification échoue.
-# Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E|F|G|H|I]
-param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G","H","I")][string]$Scenario = "all")
+# Code de sortie 1 si une vérification échoue.
+# Usage : powershell -File tools/unity-e2e.ps1 [-SkipBuild] [-Scenario A|B|C|D|E|F|G|H|I] [-Jobs 4] [-RealInput]
+param([switch]$SkipBuild, [ValidateSet("all","A","B","C","D","E","F","G","H","I")][string]$Scenario = "all", [int]$Jobs = 4, [switch]$RealInput, [int]$Show = 6)
 $ErrorActionPreference = "Stop"
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Add-Type @"
 using System;
 using System.Runtime.InteropServices;
@@ -37,9 +41,27 @@ public static class Win {
 }
 "@
 
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public static class Launcher {
+  [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)] struct STARTUPINFO { public int cb; public string lpReserved, lpDesktop, lpTitle; public int dwX, dwY, dwXSize, dwYSize, dwXCountChars, dwYCountChars, dwFillAttribute, dwFlags; public short wShowWindow, cbReserved2; public IntPtr lpReserved2, hStdInput, hStdOutput, hStdError; }
+  [StructLayout(LayoutKind.Sequential)] struct PROCESS_INFORMATION { public IntPtr hProcess, hThread; public int dwProcessId, dwThreadId; }
+  [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)] static extern bool CreateProcess(string app, string cmd, IntPtr pa, IntPtr ta, bool inherit, uint flags, IntPtr env, string dir, ref STARTUPINFO si, out PROCESS_INFORMATION pi);
+  // Lance le jeu avec un état de fenêtre imposé (6 = réduite dans la barre des tâches : ne vole pas le focus).
+  public static int Start(string exe, string args, int show) {
+    var si = new STARTUPINFO(); si.cb = Marshal.SizeOf(si); si.dwFlags = 1; si.wShowWindow = (short)show;
+    PROCESS_INFORMATION pi;
+    if (!CreateProcess(exe, "\"" + exe + "\" " + args, IntPtr.Zero, IntPtr.Zero, false, 0, IntPtr.Zero, null, ref si, out pi)) throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+    return pi.dwProcessId;
+  }
+}
+"@
 $root = Split-Path -Parent $PSScriptRoot
 $exe = Join-Path $root "unity\HealerGame\Builds\Windows\HealerGame.exe"
-$plog = Join-Path $env:USERPROFILE "AppData\LocalLow\Healer\Healer Game\Player.log"
+$plog = Join-Path $env:TEMP ("healer-e2e-" + $Scenario + ".log")
+$cmdFile = Join-Path $env:TEMP ("healer-e2e-cmd-" + $Scenario + ".txt")
+$script:cmdN = 0
 $failures = @()
 
 if (-not $SkipBuild) {
@@ -50,19 +72,44 @@ if (-not $SkipBuild) {
   if ($b.ExitCode -ne 0) { Write-Output "ÉCHEC : build (code $($b.ExitCode)), voir $blog"; exit 1 }
 }
 
+# ---- Exécution parallèle : un processus par scénario (les gestes sont injectés, aucun ne dispute la souris) ----
+if ($Scenario -eq "all" -and -not $RealInput -and $Jobs -gt 1) {
+  $order = "D","G","F","H","B","C","A","E","I"  # les plus longs d'abord
+  $queue = New-Object System.Collections.Queue; foreach ($s in $order) { $queue.Enqueue($s) }
+  $running = @{}; $outs = @{}; $codes = @{}
+  while ($queue.Count -gt 0 -or $running.Count -gt 0) {
+    while ($queue.Count -gt 0 -and $running.Count -lt $Jobs) {
+      $s = $queue.Dequeue(); $out = Join-Path $env:TEMP "healer-e2e-out-$s.txt"; $outs[$s] = $out
+      $running[$s] = Start-Process powershell -ArgumentList (@("-NoProfile", "-File", $PSCommandPath, "-SkipBuild", "-Scenario", $s) + @("-Show", $Show)) -RedirectStandardOutput $out -WindowStyle Hidden -PassThru
+      $null = $running[$s].Handle  # sans cela, ExitCode reste vide une fois le processus terminé
+    }
+    foreach ($s in @($running.Keys)) { if ($running[$s].HasExited) { $codes[$s] = $running[$s].ExitCode; $running.Remove($s) } }
+    Start-Sleep -Milliseconds 500
+  }
+  $bad = 0
+  foreach ($s in ($outs.Keys | Sort-Object)) {
+    Get-Content $outs[$s] -Encoding UTF8 | Where-Object { $_ -notmatch "^Tous les tests|vérification\(s\) en échec|^\s*$" }
+    if ($codes[$s] -ne 0) { $bad++ }
+  }
+  Write-Output ""
+  if ($bad -gt 0) { Write-Output "$bad scénario(s) en échec."; Write-Output "[e2e-fin] code=1"; exit 1 }
+  Write-Output "Tous les tests de bout en bout passent."; Write-Output "[e2e-fin] code=0"; exit 0
+}
+
 # Grille logique 1280x720 (Healer.Ui.Layout) -> écran, comme Healer.Ui.ScreenFit.
 function New-ProfileDir($name) { $d = Join-Path $env:TEMP ("healer-e2e-" + $name + "-" + [Guid]::NewGuid().ToString("N").Substring(0, 6)); New-Item -ItemType Directory -Path $d | Out-Null; return $d }
 function Start-Game($extraArgs) {
   if (Test-Path $plog) { Remove-Item $plog -Force -ErrorAction SilentlyContinue }  # sinon le « jeu prêt » d'une partie précédente ferait croire au démarrage
-  $script:p = Start-Process -FilePath $exe -ArgumentList (@("-screen-width", "1280", "-screen-height", "720", "-screen-fullscreen", "0") + $extraArgs) -PassThru
+  [IO.File]::WriteAllText($cmdFile, ""); $script:cmdN = 0
+  $inject = if ($RealInput) { @() } else { @("-healer-e2e", $cmdFile) }
+  $all = @("-screen-width", "1280", "-screen-height", "720", "-screen-fullscreen", "0", "-logFile", $plog) + $inject + $extraArgs
+  if ($RealInput) { $script:p = Start-Process -FilePath $exe -ArgumentList $all -PassThru }
+  else { $quoted = ($all | ForEach-Object { if ($_ -match "\s") { '"' + $_ + '"' } else { $_ } }) -join " "; $script:p = Get-Process -Id ([Launcher]::Start($exe, $quoted, $Show)) }
   # On attend le signal « jeu prêt » du journal (le premier lancement après une compilation est bien plus lent qu'un lancement à chaud).
-  Start-Sleep -Seconds 3
   $deadline = (Get-Date).AddSeconds(60)
-  while ((Get-Date) -lt $deadline) {
-    if ((Test-Path $plog) -and ((Get-Content $plog -Encoding UTF8 -ErrorAction SilentlyContinue | Select-String -Pattern "jeu prêt" -Quiet))) { break }
-    Start-Sleep -Milliseconds 500
-  }
-  Start-Sleep -Seconds 1
+  while ((Get-Date) -lt $deadline) { if ((LogText) -match "jeu prêt") { break }; Start-Sleep -Milliseconds 200 }
+  Start-Sleep -Milliseconds 500
+  if (-not $RealInput) { return }
   $script:p.Refresh()
   $script:h = $script:p.MainWindowHandle
   if ($script:h -eq 0) { throw "fenêtre du jeu introuvable" }
@@ -73,24 +120,52 @@ function Start-Game($extraArgs) {
   $script:scale = [Math]::Min($r.Right / 1280.0, $r.Bottom / 720.0)
   $script:offX = ($r.Right - 1280 * $script:scale) / 2; $script:offY = ($r.Bottom - 720 * $script:scale) / 2
 }
+# Contenu du journal du jeu (lecture partagée : le jeu l'écrit encore).
+function LogText() {
+  if (-not (Test-Path $plog)) { return "" }
+  try { $fs = New-Object IO.FileStream($plog, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite); $sr = New-Object IO.StreamReader($fs, [Text.Encoding]::UTF8); try { return $sr.ReadToEnd() } finally { $sr.Dispose() } } catch { return "" }
+}
+# Attend qu'une ligne du journal corresponde (au lieu d'une pause fixe) ; abandonne au bout de $timeout s (la vérification échouera alors d'elle-même).
+function WaitLog($pattern, $timeout) {
+  $deadline = (Get-Date).AddSeconds($timeout)
+  while ((Get-Date) -lt $deadline) { if ((LogText) -match $pattern) { return }; Start-Sleep -Milliseconds 200 }
+}
+# Envoie une commande au jeu (entrées injectées) et attend son accusé dans le journal.
+function Send($command) {
+  $script:cmdN++
+  [IO.File]::AppendAllText($cmdFile, $command + "`n")
+  $tag = "e2e $($script:cmdN) ok"; $deadline = (Get-Date).AddSeconds(20)
+  while ((Get-Date) -lt $deadline) { if ((LogText).Contains($tag)) { return }; Start-Sleep -Milliseconds 30 }
+  throw "le jeu n'a pas joué la commande : $command"
+}
+$keyNames = @{ 0x39 = "Space"; 0x01 = "Escape"; 0x1C = "Enter"; 0x02 = "Digit1"; 0x10 = "Q" }
 function Tap($lx, $ly, $label) {
-  $sx = [int]($script:origin.X + $script:offX + $lx * $script:scale); $sy = [int]($script:origin.Y + $script:offY + $ly * $script:scale)
-  Write-Output ("  clic {0} : logique ({1},{2}) -> écran ({3},{4})" -f $label, $lx, $ly, $sx, $sy)
-  [Win]::Click($sx, $sy); Start-Sleep -Milliseconds 800
+  Write-Output ("  clic {0} : logique ({1},{2})" -f $label, $lx, $ly)
+  if ($RealInput) { $sx = [int]($script:origin.X + $script:offX + $lx * $script:scale); $sy = [int]($script:origin.Y + $script:offY + $ly * $script:scale); [Win]::Click($sx, $sy); Start-Sleep -Milliseconds 800 }
+  else { Send "click $lx $ly"; Start-Sleep -Milliseconds 300 }
 }
 function HoldMouse($lx, $ly, $seconds, $label) {
-  $sx = [int]($script:origin.X + $script:offX + $lx * $script:scale); $sy = [int]($script:origin.Y + $script:offY + $ly * $script:scale)
   Write-Output ("  maintenir {0} pendant {1} s : logique ({2},{3})" -f $label, $seconds, $lx, $ly)
-  [Win]::MouseDown($sx, $sy); Start-Sleep -Milliseconds ([int]($seconds * 1000)); [Win]::MouseUp(); Start-Sleep -Milliseconds 600
+  if ($RealInput) { $sx = [int]($script:origin.X + $script:offX + $lx * $script:scale); $sy = [int]($script:origin.Y + $script:offY + $ly * $script:scale); [Win]::MouseDown($sx, $sy) }
+  else { Send "down $lx $ly" }
+  Start-Sleep -Milliseconds ([int]($seconds * 1000))
+  if ($RealInput) { [Win]::MouseUp() } else { Send "up" }
+  Start-Sleep -Milliseconds 600
 }
 function HoldKey($scan, $seconds, $label) {
   Write-Output "  maintenir la touche $label pendant $seconds s"
-  [Win]::KeyDown([byte]$scan); Start-Sleep -Milliseconds ([int]($seconds * 1000)); [Win]::KeyUp([byte]$scan); Start-Sleep -Milliseconds 600
+  if ($RealInput) { [Win]::KeyDown([byte]$scan) } else { Send ("keydown " + $keyNames[[int]$scan]) }
+  Start-Sleep -Milliseconds ([int]($seconds * 1000))
+  if ($RealInput) { [Win]::KeyUp([byte]$scan) } else { Send ("keyup " + $keyNames[[int]$scan]) }
+  Start-Sleep -Milliseconds 600
 }
 function Count($lines, $pattern) { return @($lines | Select-String -Pattern $pattern).Count }
-function Press($scan, $label) { Write-Output "  touche $label"; [Win]::Key([byte]$scan); Start-Sleep -Milliseconds 800 }
+function Press($scan, $label) {
+  Write-Output "  touche $label"
+  if ($RealInput) { [Win]::Key([byte]$scan); Start-Sleep -Milliseconds 800 } else { Send ("key " + $keyNames[[int]$scan]); Start-Sleep -Milliseconds 300 }
+}
 function Stop-Game() { try { $null = $script:p.CloseMainWindow(); if (-not $script:p.WaitForExit(6000)) { Stop-Process -Id $script:p.Id -Force } } catch {}; Start-Sleep -Milliseconds 800 }
-function Log() { if (Test-Path $plog) { Get-Content $plog -Encoding UTF8 | ForEach-Object { $_ } } else { @() } }
+function Log() { (LogText) -split "\r?\n" }
 function Expect($lines, $pattern, $label) {
   if ($lines | Select-String -Pattern $pattern -Quiet) { Write-Output "  OK      $label" }
   else { Write-Output "  ÉCHEC   $label   (attendu : $pattern)"; $script:failures += $label }
@@ -145,7 +220,7 @@ Tap $level3[0] $level3[1] "niveau 3 (verrouillé)"
 Tap $level2[0] $level2[1] "niveau 2 (verrouillé)"
 Tap $level1[0] $level1[1] "niveau 1"
 Tap $fightPlay[0] $fightPlay[1] "Jouer (combat)"
-Start-Sleep -Seconds 12
+WaitLog "combat terminé" 60
 $b = Log
 Forbid $b "niveau : l[23]" "un niveau verrouillé ne se lance pas"
 Expect $b "état : combat terminé \(defeat\)" "le combat sans joueur se termine par une défaite"
@@ -164,7 +239,7 @@ if (Want "C") {
 Write-Output "Scénario C : Espace démarre, Entrée redémarre après la défaite"
 Start-Game @("-healer-timescale", "40", "-healer-level", "l1", "-healer-profile-dir", (New-ProfileDir "C"))
 Press 0x39 "Espace (jouer)"
-Start-Sleep -Seconds 12
+WaitLog "combat terminé" 60
 Press 0x1C "Entrée (recommencer)"
 Stop-Game
 $c = Log
@@ -181,7 +256,7 @@ Start-Game @("-healer-autoplay", "-healer-timescale", "20", "-healer-profile-dir
 Tap $menuPlay[0] $menuPlay[1] "Jouer (menu)"
 Tap $level1[0] $level1[1] "niveau 1"
 Tap $fightPlay[0] $fightPlay[1] "Jouer (combat)"
-Start-Sleep -Seconds 14
+WaitLog "sauvegarde : écrite" 60
 $d1 = Log
 Expect $d1 "état : combat terminé \(victory\)" "le bot gagne le niveau 1"
 Expect $d1 "progression : l1 [123] étoile" "la victoire donne au moins une étoile"
@@ -299,13 +374,13 @@ if (Want "H") {
 Write-Output "Scénario H : le Seigneur de Cendre s'enrage, le Golem (tutoriel) jamais"
 Start-Game @("-healer-autoplay", "-healer-timescale", "40", "-healer-level", "l3", "-healer-profile-dir", (New-ProfileDir "H"))
 Press 0x39 "Espace (jouer)"
-Start-Sleep -Seconds 6
+WaitLog "boss enragé palier 1" 40
 Stop-Game
 $h1 = Log
 Expect $h1 "état : boss enragé palier 1 .\+5 %." "le palier 1 d'enrage arrive (+5 %)"
 Start-Game @("-healer-autoplay", "-healer-timescale", "40", "-healer-level", "l1", "-healer-profile-dir", (New-ProfileDir "H2"))
 Press 0x39 "Espace (jouer)"
-Start-Sleep -Seconds 6
+WaitLog "combat terminé" 40
 Stop-Game
 $h2 = Log
 Forbid $h2 "boss enragé" "le Golem, boss tutoriel, ne s'enrage jamais"
@@ -350,5 +425,5 @@ Expect $i2 "sauvegarde : chargée" "la sauvegarde est rechargée"
 Expect $i2 "réglage : musique 30" "les réglages rechargés servent de point de départ (40 -> 30)"
 }
 
-if ($failures.Count -gt 0) { Write-Output ""; Write-Output "$($failures.Count) vérification(s) en échec."; exit 1 }
-Write-Output ""; Write-Output "Tous les tests de bout en bout passent."
+if ($failures.Count -gt 0) { Write-Output ""; Write-Output "$($failures.Count) vérification(s) en échec."; Write-Output "[e2e-fin] code=1"; exit 1 }
+Write-Output ""; Write-Output "Tous les tests de bout en bout passent."; Write-Output "[e2e-fin] code=0"
