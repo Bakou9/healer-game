@@ -21,10 +21,12 @@ namespace Healer.Combat.Progress
         public string Path { get; set; } = "";
         /// <summary>Taille voulue du modèle : sa plus grande dimension en CENTIÈMES d'unité du pivot (220 = 2,2). Le client normalise le fichier importé : FBX, glTF et OBJ n'ont pas la même unité. Entiers, comme toute donnée du jeu.</summary>
         public int Size { get; set; } = 100;
-        /// <summary>Décalage local (x, y, z) par rapport au pivot de l'emplacement, en centièmes d'unité.</summary>
+        /// <summary>Où placer le CENTRE du modèle (x, y, z) par rapport au pivot de l'emplacement, en centièmes d'unité : le client recentre le fichier, son origine ne compte pas.</summary>
         public int[] Offset { get; set; } = new int[] { 0, 0, 0 };
         /// <summary>Rotation locale en degrés entiers (x, y, z).</summary>
         public int[] Euler { get; set; } = new int[] { 0, 0, 0 };
+        /// <summary>Pièces dessinées à CONSERVER sur le pivot (par nom : « Orb », « Cross »…) : cristaux et lueurs qui font l'identité du héros.</summary>
+        public string[] Keep { get; set; } = new string[0];
 
         /// <summary>Dossier de la ressource externe (« Imported/KayKit/Knight » → « KayKit »), ou null si le modèle est une création de l'équipe.</summary>
         public string? ImportedFolder

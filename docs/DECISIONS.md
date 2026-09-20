@@ -432,3 +432,12 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Atelier** : « Or → 99,9k » (`Workshop.DevSetGold`, par le portefeuille, donc journalisé « mode développeur ») et − / + par piste d'équipement (`Workshop.DevSetEquipmentLevel`, borné à 0..maximum, sans paiement). Le cœur porte ces deux fonctions (testées : bornes, aucun paiement, piste inconnue, or exact depuis 0 / 400 / 500 000, effet sur l'apparence et les statistiques) ; le jeu normal ne les appelle jamais.
 - **Vérification** : scénario e2e L (or à 99 999, trois + puis un −, aucun achat, sauvegarde correcte). 761 tests et 12 scénarios verts.
 - **Question B** : aucune règle ni valeur de jeu modifiée.
+
+## D-064 — Armes importées pour les héros (KayKit Adventurers)
+
+- **Date** : 2026-09-20 — **Statut** : Livrée pour Garde, Mage et Soigneuse ; Archère inchangée faute d'arc dans le pack.
+- **Contenu importé** (CC0, crédité) : `sword_1handed`, `sword_2handed`, `sword_2handed_color`, `staff`, `wand` (non utilisé), textures et licence, dans `Assets/Resources/Imported/KayKitAdventurers`.
+- **Mise en jeu** : Garde : épée courte (Ordinaire), épée à deux mains (Raffiné), épée à deux mains colorée (Légendaire), portée en diagonale vers l'avant ; Mage et Soigneuse : bâton KayKit à trois tailles ; la Soigneuse **garde sa croix de cristal** dessinée par le code (nouvelle option `keep` : pièces dessinées à conserver sur le pivot). Le modèle est **recentré** (option `offset` = où va son centre) : l'origine du fichier ne compte plus, et sa taille est normalisée.
+- **Archère** : le pack ne contient pas d'arc (arbalètes seulement) ; on garde l'arc dessiné par le code plutôt que de changer d'arme selon le palier. À combler avec un autre pack ou une pièce faite sur mesure.
+- **Corps et armures** : toujours dessinés par le code ; les remplacer demande un squelette commun (voir docs/ART_3D.md).
+- **Question B** : aucune règle ni valeur de jeu modifiée ; 761 tests et 12 scénarios e2e verts.

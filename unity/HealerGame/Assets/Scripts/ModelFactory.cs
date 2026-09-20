@@ -170,28 +170,34 @@ namespace Healer.Client
                 return;
             }
             // Destruction IMMÉDIATE : la scène liste ensuite les rendus du héros, elle ne doit pas y trouver des objets détruits en fin d'image.
-            for (int i = rig.Weapon.childCount - 1; i >= 0; i--) Object.DestroyImmediate(rig.Weapon.GetChild(i).gameObject);
+            var keep = new HashSet<string>(model.Keep);
+            for (int i = rig.Weapon.childCount - 1; i >= 0; i--)
+                if (!keep.Contains(rig.Weapon.GetChild(i).name)) Object.DestroyImmediate(rig.Weapon.GetChild(i).gameObject);
             var instance = Object.Instantiate(prefab, rig.Weapon, false);
             instance.name = "ImportedWeapon";
-            instance.transform.localPosition = new Vector3(model.Offset[0], model.Offset[1], model.Offset[2]) / 100f;
+            instance.transform.localPosition = Vector3.zero;
             instance.transform.localEulerAngles = new Vector3(model.Euler[0], model.Euler[1], model.Euler[2]);
             foreach (var collider in instance.GetComponentsInChildren<Collider>()) Object.DestroyImmediate(collider);
             // Taille normalisée : l'unité du fichier (mètres, centimètres…) ne compte pas, seule la taille voulue compte.
             instance.transform.localScale = Vector3.one;
-            float longest = LongestSide(instance.transform);
+            var measured = BoundsIn(instance.transform, rig.Weapon);
+            float longest = Mathf.Max(measured.size.x, Mathf.Max(measured.size.y, measured.size.z));
             if (longest > 0.0001f) instance.transform.localScale = Vector3.one * (model.Size / 100f / longest);
+            // Recentrage : l'origine du fichier ne compte pas, le CENTRE du modèle va où les données le demandent.
+            var scaled = BoundsIn(instance.transform, rig.Weapon);
+            instance.transform.localPosition = new Vector3(model.Offset[0], model.Offset[1], model.Offset[2]) / 100f - scaled.center;
             Debug.Log("[Healer] modèle importé : " + model.Path);
         }
 
-        /// <summary>Plus grande dimension d'un modèle dans son propre repère (mesures des maillages, sans dépendre de l'échelle des parents ni de l'unité du fichier).</summary>
-        private static float LongestSide(Transform root)
+        /// <summary>Boîte englobante d'un modèle exprimée dans le repère `space` (mesures des maillages : indépendante de l'unité du fichier et de l'échelle des parents).</summary>
+        private static Bounds BoundsIn(Transform root, Transform space)
         {
             bool any = false;
             var bounds = new Bounds();
             void Add(Mesh? mesh, Transform node)
             {
                 if (mesh == null) return;
-                var toRoot = root.worldToLocalMatrix * node.localToWorldMatrix;
+                var toRoot = space.worldToLocalMatrix * node.localToWorldMatrix;
                 var b = mesh.bounds;
                 for (int i = 0; i < 8; i++)
                 {
@@ -202,7 +208,7 @@ namespace Healer.Client
             }
             foreach (var mf in root.GetComponentsInChildren<MeshFilter>()) Add(mf.sharedMesh, mf.transform);
             foreach (var sk in root.GetComponentsInChildren<SkinnedMeshRenderer>()) Add(sk.sharedMesh, sk.transform);
-            return any ? Mathf.Max(bounds.size.x, Mathf.Max(bounds.size.y, bounds.size.z)) : 0f;
+            return bounds;
         }
 
         /// <summary>Garde : armure de plaques noircies ; corne, crête et cape sang aux paliers supérieurs ; épée et bouclier runiques.</summary>

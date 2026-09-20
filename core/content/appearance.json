@@ -24,6 +24,21 @@
             "accent": "8E2B34",
             "glow": "7CC8FF",
             "trim": "B8924A"
+          },
+          "model": {
+            "path": "Imported/KayKitAdventurers/sword_1handed",
+            "size": 170,
+            "offset": [
+              0,
+              77,
+              41
+            ],
+            "euler": [
+              115,
+              0,
+              0
+            ],
+            "keep": []
           }
         },
         {
@@ -34,6 +49,21 @@
             "accent": "B12F3B",
             "glow": "7CC8FF",
             "trim": "C9A45A"
+          },
+          "model": {
+            "path": "Imported/KayKitAdventurers/sword_2handed",
+            "size": 200,
+            "offset": [
+              0,
+              91,
+              47
+            ],
+            "euler": [
+              115,
+              0,
+              0
+            ],
+            "keep": []
           }
         },
         {
@@ -46,18 +76,19 @@
             "trim": "E8C25A"
           },
           "model": {
-            "path": "Imported/KayKitAdventurers/sword_2handed",
-            "size": 220,
+            "path": "Imported/KayKitAdventurers/sword_2handed_color",
+            "size": 230,
             "offset": [
               0,
-              0,
-              30
+              104,
+              54
             ],
             "euler": [
-              90,
+              115,
               0,
               0
-            ]
+            ],
+            "keep": []
           }
         }
       ],
@@ -170,6 +201,20 @@
             "accent": "8E2B34",
             "glow": "C78CFF",
             "trim": "B8924A"
+          },
+          "model": {
+            "path": "Imported/KayKitAdventurers/staff",
+            "size": 220,
+            "offset": [
+              0,
+              50,
+              24
+            ],
+            "euler": [
+              0,
+              0,
+              0
+            ]
           }
         },
         {
@@ -180,6 +225,20 @@
             "accent": "B12F3B",
             "glow": "D8A8FF",
             "trim": "C9A45A"
+          },
+          "model": {
+            "path": "Imported/KayKitAdventurers/staff",
+            "size": 240,
+            "offset": [
+              0,
+              50,
+              24
+            ],
+            "euler": [
+              0,
+              0,
+              0
+            ]
           }
         },
         {
@@ -190,6 +249,20 @@
             "accent": "D8404E",
             "glow": "F0CCFF",
             "trim": "E8C25A"
+          },
+          "model": {
+            "path": "Imported/KayKitAdventurers/staff",
+            "size": 260,
+            "offset": [
+              0,
+              50,
+              24
+            ],
+            "euler": [
+              0,
+              0,
+              0
+            ]
           }
         }
       ],
@@ -236,6 +309,23 @@
             "accent": "B8924A",
             "glow": "7CFFB2",
             "trim": "B8924A"
+          },
+          "model": {
+            "path": "Imported/KayKitAdventurers/staff",
+            "size": 220,
+            "offset": [
+              0,
+              50,
+              24
+            ],
+            "euler": [
+              0,
+              0,
+              0
+            ],
+            "keep": [
+              "Cross"
+            ]
           }
         },
         {
@@ -246,6 +336,23 @@
             "accent": "C9A45A",
             "glow": "7CFFB2",
             "trim": "C9A45A"
+          },
+          "model": {
+            "path": "Imported/KayKitAdventurers/staff",
+            "size": 240,
+            "offset": [
+              0,
+              50,
+              24
+            ],
+            "euler": [
+              0,
+              0,
+              0
+            ],
+            "keep": [
+              "Cross"
+            ]
           }
         },
         {
@@ -256,6 +363,23 @@
             "accent": "E8C25A",
             "glow": "B8FFD8",
             "trim": "E8C25A"
+          },
+          "model": {
+            "path": "Imported/KayKitAdventurers/staff",
+            "size": 260,
+            "offset": [
+              0,
+              50,
+              24
+            ],
+            "euler": [
+              0,
+              0,
+              0
+            ],
+            "keep": [
+              "Cross"
+            ]
           }
         }
       ],
