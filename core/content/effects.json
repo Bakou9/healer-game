@@ -6,5 +6,21 @@
     "damagePerTick": 20,
     "tickMs": 1000,
     "durationMs": 8000
+  },
+  {
+    "id": "venom",
+    "name": "Venin",
+    "kind": "damageOverTime",
+    "damagePerTick": 30,
+    "tickMs": 1000,
+    "durationMs": 9000
+  },
+  {
+    "id": "burn",
+    "name": "Brûlure",
+    "kind": "damageOverTime",
+    "damagePerTick": 34,
+    "tickMs": 1000,
+    "durationMs": 6000
   }
 ]

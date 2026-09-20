@@ -1,0 +1,90 @@
+{
+  "id": "boss3",
+  "name": "Seigneur de Cendre",
+  "maxHp": 8200,
+  "atk": 34,
+  "def": 20,
+  "tickMs": 1900,
+  "pattern": [
+    {
+      "type": "attack",
+      "telegraphMs": 0
+    },
+    {
+      "type": "attack",
+      "telegraphMs": 0
+    },
+    {
+      "type": "bigAttack",
+      "telegraphMs": 1200,
+      "multiplier": 2.4,
+      "hitsAll": true
+    },
+    {
+      "type": "attack",
+      "telegraphMs": 0
+    }
+  ],
+  "phases": [
+    {
+      "name": "Braise",
+      "atHpRatio": 0.66,
+      "tickMs": 1800,
+      "pattern": [
+        {
+          "type": "attack",
+          "telegraphMs": 0
+        },
+        {
+          "type": "poison",
+          "telegraphMs": 0,
+          "multiplier": 0,
+          "effectId": "burn"
+        },
+        {
+          "type": "bigAttack",
+          "telegraphMs": 1200,
+          "multiplier": 2.4,
+          "hitsAll": true
+        },
+        {
+          "type": "attack",
+          "telegraphMs": 0
+        }
+      ]
+    },
+    {
+      "name": "Brasier",
+      "atHpRatio": 0.33,
+      "tickMs": 1600,
+      "pattern": [
+        {
+          "type": "attack",
+          "telegraphMs": 0
+        },
+        {
+          "type": "poison",
+          "telegraphMs": 0,
+          "multiplier": 0,
+          "effectId": "burn"
+        },
+        {
+          "type": "bigAttack",
+          "telegraphMs": 1200,
+          "multiplier": 2.4,
+          "hitsAll": true
+        },
+        {
+          "type": "poison",
+          "telegraphMs": 0,
+          "multiplier": 0,
+          "effectId": "burn"
+        },
+        {
+          "type": "attack",
+          "telegraphMs": 0
+        }
+      ]
+    }
+  ]
+}

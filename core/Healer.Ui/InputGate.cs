@@ -11,14 +11,32 @@ namespace Healer.Ui
         Ended,
     }
 
+    /// <summary>Écran de l'application : menu principal, choix du niveau, combat.</summary>
+    public enum AppScreen
+    {
+        MainMenu,
+        LevelSelect,
+        Battle,
+    }
+
     /// <summary>Gestes que l'interface peut déclencher (clic, toucher ou raccourci clavier).</summary>
     public enum UiAction
     {
+        // Combat
         StartFight,
         TapAlly,
         TapSkill,
         TogglePause,
         Restart,
+        NextLevel,
+        BackToMap,
+        // Menu principal
+        MenuPlay,
+        MenuToggleSound,
+        MenuQuit,
+        // Choix du niveau
+        PickLevel,
+        BackToMenu,
     }
 
     /// <summary>
@@ -36,16 +54,37 @@ namespace Healer.Ui
             return paused ? ScreenState.Paused : ScreenState.Playing;
         }
 
+        /// <summary>Gestes permis pendant un combat, selon l'état de l'écran de combat.</summary>
         public static bool Allows(ScreenState state, UiAction action)
         {
             switch (state)
             {
-                case ScreenState.Start: return action == UiAction.StartFight;
-                case ScreenState.Ended: return action == UiAction.Restart;
-                case ScreenState.Paused: return action == UiAction.TogglePause || action == UiAction.TapAlly;
+                case ScreenState.Start: return action == UiAction.StartFight || action == UiAction.BackToMap;
+                case ScreenState.Ended: return action == UiAction.Restart || action == UiAction.NextLevel || action == UiAction.BackToMap;
+                case ScreenState.Paused: return action == UiAction.TogglePause || action == UiAction.TapAlly || action == UiAction.BackToMap;
                 default: return action == UiAction.TapAlly || action == UiAction.TapSkill || action == UiAction.TogglePause;
             }
         }
+
+        /// <summary>Gestes permis selon l'écran de l'application : un écran ne laisse jamais passer les gestes d'un autre.</summary>
+        public static bool Allows(AppScreen screen, ScreenState battleState, UiAction action)
+        {
+            switch (screen)
+            {
+                case AppScreen.MainMenu:
+                    return action == UiAction.MenuPlay || action == UiAction.MenuToggleSound || action == UiAction.MenuQuit;
+                case AppScreen.LevelSelect:
+                    return action == UiAction.PickLevel || action == UiAction.BackToMenu;
+                default:
+                    return Allows(battleState, action);
+            }
+        }
+
+        /// <summary>
+        /// Touche de confirmation en fin de combat : niveau suivant après une victoire s'il existe, sinon rejouer.
+        /// </summary>
+        public static UiAction ConfirmAction(ScreenState state, bool victory, bool hasNextLevel) =>
+            state == ScreenState.Ended && victory && hasNextLevel ? UiAction.NextLevel : ConfirmAction(state);
 
         /// <summary>Ce que fait la touche de confirmation (Espace / Entrée) selon l'état : jouer, pause / reprise, rejouer.</summary>
         public static UiAction ConfirmAction(ScreenState state)

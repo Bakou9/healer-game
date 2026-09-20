@@ -103,6 +103,47 @@ namespace Healer.Ui
         /// <summary>Boutons des écrans modaux (démarrage, bilan). Volontairement au-dessus de la mise en page : voir InputGate.</summary>
         public static readonly Rect StartButton = new Rect(GameW / 2 - 120, 470, 240, 60);
         public static readonly Rect RestartButton = new Rect(GameW / 2 - 120, 450, 240, 56);
+        // ---- Autres écrans (menu principal, choix du niveau, fin de combat, pause) ----
+
+        /// <summary>Boutons du menu principal, empilés au centre : Jouer, Son, Quitter.</summary>
+        public static readonly Rect MenuPlay = new Rect(GameW / 2 - 160, 330, 320, 64);
+        public static readonly Rect MenuSound = new Rect(GameW / 2 - 160, 410, 320, 56);
+        public static readonly Rect MenuQuit = new Rect(GameW / 2 - 160, 482, 320, 56);
+
+        /// <summary>Bouton « retour » en haut à gauche des écrans secondaires.</summary>
+        public static readonly Rect BackButton = new Rect(SafeSide, SafeTop, 150, MinTouch);
+
+        public const double LevelCardW = 300;
+        public const double LevelCardH = 380;
+
+        /// <summary>Cartes de niveau, centrées sur une rangée.</summary>
+        public static Rect[] LevelCardRects(int count)
+        {
+            // Taille pleine tant que ça tient ; sinon les cartes rétrécissent pour que toutes restent visibles.
+            double w = Math.Min(LevelCardW, (GameW - 2 * SafeSide - (count - 1) * 28) / count);
+            double total = count * w + (count - 1) * 28;
+            double x0 = (GameW - total) / 2;
+            var result = new Rect[count];
+            for (int i = 0; i < count; i++) result[i] = new Rect(x0 + i * (w + 28), 150, w, LevelCardH);
+            return result;
+        }
+
+        public const double EndButtonW = 220;
+
+        /// <summary>Boutons de fin de combat (Recommencer, Niveau suivant, Carte), centrés sur une rangée.</summary>
+        public static Rect[] EndButtonRects(int count)
+        {
+            double total = count * EndButtonW + (count - 1) * 16;
+            double x0 = (GameW - total) / 2;
+            var result = new Rect[count];
+            for (int i = 0; i < count; i++) result[i] = new Rect(x0 + i * (EndButtonW + 16), 590, EndButtonW, 56);
+            return result;
+        }
+
+        /// <summary>Menu de pause : Reprendre, Quitter le niveau.</summary>
+        public static readonly Rect PauseResume = new Rect(GameW / 2 - 140, 330, 280, 56);
+        public static readonly Rect PauseLeave = new Rect(GameW / 2 - 140, 402, 280, 56);
+
         /// <summary>Barre de PV du boss : s'arrête avant le bouton de pause pour ne pas le chevaucher.</summary>
         public static readonly Rect BossHpBar = new Rect(Zones.CenterX + SafeSide, SafeTop + 34, Zones.CenterW - 2 * SafeSide, 14);
 

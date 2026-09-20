@@ -1,0 +1,73 @@
+{
+  "id": "boss2",
+  "name": "Reine des Marais",
+  "maxHp": 6500,
+  "atk": 34,
+  "def": 16,
+  "tickMs": 2000,
+  "pattern": [
+    {
+      "type": "attack",
+      "telegraphMs": 0
+    },
+    {
+      "type": "poison",
+      "telegraphMs": 0,
+      "multiplier": 0,
+      "effectId": "venom"
+    },
+    {
+      "type": "attack",
+      "telegraphMs": 0
+    },
+    {
+      "type": "poison",
+      "telegraphMs": 0,
+      "multiplier": 0,
+      "effectId": "venom"
+    },
+    {
+      "type": "bigAttack",
+      "telegraphMs": 1400,
+      "multiplier": 2,
+      "hitsAll": true
+    }
+  ],
+  "phases": [
+    {
+      "name": "Marée toxique",
+      "atHpRatio": 0.5,
+      "tickMs": 1800,
+      "pattern": [
+        {
+          "type": "poison",
+          "telegraphMs": 0,
+          "multiplier": 0,
+          "effectId": "venom"
+        },
+        {
+          "type": "poison",
+          "telegraphMs": 0,
+          "multiplier": 0,
+          "effectId": "venom"
+        },
+        {
+          "type": "attack",
+          "telegraphMs": 0
+        },
+        {
+          "type": "bigAttack",
+          "telegraphMs": 1400,
+          "multiplier": 2,
+          "hitsAll": true
+        },
+        {
+          "type": "poison",
+          "telegraphMs": 0,
+          "multiplier": 0,
+          "effectId": "venom"
+        }
+      ]
+    }
+  ]
+}

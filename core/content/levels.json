@@ -1,0 +1,32 @@
+[
+  {
+    "id": "l1",
+    "name": "Le Golem Ancestral",
+    "bossId": "boss1",
+    "requires": null,
+    "rewardGold": 100,
+    "repeatGold": 20,
+    "starBonusGold": 20,
+    "threeStarMaxDamageTaken": 3700
+  },
+  {
+    "id": "l2",
+    "name": "La Reine des Marais",
+    "bossId": "boss2",
+    "requires": "l1",
+    "rewardGold": 150,
+    "repeatGold": 30,
+    "starBonusGold": 30,
+    "threeStarMaxDamageTaken": 2000
+  },
+  {
+    "id": "l3",
+    "name": "Le Seigneur de Cendre",
+    "bossId": "boss3",
+    "requires": "l2",
+    "rewardGold": 220,
+    "repeatGold": 45,
+    "starBonusGold": 40,
+    "threeStarMaxDamageTaken": 3000
+  }
+]

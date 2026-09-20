@@ -15,16 +15,18 @@ namespace Healer.Combat.Tests
         private readonly Action<Battle> _drive;
         private readonly Func<List<Command>> _commands;
         private readonly uint _seed;
+        private readonly string _bossId;
 
-        public Scenario(string name, Action<Battle> drive, uint seed, Func<List<Command>>? commands = null)
+        public Scenario(string name, Action<Battle> drive, uint seed, Func<List<Command>>? commands = null, string bossId = "boss1")
         {
+            _bossId = bossId;
             Name = name;
             _drive = drive;
             _seed = seed;
             _commands = commands ?? (() => new List<Command>());
         }
 
-        public Battle Build() => new Battle(Fixtures.Encounter(_seed), _commands());
+        public Battle Build() => new Battle(_bossId == "boss1" ? Fixtures.Encounter(_seed) : Fixtures.FullContent().CreateEncounter(_bossId, _seed), _commands());
 
         /// <summary>Déroulé complet : un événement par ligne, puis un résumé de l'état final.</summary>
         public List<string> Record()
@@ -59,6 +61,9 @@ namespace Healer.Combat.Tests
             new Scenario("bot-sans-purge-seed7", b => ReferenceHealerBot.Run(b, MaxMs, new ReferenceHealerOptions { Purge = false }), 7),
             new Scenario("sans-soigneur-seed1", b => b.Run(MaxMs), 1),
             new Scenario("spam-soin-seed3", b => b.Run(MaxMs), 3, SpamHeal),
+            // Boss 2 et 3 : références créées avec ce projet (E15), pas reprises de Phaser.
+            new Scenario("boss2-bot-seed7", b => ReferenceHealerBot.Run(b, MaxMs), 7, null, "boss2"),
+            new Scenario("boss3-bot-seed7", b => ReferenceHealerBot.Run(b, MaxMs), 7, null, "boss3"),
             new Scenario("bouclier-initial-seed5", b => b.Run(MaxMs), 5,
                 () => new List<Command> { new Command { TimeMs = 0, SkillId = "shield", TargetId = "tank" } }),
         };

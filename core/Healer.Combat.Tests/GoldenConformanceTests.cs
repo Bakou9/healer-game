@@ -38,7 +38,7 @@ namespace Healer.Combat.Tests
         }
 
         [Test]
-        public void Les_sept_scenarios_de_reference_sont_tous_couverts()
+        public void Chaque_scenario_de_reference_a_son_fichier_golden_et_inversement()
         {
             var files = Directory.GetFiles(Fixtures.GoldenDir, "*.txt").Select(Path.GetFileNameWithoutExtension).OrderBy(x => x).ToList();
             var scenarios = Scenario.All.Select(s => s.Name).OrderBy(x => x).ToList();

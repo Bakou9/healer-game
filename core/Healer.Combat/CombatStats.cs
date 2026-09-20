@@ -25,9 +25,10 @@ namespace Healer.Combat
         private readonly Dictionary<string, int> _castsBySkill = new Dictionary<string, int>();
 
         /// <summary>S'abonne au combat. Renvoie l'action de désabonnement.</summary>
-        public Action Attach(Battle battle) => battle.Subscribe(OnEvent);
+        public Action Attach(Battle battle) => battle.Subscribe(Apply);
 
-        private void OnEvent(BattleEvent e)
+        /// <summary>Prend en compte un événement (utilisé par Attach ; public pour rejouer un enregistrement ou construire un cas de test).</summary>
+        public void Apply(BattleEvent e)
         {
             switch (e.Type)
             {

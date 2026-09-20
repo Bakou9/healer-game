@@ -137,3 +137,24 @@ namespace Healer.Combat
         public const string Defeat = "defeat";
     }
 }
+
+namespace Healer.Combat
+{
+    /// <summary>Niveau de la campagne : un boss, un déblocage, des récompenses (core/content/levels.json).</summary>
+    public class LevelDef
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string BossId { get; set; } = "";
+        /// <summary>Niveau à terminer avant celui-ci ; null = disponible dès le début.</summary>
+        public string? Requires { get; set; }
+        /// <summary>Or gagné à la première victoire.</summary>
+        public int RewardGold { get; set; }
+        /// <summary>Or gagné à chaque victoire suivante.</summary>
+        public int RepeatGold { get; set; }
+        /// <summary>Or gagné pour chaque étoile obtenue pour la première fois.</summary>
+        public int StarBonusGold { get; set; }
+        /// <summary>3ᵉ étoile : victoire sans allié K.O. ET au plus ce total de dégâts encaissés (boucliers et purges comptent).</summary>
+        public double ThreeStarMaxDamageTaken { get; set; }
+    }
+}

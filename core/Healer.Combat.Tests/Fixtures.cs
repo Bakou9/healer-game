@@ -35,5 +35,13 @@ namespace Healer.Combat.Tests
             GameContent.FromJson(CharactersJson, SkillsJson, EffectsJson, BossJson);
 
         public static EncounterDef Encounter(uint seed) => Content().CreateEncounter(seed);
+
+        /// <summary>Tout le contenu : personnages, sorts, effets, tous les boss (boss1.json, boss2.json…) et niveaux.</summary>
+        public static GameContent FullContent()
+        {
+            var bosses = new System.Collections.Generic.List<string>();
+            for (int i = 1; File.Exists(Path.Combine(ContentDir, $"boss{i}.json")); i++) bosses.Add(Read($"boss{i}.json"));
+            return GameContent.FromJson(CharactersJson, SkillsJson, EffectsJson, bosses, Read("levels.json"));
+        }
     }
 }

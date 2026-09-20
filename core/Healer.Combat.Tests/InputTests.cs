@@ -14,17 +14,17 @@ namespace Healer.Combat.Tests
         private static readonly UiAction[] AllActions = (UiAction[])Enum.GetValues(typeof(UiAction));
 
         [Test]
-        public void Au_demarrage_seul_le_bouton_Jouer_reagit()
+        public void Au_demarrage_seuls_Jouer_et_le_retour_a_la_carte_reagissent()
         {
             foreach (var a in AllActions)
-                Assert.That(InputGate.Allows(ScreenState.Start, a), Is.EqualTo(a == UiAction.StartFight), a.ToString());
+                Assert.That(InputGate.Allows(ScreenState.Start, a), Is.EqualTo(a == UiAction.StartFight || a == UiAction.BackToMap), a.ToString());
         }
 
         [Test]
-        public void En_fin_de_combat_seul_le_bouton_Recommencer_reagit()
+        public void En_fin_de_combat_seuls_Recommencer_Niveau_suivant_et_Carte_reagissent()
         {
             foreach (var a in AllActions)
-                Assert.That(InputGate.Allows(ScreenState.Ended, a), Is.EqualTo(a == UiAction.Restart), a.ToString());
+                Assert.That(InputGate.Allows(ScreenState.Ended, a), Is.EqualTo(a == UiAction.Restart || a == UiAction.NextLevel || a == UiAction.BackToMap), a.ToString());
         }
 
         [Test]
@@ -35,6 +35,8 @@ namespace Healer.Combat.Tests
             Assert.That(InputGate.Allows(ScreenState.Playing, UiAction.TogglePause), Is.True);
             Assert.That(InputGate.Allows(ScreenState.Playing, UiAction.StartFight), Is.False);
             Assert.That(InputGate.Allows(ScreenState.Playing, UiAction.Restart), Is.False);
+            Assert.That(InputGate.Allows(ScreenState.Playing, UiAction.BackToMap), Is.False, "on quitte un combat par la pause, pas d'un clic malheureux");
+            Assert.That(InputGate.Allows(ScreenState.Playing, UiAction.NextLevel), Is.False);
         }
 
         [Test]
@@ -45,6 +47,7 @@ namespace Healer.Combat.Tests
             Assert.That(InputGate.Allows(ScreenState.Paused, UiAction.TapSkill), Is.False);
             Assert.That(InputGate.Allows(ScreenState.Paused, UiAction.Restart), Is.False);
             Assert.That(InputGate.Allows(ScreenState.Paused, UiAction.StartFight), Is.False);
+            Assert.That(InputGate.Allows(ScreenState.Paused, UiAction.BackToMap), Is.True, "quitter le niveau depuis la pause");
         }
 
         [TestCase(false, false, false, ScreenState.Start)]
