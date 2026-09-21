@@ -43,12 +43,15 @@ namespace Healer.Client
             public string Nom = "";
             public Transform Pivot = null!;
             public Mesh? Grille;            // seulement pour le corps : ondulation du tissu
+            /// <summary>Degrés de rotation par canal : souffle, coup, recul, lancer, lâcher, chute (lus dans le fichier de découpe).</summary>
+            public float[] Anim = new float[6];
             public Vector3[]? Repos;
             public Vector3[]? Travail;
             public float Hauteur;
         }
 
         private readonly List<Partie> _parties = new List<Partie>();
+        private readonly Dictionary<string, float[]> _animations = new Dictionary<string, float[]>();
         private Transform _plateau = null!;   // porte l'orientation face caméra : tout ce qui est dessous est du pur 2D
         private float _phase;
         private UnitPose _pose;
@@ -87,7 +90,17 @@ namespace Healer.Client
         {
             var pivots = new Dictionary<string, Partie>();
             var ancres = new Dictionary<string, Vector2>();
-            foreach (var brute in texte.Split('\n'))
+            var lignes = texte.Split('\n');
+            // Première passe : les animations, car dans le fichier chaque ligne « anim » SUIT la partie qu'elle décrit.
+            foreach (var brute in lignes)
+            {
+                var t = brute.Trim().Split(' ');
+                if (t.Length != 8 || t[0] != "anim") continue;
+                var v = new float[6];
+                for (int k = 0; k < 6; k++) v[k] = float.Parse(t[k + 2], CultureInfo.InvariantCulture);
+                _animations[t[1]] = v;
+            }
+            foreach (var brute in lignes)
             {
                 var t = brute.Trim().Split(' ');
                 if (t.Length != 10 || t[0] != "partie") continue;
@@ -101,6 +114,7 @@ namespace Healer.Client
                 var parente = parent != "-" && pivots.TryGetValue(parent, out var pp) ? pp : null;
                 var pivotParent = parent != "-" && ancres.TryGetValue(parent, out var ap) ? ap : Vector2.zero;
                 var partie = Ajouter(nom, parente, ordre, pivot, pivotParent, zone, tex, largeur, nom == "body");
+                if (_animations.TryGetValue(nom, out var anim)) partie.Anim = anim;
                 pivots[nom] = partie;
                 ancres[nom] = pivot;
                 _parties.Add(partie);
@@ -205,26 +219,46 @@ namespace Healer.Client
             _plateau.rotation = cam.transform.rotation * Quaternion.Euler(0f, 0f, -74f * chute);
             _plateau.localPosition = Vector3.zero;
 
-            // Le personnage regarde vers la droite (vers le boss) : un angle NÉGATIF le penche vers l'ennemi.
+            // Le coup porté est une SÉQUENCE, pas un simple aller-retour : on arme en arrière (valeur négative),
+            // on frappe vers l'avant (positive), puis on revient. C'est ce qui fait lire une attaque plutôt qu'un tremblement.
+            float u = (float)_pose.LungeProgress;
+            float coup = u > 0f ? Courbe(u) : 0f;
+
+            // Le plateau porte l'orientation face caméra et la bascule de la chute (autour des pieds).
+            _plateau.rotation = cam.transform.rotation * Quaternion.Euler(0f, 0f, -74f * chute);
+            _plateau.localPosition = Vector3.zero;
+
+            // Sans fichier d'animation (illustration non découpée), on garde un mouvement d'ensemble simple.
+            bool articule = _animations.Count > 0;
             float penche = (-elan * 13f - lache * 8f + recul * 11f + lancer * 3f) * vivant;
-            float leveBras = (souffle * 2.5f + lancer * 44f - lache * 52f - recul * 20f) * vivant;
-            float tete = (-souffle * 1.8f - elan * 8f + recul * 15f - lancer * 7f) * vivant;
 
             foreach (var p in _parties)
             {
-                float angle = p.Nom switch
+                float angle;
+                if (articule)
                 {
-                    "body" => penche,
-                    "head" => tete,
-                    "arm_free" => leveBras,
-                    _ => souffle * 1.5f * vivant,
-                };
+                    var a = p.Anim;
+                    // souffle, coup, recul, lancer, lâcher, chute : chaque partie a son amplitude, lue dans les données.
+                    angle = (a[0] * souffle + a[1] * coup + a[2] * recul + a[3] * lancer + a[4] * lache) * vivant + a[5] * chute;
+                }
+                else angle = p.Nom == "body" ? penche : souffle * 1.5f * vivant;
+
                 p.Pivot.localRotation = Quaternion.Euler(0f, 0f, angle);
                 if (p.Nom == "body")
                     p.Pivot.localScale = new Vector3(1f - 0.008f * souffle, 1f + 0.014f * souffle - recul * 0.03f, 1f);
                 if (p.Grille != null && p.Repos != null && p.Travail != null) Onduler(p, t, vivant);
             }
         }
+
+        /// <summary>Courbe du coup porté : 0 au départ, -1 quand l'arme est armée en arrière (à 30 %), +1 à la frappe (55 %), 0 au retour.</summary>
+        private static float Courbe(float u)
+        {
+            if (u < 0.30f) return -Lisse(u / 0.30f);
+            if (u < 0.55f) return Mathf.Lerp(-1f, 1f, Lisse((u - 0.30f) / 0.25f));
+            return Mathf.Lerp(1f, 0f, Lisse((u - 0.55f) / 0.45f));
+        }
+
+        private static float Lisse(float x) { x = Mathf.Clamp01(x); return x * x * (3f - 2f * x); }
 
         /// <summary>Ondulation du tissu : forte en bas de la robe, nulle en haut (là où sont accrochées la tête et les bras).</summary>
         private void Onduler(Partie p, float t, float vivant)

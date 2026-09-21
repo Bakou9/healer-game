@@ -97,6 +97,7 @@ if not os.path.exists(chemin_rig):
     sys.exit(0)
 
 parties = []
+animations = {}
 for ligne in open(chemin_rig, encoding="utf-8"):
     ligne = ligne.strip()
     if not ligne or ligne.startswith("#"):
@@ -105,6 +106,8 @@ for ligne in open(chemin_rig, encoding="utf-8"):
     if t[0] == "partie":
         parties.append({"nom": t[1], "parent": None if t[2] == "-" else t[2], "ordre": int(t[3]),
                         "pivot": (float(t[4]), float(t[5])), "poly": []})
+    elif t[0] == "anim":
+        animations[t[1]] = " ".join(t[2:])
     elif t[0] == "poly":
         vals = [float(v) for v in t[1:]]
         parties[-1]["poly"] = [(vals[i], vals[i + 1]) for i in range(0, len(vals), 2)]
@@ -165,6 +168,8 @@ for p in parties:
     fw, fh = (x1 - x0) / W, (y1 - y0) / H
     pvx, pvy = p["pivot"][0] / 100.0, 1.0 - p["pivot"][1] / 100.0
     lignes_rig.append(f"partie {p['nom']} {p['parent'] or '-'} {p['ordre']} {fx0:.5f} {fy0:.5f} {fw:.5f} {fh:.5f} {pvx:.5f} {pvy:.5f}")
+    if p["nom"] in animations:
+        lignes_rig.append(f"anim {p['nom']} {animations[p['nom']]}")
     apercus.append((p, decoupe, x0, y0))
     print(f"PARTIE {p['nom']:<12} {x1 - x0:4d}x{y1 - y0:4d} px  pivot {p['pivot']}")
 

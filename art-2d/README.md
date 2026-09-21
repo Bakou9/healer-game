@@ -103,9 +103,15 @@ Une illustration figée donne des animations pauvres. On la découpe donc en que
 3. Découper : `blender --background --python art-2d/tools/cutout.py -- <unité> --unity`
    → une image par partie, le fichier de rig pour le jeu, et `<unité>_parts_apercu.png` pour vérifier la découpe d'un coup d'œil.
 
+**Animer les parties** : chaque partie déclare ses amplitudes dans le même fichier, ligne `anim <nom> <souffle> <coup> <recul> <lancer> <lache> <chute>`
+(en degrés). Le jeu ne connaît aucun nom de partie : tout est dans les données. Le canal `coup` est une séquence (arme en arrière, frappe, retour).
+
 **Règle apprise sur la Soigneuse** : une partie qui bouge ne doit pas être dupliquée dans la partie du dessous, sinon son fantôme
 apparaît dès qu'elle tourne. Le corps s'arrête donc sous le cou et avant l'épaule du bras mobile. À l'inverse, un accessoire qui
 traverse le corps en diagonale (le bâton de la Soigneuse) reste dans le corps : l'extraire laisserait une bande vide.
+
+**Règle apprise sur le Garde** : l'ARTICULATION, elle, doit être doublée. Le corps déborde sous l'épaule du bras mobile ; cette matière
+reste cachée par l'épaulière et comble le trou qui apparaît dès que le bras tourne.
 
 Découpe actuelle de la Soigneuse : `body` (robe, bâton, bras porteur), `head` (capuche, masque, bois), `arm_free` (bras tendu, lumière).
 Trois parties suffisent à animer respiration, incantation, attaque, coup reçu et chute.

@@ -1,0 +1,15 @@
+image 264 512
+partie leg_l body 0 0.28409 0.05078 0.23106 0.33203 0.42000 0.34000
+anim leg_l 0.4 -6 5 -1 -2 0
+partie leg_r body 0 0.48864 0.00977 0.21212 0.37305 0.56000 0.34000
+anim leg_r -0.4 7 -4 1 2 0
+partie body - 1 0.27273 0.27539 0.40530 0.59766 0.50000 0.36000
+anim body 0.6 -9 10 -3 -6 0
+partie head body 2 0.37500 0.79492 0.28030 0.20508 0.50000 0.83000
+anim head -1 -6 15 -5 -4 0
+partie arm_sword_upper body 3 0.13636 0.55469 0.24242 0.30078 0.33000 0.76000
+anim arm_sword_upper 1.5 -24 9 -8 -14 0
+partie arm_sword_fore arm_sword_upper 4 0.01515 0.04492 0.34470 0.57812 0.25000 0.60000
+anim arm_sword_fore 1 -18 7 -4 -16 0
+partie arm_shield body 5 0.55303 0.47461 0.42424 0.42578 0.60000 0.76000
+anim arm_shield -1.5 10 -18 5 7 0

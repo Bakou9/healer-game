@@ -1,0 +1,43 @@
+# Découpe articulée du Garde (D-079). Coordonnées en % de l'illustration, origine en HAUT à gauche
+# (repère : art-2d/out/tank_grille.png).
+#
+#   partie <nom> <parent|-> <ordre> <pivot_x> <pivot_y>     ordre : petit = derrière
+#   poly   <x> <y> ...                                      le polygone découpé (peut être concave)
+#   anim   <nom> <souffle> <coup> <recul> <lancer> <lache> <chute>    degrés de rotation par canal d'animation
+#
+# Canaux : souffle = respiration au repos ; coup = séquence d'attaque (armé en arrière puis frappe en avant) ;
+# recul = coup reçu ; lancer = montée d'un sort ; lache = sort lâché ; chute = mort.
+# Règle : une partie mobile ne doit pas être dupliquée dans celle du dessous, sinon son fantôme apparaît.
+
+# Jambes, derrière tout le reste : le haut est couvert par la jupe du corps.
+partie leg_l body 0 42 66
+poly 33 62  50 62  51 88  50 100  30 100  29 86
+anim leg_l 0.4 -6 5 -1 -2 0
+
+partie leg_r body 0 56 66
+poly 50 62  68 62  69 86  68 100  50 100  49 88
+anim leg_r -0.4 7 -4 1 2 0
+
+# Corps : torse, ceinture et jupe. Pivot au bassin, c'est lui qui porte tout le reste.
+partie body - 1 50 64
+poly 38 13  60 13  64 26  66 46  67 64  60 72  40 72  33 64  32 46  29 32  28 20  34 13
+anim body 0.6 -9 10 -3 -6 0
+
+# Heaume.
+partie head body 2 50 17
+poly 36 0  64 0  66 10  62 18  50 20  40 18  35 10
+anim head -1 -6 15 -5 -4 0
+
+# Bras de l'épée, en deux segments : l'épaule arme le coup, l'avant-bras (avec l'épée) le porte.
+partie arm_sword_upper body 3 33 24
+poly 14 14  36 13  37 30  34 42  20 44  12 30
+anim arm_sword_upper 1.5 -24 9 -8 -14 0
+
+partie arm_sword_fore arm_sword_upper 4 25 40
+poly 12 38  34 38  35 54  26 60  20 75  14 95  2 95  2 72  8 55
+anim arm_sword_fore 1 -18 7 -4 -16 0
+
+# Bras du bouclier : il se lève pour parer quand le Garde encaisse.
+partie arm_shield body 5 60 24
+poly 58 8  96 10  97 45  76 52  60 46  56 26
+anim arm_shield -1.5 10 -18 5 7 0

@@ -583,3 +583,27 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
   Google Play demandent de déclarer. Le générique affiche la section « Contenus générés par IA ». 4 tests ajoutés (dont : un contenu IA sans
   prompt est refusé ; une ressource importée sous copyleft reste refusée).
 - **Question B** : aucune règle ni valeur de jeu modifiée ; présentation et politique de crédits seulement.
+
+
+## D-079 — Animation articulée pilotée par les données, et limites des modèles de pose
+
+- **Date** : 2026-09-21 — **Statut** : Livrée pour le Garde sur la branche `pixel-art` ; à étendre aux autres unités.
+- **Constat de l'utilisateur** : « là tu ne fais que tordre les images, il faudrait pouvoir faire du mouvement ». Juste : avec trois
+  parties, on ne pouvait que pencher et respirer.
+- **Essai mesuré et négatif** (`art-2d/tools/poses.mjs`) : regénérer l'illustration en « image vers image » avec un prompt de pose
+  différente préserve parfaitement le personnage mais **ne change pas la pose**, même en laissant réécrire les deux tiers de l'image
+  (essais à 0,35, 0,50 et 0,65). Cette technique retouche la matière, pas la structure. Le script est conservé : il sert à produire
+  des variations de rendu, pas des poses.
+- **Licences vérifiées** : les modèles de contrôle de pose (ControlNet) pour FLUX visent FLUX.1-**dev**, sous licence **non
+  commerciale**, et ne fonctionnent pas avec schnell (Apache 2.0, celui que nous utilisons). Cette voie est donc **fermée pour un jeu
+  commercial** en l'état. Une alternative existe avec SDXL et ses ControlNet, mais elle changerait le style de tous les personnages.
+- **Choix retenu** : l'animation par découpe fine, comme Spine ou DragonBones. Le Garde est découpé en **7 parties** (deux jambes,
+  corps, heaume, bras de l'épée en deux segments, bras du bouclier), et chaque partie déclare ses amplitudes DANS LES DONNÉES
+  (`art-2d/rigs/<unité>.txt`, lignes `anim`), pour six canaux : souffle, coup, recul, lancer, lâcher, chute. Le client ne contient
+  plus aucun nom de partie en dur.
+- **Le coup porté est une séquence** et non un aller-retour : l'arme s'arme en arrière (30 % du geste), frappe en avant (55 %), puis
+  revient. C'est ce qui fait lire une attaque.
+- **Deux pièges du découpage**, notés dans `art-2d/README.md` : une partie mobile ne doit pas être dupliquée dans celle du dessous
+  (son fantôme apparaît dès qu'elle tourne) ; mais l'articulation, elle, DOIT être doublée — le corps déborde sous l'épaule, cette
+  matière reste cachée par l'épaulière et comble le trou qui apparaissait quand le bras tournait.
+- **Question B** : aucune règle ni valeur de jeu modifiée ; présentation seulement.
