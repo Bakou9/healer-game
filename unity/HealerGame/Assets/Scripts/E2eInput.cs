@@ -73,6 +73,12 @@ namespace Healer.Client
                     break;
                 case "down": Aim(t); Pointer(false); yield return null; Pointer(true); break;
                 case "up": Pointer(false); break;
+                case "hover":   // survol sans clic (D-080) : Pointer(false) pousse la position au périphérique ;
+                    Aim(new[] { t[0], "4", "4" }); Pointer(false);      // on passe par un coin pour que l'interface voie un mouvement,
+                    yield return null; yield return null;
+                    Aim(t); Pointer(false);                              // puis on vient sur la cible.
+                    for (int k = 0; k < 4; k++) yield return null;
+                    break;
                 case "key":
                     SetKey(t[1], true); yield return new WaitForSecondsRealtime(0.08f); SetKey(t[1], false);
                     break;

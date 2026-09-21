@@ -607,3 +607,29 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
   (son fantôme apparaît dès qu'elle tourne) ; mais l'articulation, elle, DOIT être doublée — le corps déborde sous l'épaule, cette
   matière reste cachée par l'épaulière et comble le trou qui apparaissait quand le bras tournait.
 - **Question B** : aucune règle ni valeur de jeu modifiée ; présentation seulement.
+
+
+## D-080 — Le jeu vise le PC ; quinconce ; premières briques d'interface PC
+
+- **Date** : 2026-09-21 — **Statut** : Décision ferme de l'utilisateur, appliquée progressivement.
+- **Demande** : « on abandonne la partie mobile, on se concentre sur une UI dédiée PC » ; et « les personnages en quinconce
+  pour éviter la diagonale qui prend la moitié de l'écran ».
+- **Ce que cela remplace** : la cible Android d'abord (D-001 et suivantes) et les règles tactiles de `docs/UX.md`
+  (« deux gestes au plus dans la zone du pouce », « cibles ≥ 48 px »). Nouvelles règles, écrites au §9 de `docs/UX.md` :
+  **une action = un clic ou une touche**, cibles ≥ 28 px (souris), infobulle au survol, densité assumée, du 1280×720 au 4K.
+  Ce qui NE change pas : règle des 3 secondes, hiérarchie de l'urgent, jamais la couleur seule, valeurs tronquées, retours plafonnés.
+- **Quinconce** : `Layout.AllyStageX` / `AllyStageFeetY` placent deux alliés par colonne, décalés en hauteur, les colonnes
+  reculant vers la gauche. L'équipe tient dans une zone compacte (moins de 320 px d'emprise) au lieu de barrer l'écran.
+  La profondeur d'affichage suit désormais la hauteur au sol, et non l'ordre dans l'équipe. **Test remplacé** (voulu) :
+  `Les_allies_de_la_scene_forment_une_colonne...` devient `Les_allies_sont_en_quinconce_compacte_a_gauche_du_boss`, qui
+  vérifie qu'aucune paire ne se confond et que l'équipe reste compacte.
+- **Infobulle au survol** (`Tooltip`) : marqueur d'une interface PC. Elle affiche la fiche du sort calculée par le cœur
+  (coût, incantation, recharge, cible, effet), avec les bonus d'équipement en vert, se place d'elle-même dans l'écran et
+  disparaît hors combat. Trois pièges rencontrés : les événements d'entrée et de sortie ne passent pas avec un pointeur
+  injecté (le survol est donc calculé à chaque image depuis la position de la souris) ; la commande e2e `hover` ne poussait
+  pas la position au périphérique ; et UI Toolkit rogne les espaces au bord de chaque Label, ce qui donnait « CD :aucun »
+  (résolu en une seule étiquette par ligne, avec balises de couleur).
+- **Vocabulaire** : « Touchez » devient « Cliquez », et les raccourcis clavier sont rappelés dans les consignes.
+- **Reste à faire** pour l'interface PC : clic direct sur un personnage dans la scène, journal de combat, barre
+  d'incantation du boss, fenêtre redimensionnable au-delà de la grille logique.
+- **Question B** : aucune règle ni valeur de jeu modifiée ; disposition et interface seulement.

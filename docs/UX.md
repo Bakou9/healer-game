@@ -101,3 +101,23 @@ Habillage graphique (D-023) : décor, Golem animé, portraits et icônes, partic
 E04-T02 (netteté) → E04-T03 (mise en page) → E04-T04 (ciblage) → E04-T05
 (cartes) → E04-T07 (télégraphes). C'est la plus petite série qui transforme
 l'expérience ; elle se vérifie avec des captures automatiques (E13-T05, E04-T13).
+
+## 9. Le jeu vise le PC (D-080)
+
+Le mobile est abandonné : plus de contrainte tactile, mais de nouvelles exigences. Ce que les bons jeux du genre
+(Darkest Dungeon, Slay the Spire, Hades, les MMO) tiennent pour acquis sur PC :
+
+| Attente PC | Ce que ça change ici |
+|---|---|
+| **Souris précise** | On peut viser un personnage dans la scène, pas seulement sa carte. Les cibles n'ont plus besoin de 48 px : 28 px suffisent, ce qui libère de la place. |
+| **Survol** | Une infobulle explique chaque sort (coût, recharge, effet) et chaque état. Rien n'est appris par tâtonnement. |
+| **Clavier** | Chaque action a son raccourci, affiché sur le bouton. Échap ouvre la pause, Espace confirme. Le jeu se joue entièrement au clavier. |
+| **Grand écran** | Plus d'informations à l'écran sans le surcharger : états détaillés, journal de combat, barre d'incantation du boss. |
+| **Densité assumée** | Un joueur PC lit plus de texte et plus petit : 14 px restent le minimum, mais l'essentiel n'a plus besoin d'être énorme. |
+| **Fenêtre redimensionnable** | La grille logique reste la référence, mais l'interface doit tenir du 1280×720 au 4K sans casser. |
+
+**Ce qui ne change pas** : la règle des 3 secondes, la hiérarchie de l'urgent, le langage visuel unique, jamais la
+couleur seule, les valeurs tronquées, les retours plafonnés. Ce sont des principes de lisibilité, pas des contraintes tactiles.
+
+**Ce qui est abandonné** : « deux gestes au plus dans la zone du pouce » et « cibles ≥ 48 px ». Remplacés par :
+**une action = un clic ou une touche**, et **cibles ≥ 28 px** (souris).

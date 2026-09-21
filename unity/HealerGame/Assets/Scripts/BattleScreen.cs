@@ -35,6 +35,7 @@ namespace Healer.Client
         private VisualElement _castBarBg = null!, _castBarFill = null!;
         private readonly List<CardView> _cards = new List<CardView>();
         private readonly List<SkillView> _skillViews = new List<SkillView>();
+        private Tooltip? _infobulle;
 
         private sealed class CardView
         {
@@ -63,6 +64,7 @@ namespace Healer.Client
             root.Vignette.style.backgroundImage = new StyleBackground(MakeVignette());
             root.Vignette.style.unityBackgroundScaleMode = ScaleMode.StretchToFill;
             root.Danger.style.display = DisplayStyle.None;
+            _infobulle = new Tooltip(root.Note);   // au-dessus de tout, mais transparente aux clics
         }
 
         private static VisualElement Container(VisualElement parent)
@@ -103,12 +105,34 @@ namespace Healer.Client
 
         // ---- Cycle de vie ------------------------------------------------------------------------
 
+        /// <summary>Infobulle du sort survolé (D-080). Calculée à chaque image depuis la position de la souris.</summary>
+        private void MajInfobulle()
+        {
+            if (_infobulle == null) return;
+            if (_ctl.Battle == null || _ctl.State != ScreenState.Playing) { _infobulle.CacherTout(); return; }
+            var souris = UnityEngine.InputSystem.Mouse.current;
+            if (souris == null) { _infobulle.CacherTout(); return; }
+            ScreenMap.Refresh();
+            var p = souris.position.ReadValue();
+            var logique = ScreenMap.ScreenToLogical(p.x, Screen.height - p.y);
+            foreach (var v in _skillViews)
+                if (v.Rect.Contains(new Vector2(logique.x, logique.y)))
+                {
+                    var courant = _ctl.Skills.FirstOrDefault(x => x.Id == v.Skill.Id) ?? v.Skill;
+                    var basique = _flow.Content.Skills.FirstOrDefault(x => x.Id == v.Skill.Id) ?? courant;
+                    _infobulle.Montrer(SkillDescriber.Sheet(basique, courant), v.Rect, v.Skill.Id);
+                    return;
+                }
+            _infobulle.CacherTout();
+        }
+
         public void Refresh()
         {
             bool active = _flow.Screen == AppScreen.Battle && _ctl.Battle != null;
             var display = active ? DisplayStyle.Flex : DisplayStyle.None;
             _hud.style.display = display;
             _modal.style.display = display;
+            if (active) MajInfobulle(); else _infobulle?.CacherTout();
             _root.Vignette.style.display = display;
             if (!active)
             {
@@ -131,6 +155,7 @@ namespace Healer.Client
             _hud.Clear();
             _cards.Clear();
             _skillViews.Clear();
+            _infobulle?.CacherTout();
             _modalSignature = "";
             var allies = _ctl.Battle.GetAllies();
 
@@ -351,7 +376,7 @@ namespace Healer.Client
                 string? selectedName = allies.FirstOrDefault(x => x.Id == _ctl.Selection.Selected)?.Name;
                 if (_ctl.HintActive) Ui.SetText(_targetLabel, "Choisissez d'abord un allié !", Layout.Font.Title, Palette.Danger, TextAnchor.MiddleCenter, true);
                 else if (selectedName != null) Ui.SetText(_targetLabel, $"Cible : {selectedName}", Layout.Font.Title, Color.white, TextAnchor.MiddleCenter, true);
-                else Ui.SetText(_targetLabel, "Touchez un allié (à gauche) pour le cibler", Layout.Font.Body, Ui.Muted, TextAnchor.MiddleCenter);
+                else Ui.SetText(_targetLabel, "Cliquez un allié à gauche, ou A Z E R, pour le cibler", Layout.Font.Body, Ui.Muted, TextAnchor.MiddleCenter);
             }
 
             // Sorts
@@ -434,8 +459,8 @@ namespace Healer.Client
             M(panel, new Color(Ui.Panel.r, Ui.Panel.g, Ui.Panel.b, 0.96f), 14, Ui.PanelStroke, 2);
             string[] tips =
             {
-                "1  Touchez un allié à GAUCHE pour le cibler",
-                "2  Touchez un sort à DROITE pour le lancer sur lui",
+                "1  Cliquez un allié à GAUCHE (ou touches A Z E R)",
+                "2  Cliquez un sort à DROITE (ou touches 1 2 3 4) ; survolez-le pour le lire",
                 "Soin de zone : sans cible, pour toute l'équipe",
                 "Bouclier : à poser AVANT l'attaque annoncée",
                 "Purge : retire poisons et brûlures",
@@ -450,7 +475,7 @@ namespace Healer.Client
                 T(new Rect(0, 556, w, 24), "Clavier : " + allies + " pour cibler · 1 2 3 4 (ou pavé numérique) pour les sorts · Tab : allié suivant", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
                 T(new Rect(0, 580, w, 24), "Espace : jouer / pause · Échap : retour · M : son · F8 : noter un retour", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
             }
-            else T(new Rect(0, 560, w, 24), "Touchez Jouer pour commencer", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
+            else T(new Rect(0, 560, w, 24), "Cliquez Jouer, ou appuyez sur Espace", Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
             B(Ui.R(Layout.BackButton), "← Carte", Layout.Font.Body, Ui.ButtonFill, Ui.ButtonStroke, UiAction.BackToMap, _flow.LeaveBattle);
         }
 
