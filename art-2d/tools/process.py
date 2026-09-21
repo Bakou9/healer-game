@@ -32,7 +32,6 @@ nums = [a for a in args if not a.startswith("--")]
 HAUTEUR = int(nums[0]) if nums else 512          # hauteur finale de l'illustration, en pixels
 VERS_UNITY = "--unity" in args
 
-FOND = np.array([1.0, 0.0, 1.0])                 # magenta demandé dans le prompt
 SEUIL_PLEIN = 0.42                               # distance au-delà de laquelle le pixel est totalement opaque
 SEUIL_VIDE = 0.16                                # distance en-deçà de laquelle le pixel est totalement transparent
 FOND_JEU = np.array([26, 24, 40, 255], dtype=np.uint8)
@@ -61,11 +60,42 @@ def ecrire_png(chemin, arr8):
                 + bloc(b"IDAT", zlib.compress(lignes, 9)) + bloc(b"IEND", b""))
 
 
-def detourer(a):
-    """Alpha depuis la distance au fond magenta, puis décontamination de la frange."""
+def couleur_de_fond(a, bande=4):
+    """
+    Couleur du fond, MESURÉE sur les bords au lieu d'être supposée : les générateurs d'images ne rendent jamais
+    exactement le magenta demandé (l'un donne #FF00FF, l'autre un rose plus sombre). On prend la médiane du pourtour.
+    """
     rgb = a[..., :3]
+    bord = np.concatenate([
+        rgb[:bande].reshape(-1, 3), rgb[-bande:].reshape(-1, 3),
+        rgb[:, :bande].reshape(-1, 3), rgb[:, -bande:].reshape(-1, 3),
+    ])
+    fond = np.median(bord, axis=0)
+    ecart = np.abs(bord - fond).mean()
+    if ecart > 0.06:
+        print(f"ATTENTION : le fond n'est pas uni (écart moyen {ecart:.3f}) — le détourage risque d'être imparfait.")
+    return fond
+
+
+def detourer(a):
+    """Alpha depuis la distance à la couleur de fond mesurée, puis décontamination de la frange."""
+    rgb = a[..., :3]
+    FOND = couleur_de_fond(a)
+    print(f"  fond mesuré : #{''.join(f'{int(c * 255):02X}' for c in FOND)}")
     dist = np.sqrt(((rgb - FOND) ** 2).sum(axis=2) / 3.0)
     alpha = np.clip((dist - SEUIL_VIDE) / (SEUIL_PLEIN - SEUIL_VIDE), 0.0, 1.0)
+
+    # Ombre portée et halo : les générateurs en ajoutent malgré la consigne (ils ignorent les tournures négatives).
+    # Or un pixel d'ombre, ou de halo, n'est que la couleur du fond assombrie ou éclaircie : il reste ALIGNÉ avec elle
+    # (même teinte, intensité différente). On l'efface donc, sauf les pixels très sombres, qui appartiennent au personnage.
+    norme = max((FOND ** 2).sum(), 1e-6)
+    intensite = (rgb * FOND).sum(axis=2) / norme
+    residu = np.sqrt(((rgb - intensite[..., None] * FOND) ** 2).sum(axis=2) / 3.0)
+    modulation = (residu < 0.05) & (intensite > 0.35)
+    efface = modulation.sum()
+    if efface:
+        print(f"  ombre/halo effacés : {efface} pixels ({100 * efface / modulation.size:.1f} %)")
+    alpha[modulation] = 0.0
     # décontamination : couleur = (observée - fond * (1 - alpha)) / alpha, seulement là où le pixel est partiellement opaque
     partiel = (alpha > 0.02) & (alpha < 0.98)
     propre = rgb.copy()

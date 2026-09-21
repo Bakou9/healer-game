@@ -3,7 +3,7 @@
 #           unite  <id>  <description propre au personnage>
 # L'id doit être celui du personnage dans core/content (healer, tank, dps1, dps2) ou du boss (golem, marsh, ash).
 
-style Dark fantasy game character illustration, painterly digital art, clean readable silhouette, limited moody palette with one glowing accent color, strong rim light from behind, full body, standing idle pose, three-quarter view facing RIGHT, centered, isolated on a perfectly flat solid magenta (#FF00FF) background, no ground, no cast shadow, no text, no border, no watermark. Consistent proportions: slightly stylized, about 5 heads tall, large readable hands and weapon.
+style Dark fantasy game character illustration, richly painted digital art with visible brushwork and textured materials, dramatic moody lighting with a strong rim light from behind, limited palette with one glowing accent colour, clean readable silhouette, full body from head to feet, standing idle pose, three-quarter view facing RIGHT, centred with empty margins on all sides, the character is a clean cutout floating in empty space on a perfectly flat uniform magenta backdrop, nothing under the feet, no floor, no ground, no shadow, no text, no border, no watermark. Slightly stylized proportions, about 5 heads tall, large readable hands and weapon.
 
 unite healer A druid healer wearing a pale deer-skull mask under a deep hood, tall branching antlers with small glowing green blossoms and vines, mossy dark green layered robe, mantle of leaves, leather bandolier, gnarled wooden staff held in one hand topped with a cage of branches around a glowing green crystal (7CFFB2), the other hand open palm up holding a small floating green light. Green and dark wood palette, green accent.
 

@@ -39,3 +39,6 @@ unity/HealerGame/Assets/StreamingAssets/content.meta
 .env
 .env.*
 !.env.exemple
+
+# art-2d : les fichiers de art-2d/out sont des dérivés reconstructibles (process.py, cutout.py)
+art-2d/out/
