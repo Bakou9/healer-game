@@ -105,5 +105,24 @@ namespace Healer.Combat.Tests
             foreach (var other in new[] { Layout.MenuPlay, Layout.MenuWorkshop, Layout.MenuSettings, Layout.MenuSound, Layout.MenuQuit })
                 Assert.That(b.Overlaps(other), Is.False);
         }
+
+        [Test]
+        public void Un_outil_de_production_peut_etre_sous_copyleft_mais_pas_une_ressource_importee()
+        {
+            // D-074 : Blender (GPL) et FFmpeg (LGPL) tournent sur notre machine et ne sont jamais distribués avec le jeu ;
+            // une ressource IMPORTÉE, elle, part dans le build et doit rester sous une licence permissive.
+            var outil = new CreditEntry { Name = "Blender", Author = "Blender Foundation", License = "GPL-3.0", Url = "https://www.blender.org", UsedFor = "Modélisation" };
+            Assert.That(CreditPolicy.Problems(outil, false), Is.Empty, "un outil de production sous copyleft est accepté");
+
+            var ressource = new CreditEntry { Name = "Pack", Author = "Quelqu'un", License = "GPL-3.0", Url = "https://exemple.org", UsedFor = "Décors", Folder = "Pack" };
+            Assert.That(CreditPolicy.Problems(ressource, true), Is.Not.Empty, "une ressource importée sous copyleft est refusée");
+        }
+
+        [Test]
+        public void Toute_ressource_importee_reste_creditee_avec_une_licence_verifiee()
+        {
+            var sans_licence = new CreditEntry { Name = "Illustrations", Author = "Outil IA", License = "À préciser", Url = "https://exemple.org", UsedFor = "Héros", Folder = "Art2D" };
+            Assert.That(CreditPolicy.Problems(sans_licence, true), Is.Not.Empty, "tant que la licence n'est pas vérifiée, la ressource ne peut pas être livrée");
+        }
     }
 }

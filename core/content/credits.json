@@ -25,6 +25,34 @@
       "license": "MIT",
       "url": "https://www.newtonsoft.com/json",
       "usedFor": "Lecture des données de jeu (JSON)"
+    },
+    {
+      "name": "Blender",
+      "author": "Blender Foundation",
+      "license": "GPL-3.0",
+      "url": "https://www.blender.org",
+      "usedFor": "Modélisation 3D, rig Rigify et préparation des illustrations"
+    },
+    {
+      "name": "FFmpeg",
+      "author": "FFmpeg team",
+      "license": "LGPL-2.1",
+      "url": "https://ffmpeg.org",
+      "usedFor": "Aperçus animés des personnages (GIF et vidéo)"
+    },
+    {
+      "name": "Blender",
+      "author": "Blender Foundation",
+      "license": "GPL-3.0",
+      "url": "https://www.blender.org",
+      "usedFor": "Modélisation 3D, rig Rigify et préparation des illustrations"
+    },
+    {
+      "name": "FFmpeg",
+      "author": "FFmpeg team",
+      "license": "LGPL-2.1",
+      "url": "https://ffmpeg.org",
+      "usedFor": "Aperçus animés des personnages (GIF et vidéo)"
     }
   ]
 }

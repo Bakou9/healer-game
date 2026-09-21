@@ -17,6 +17,7 @@ namespace Healer.Client
     ///   -healer-speed 6         accélération du temps pendant les captures
     ///   -healer-timescale 30    accélération du temps en jeu normal (tests de bout en bout : tools/unity-e2e.ps1)
     ///   -healer-notes-dir D     dossier des notes de playtest (F8) ; par défaut playtest/ dans les données du jeu
+    ///   -healer-art2d          (essai D-074) les unités sont affichées par leur illustration 2D (Resources/Art2D), animée par le code
     ///   -healer-sprites         (essai D-071) la Soigneuse est affichée par ses sprites pixel art (Resources/Sprites/Druid) au lieu du modèle 3D
     ///   -healer-dev             mode développeur : Atelier avec niveaux d'équipement ± et or à 99 999, sauvegarde séparée (dev-profile)
     ///   -healer-e2e FICHIER     entrées injectées par le script de test (souris et clavier virtuels, sans focus ; voir E2eInput)
@@ -40,6 +41,7 @@ namespace Healer.Client
             var content = ContentLoader.Load();
             bool dev = args.Contains("-healer-dev");
             SpriteHero.Enabled = args.Contains("-healer-sprites");
+            Art2DUnit.Enabled = args.Contains("-healer-art2d");
             // Mode développeur : sauvegarde SÉPARÉE (dev-profile) pour ne jamais fausser la vraie progression.
             string profileDir = Arg("-healer-profile-dir") ?? (shots != null ? Path.Combine(Application.temporaryCachePath, "capture-profile") : dev ? Path.Combine(Application.persistentDataPath, "dev-profile") : Application.persistentDataPath);
             var storage = new ProfileStorage(profileDir);

@@ -40,8 +40,13 @@ namespace Healer.Combat
         /// <summary>Licences acceptées pour les ressources : usage commercial permis. Toute autre licence demande l'accord de l'utilisateur.</summary>
         public static readonly IReadOnlyList<string> AllowedLicenses = new[] { "CC0-1.0", "CC-BY-4.0", "CC-BY-3.0", "MIT", "OFL-1.1", "Apache-2.0" };
 
-        /// <summary>Licences de nos outils (le moteur) : pas de fichiers importés, seulement un remerciement.</summary>
-        public static readonly IReadOnlyList<string> ToolLicenses = new[] { "Unity-Engine", "MIT", "Apache-2.0", "BSD-3-Clause" };
+        /// <summary>
+        /// Licences de nos outils : pas de fichiers importés, seulement un remerciement. Deux cas (D-074) :
+        /// un outil LIÉ au jeu (bibliothèque distribuée dans l'exécutable, comme Json.NET) exige une licence permissive ;
+        /// un outil de PRODUCTION, utilisé sur notre machine et jamais distribué (Blender sous GPL, FFmpeg sous LGPL),
+        /// peut être sous copyleft sans que cela touche le jeu ni les fichiers qu'il produit.
+        /// </summary>
+        public static readonly IReadOnlyList<string> ToolLicenses = new[] { "Unity-Engine", "MIT", "Apache-2.0", "BSD-3-Clause", "GPL-3.0", "LGPL-2.1" };
 
         public static IReadOnlyList<string> Problems(CreditEntry e, bool isAsset)
         {

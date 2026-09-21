@@ -529,3 +529,30 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Unity** : `SpriteHero` joue maintenant les planches (animation et frame choisies uniquement à partir de `UnitPose` : mort, coup reçu, incantation avec montée, tenue et lâcher, attaque, repos).
 - **Pixel-perfect** : le paquet `com.unity.2d.pixel-perfect` n'est PAS installé, volontairement : il exige une caméra orthographique, et la caméra de combat est encore en perspective (héros et boss 3D). À la place, `SpriteHero` fait ce que fait cette caméra : chaque pixel de sprite couvre un nombre entier de pixels d'écran (2 à 1280x720, 3 en 1080p), et le coin du cadre est calé sur la grille de pixels d'écran ; le sprite reste net et ne scintille pas. Le paquet et une caméra orthographique deviendront pertinents quand tous les héros et les boss seront en sprites.
 - **Question B** : aucune règle ni valeur de jeu modifiée.
+
+
+## D-074 — Direction artistique : illustrations 2D animées par le code (abandon de la fabrication 3D par héros)
+
+- **Date** : 2026-09-21 — **Statut** : Livrée pour la Soigneuse sur la branche `pixel-art` ; direction à confirmer sur les autres unités.
+- **Constat de l'utilisateur** : la fabrication 3D d'un héros (modélisation, rig, animations, puis sprites) est **trop coûteuse** pour le résultat
+  obtenu, y compris avec un sous-agent Opus (Archère : 40 min, 316 k tokens, 20 lancements Blender, qualité jugée insuffisante). Le pixel art
+  n'est pas un prérequis : pleine liberté de style.
+- **Décision** : rester dans Unity (le cœur et ses 774 tests sont indépendants du rendu ; quitter le moteur imposerait de tout porter pour zéro gain
+  sur l'art) et changer la SOURCE de l'art : **une seule illustration par unité**, générée avec un outil d'image, et **l'animation faite par le code**
+  à partir de `UnitPose`. Plus de modélisation, plus de rig, plus d'images d'animation à dessiner. Ces illustrations serviront aussi de portraits gacha.
+- **Chaîne** : `art-2d/inbox/<unité>_<pose>.png` (fond magenta uni) → `art-2d/tools/process.py` (détourage par distance au fond, décontamination de la
+  frange, recadrage, mise à l'échelle par Blender, aperçu sur le fond du jeu) → `Resources/Art2D/`. `Art2DUnit` (option `-healer-art2d`,
+  `lancer-le-jeu-2d.bat`) pose l'illustration sur une grille face caméra et la déforme : respiration, ondulation du tissu (le bas reste planté au sol),
+  inclinaison vers le boss à l'attaque et au lâcher de sort, recul au coup reçu, bascule à la chute. Une unité sans illustration garde son modèle 3D :
+  les deux rendus coexistent.
+- **Remise en cause de spec (préambule A)** : la politique de crédits (D-060) n'autorisait pour les outils que des licences permissives, ce qui
+  refusait Blender (GPL-3.0) et FFmpeg (LGPL-2.1). La règle visait les bibliothèques **liées** au jeu ; un outil de **production**, qui tourne sur
+  notre machine et n'est jamais distribué, peut être sous copyleft sans toucher le jeu ni ses fichiers produits. `ToolLicenses` étendu avec
+  GPL-3.0 et LGPL-2.1, la distinction documentée et **vérifiée par deux nouveaux tests** (un outil copyleft passe, une ressource importée copyleft
+  est refusée, une licence « À préciser » est refusée). La règle sur les ressources importées n'a pas bougé.
+- **À préciser (information manquante)** : le nom de l'outil qui a généré l'illustration de la Soigneuse, son URL et ses conditions d'usage
+  commercial. Tant qu'ils manquent, l'entrée ne peut pas entrer au générique (le test la refuse, à raison). À demander à l'utilisateur.
+- **À prévoir avant publication** : Steam et Google Play imposent de déclarer les contenus générés par IA ; tenir la liste outil + prompt (elle est
+  dans `art-2d/README.md`).
+- **Le 3D reste en place** comme repli (`art-3d/`, `art-pixel/`, modèles et sprites commités) : aucun retour en arrière n'est fermé.
+- **Question B** : aucune règle ni valeur de jeu modifiée ; seules la présentation et la politique de crédits ont changé.
