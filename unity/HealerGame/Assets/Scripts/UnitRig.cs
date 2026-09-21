@@ -16,6 +16,9 @@ namespace Healer.Client
         public Transform? Head, ArmL, ArmR, Cape, Torso, Weapon;
         /// <summary>Choisit les gestes de ApplyPose ; Default = ancien mouvement simple (boss).</summary>
         public RigStyle Style = RigStyle.Default;
+        /// <summary>Optional listener called with each pose (pixel-art heroes pick a sprite frame from it).</summary>
+        public PoseAction? PoseHook;
+        public delegate void PoseAction(in UnitPose pose);
         private Quaternion _head, _armL, _armR, _cape, _weapon, _torso;
         private Vector3 _torsoScale = Vector3.one;
         private bool _captured;
@@ -85,6 +88,7 @@ namespace Healer.Client
         /// <summary>Anime le modèle depuis l'attitude complète du cœur (préparation, frappe, retour ; incantation tenue puis lâchée).</summary>
         public void ApplyPose(float t, float phase, in UnitPose pose)
         {
+            PoseHook?.Invoke(pose);
             if (Style == RigStyle.Default)
             {
                 Apply(t, phase, (float)pose.Cast, (float)pose.Lunge, (float)pose.Recoil, (float)pose.Fall);

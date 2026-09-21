@@ -36,3 +36,10 @@ Deterministic: same inputs give the same sprites.
 - 128 px frames keep the skull mask, the antlers and the crystal readable; the palette of 28 colors is enough.
 - The palette and outline steps are the main look levers (selective outline, hue-shifted shadows and per-hero palettes are next).
 - Not done yet: Unity integration (sprite renderer, pixel-perfect camera), full animation sets (attack, hit, death), other heroes and bosses, equipment variants (re-render in batch).
+
+## In-game test (Unity)
+
+`lancer-le-jeu-sprites.bat` (or `HealerGame.exe -healer-sprites`) shows the Healer as the pixel-art druid: `SpriteHero` swaps the 3D model for a camera-facing quad
+and picks the frame from the core `UnitPose` (idle, cast raise / hold / release, hit, fall). The other heroes and the boss stay 3D, so the mix is only a rendering test.
+Copy new frames with: `art-pixel/out/druid_128_y30l_<pose>.png` -> `unity/HealerGame/Assets/Resources/Sprites/Druid/druid_<pose>.png`
+(the importer in `Assets/Editor/SpriteImport.cs` sets point filtering and no compression).

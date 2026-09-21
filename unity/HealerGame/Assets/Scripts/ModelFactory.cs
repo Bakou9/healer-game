@@ -662,6 +662,7 @@ namespace Healer.Client
 
         public static GameObject ForCharacter(string id, string role, Healer.Combat.Progress.AppearanceSet? appearance = null)
         {
+            if (SpriteHero.Enabled && SpriteHero.Has(id)) return SpriteHero.Create(id);   // pixel-art experiment (D-071)
             var look = new Look(appearance);
             GameObject model;
             RigStyle style;
