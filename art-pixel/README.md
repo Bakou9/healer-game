@@ -12,6 +12,24 @@ blender --background --python art-pixel/blender/animate_druid.py -- 128 28 30 --
 
 Outputs in `art-pixel/out/`: one sprite sheet per animation (`druid_<anim>.png`, frames side by side), `druid_anims.txt`, `druid_contact.png`, and ffmpeg previews `druid_preview.gif` / `.mp4`.
 
+## Second character : the Archere (dps1)
+
+```
+blender --background --python art-3d/blender/archer.py                       # model + control renders (art-3d/blender/out/archer_*.png)
+blender --background --python art-pixel/blender/rig_archer.py                # rig + skinning -> art-pixel/out/archer_rigged.blend (not committed)
+blender --background --python art-pixel/blender/animate_archer.py -- 128 28 30   # size colors yaw
+```
+
+Outputs `archer_<anim>.png` (idle, attack, hit, death), `archer_anims.txt` / `.json`, `archer_contact.png` and the
+ffmpeg previews. Nothing is copied into Unity. Work log and honest assessment : `art-3d/blender/archer_log.md`.
+
+What this second pass added to the pipeline: the model writes its pose into the `.blend`
+(`scene["archer_pose"]`) so the rig script does not copy the numbers again; the camera frame is a parameter
+(`frame_units` / `feet_offset_units` are written to the json, the druid's 4.3 m frame wasted 40 % of the image on a
+shorter character); the drawing arm is posed in **IK** (the hand slides along the arrow) rather than FK angles; and
+the bowstring is skinned **between the two hands** so it stretches into a V by itself, with a separate braced string
+swapped in on release.
+
 ## Pipeline
 
 1. Parent the meshes to their pivot empties (same pivots as the game rig).

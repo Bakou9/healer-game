@@ -1,0 +1,30 @@
+{
+  "size": 128,
+  "colors": 28,
+  "yaw": 30.0,
+  "facing": "left",
+  "frame_units": 3.2,
+  "feet_offset_units": 0.19999999999999996,
+  "anims": {
+    "idle": {
+      "frames": 6,
+      "fps": 6,
+      "loop": true
+    },
+    "attack": {
+      "frames": 8,
+      "fps": 14,
+      "loop": false
+    },
+    "hit": {
+      "frames": 3,
+      "fps": 12,
+      "loop": false
+    },
+    "death": {
+      "frames": 7,
+      "fps": 8,
+      "loop": false
+    }
+  }
+}
