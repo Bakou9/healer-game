@@ -15,7 +15,12 @@ namespace Healer.Client
         /// <summary>Set by GameBootstrap from the command line (-healer-sprites).</summary>
         public static bool Enabled;
 
-        private const string Folder = "Sprites/Druid/";
+        /// <summary>Sprite set folder and file prefix of each hero (Resources/Sprites/&lt;Folder&gt;/&lt;prefix&gt;_&lt;animation&gt;.png and &lt;prefix&gt;_anims.txt).</summary>
+        private static readonly Dictionary<string, (string Folder, string Prefix)> Sets = new Dictionary<string, (string, string)>
+        {
+            ["healer"] = ("Druid", "druid"),
+            ["dps1"] = ("Archer", "archer"),
+        };
 
         private sealed class Clip
         {
@@ -24,7 +29,8 @@ namespace Healer.Client
             public bool Loop;
         }
 
-        private static Dictionary<string, Clip>? _clips;
+        private static readonly Dictionary<string, Dictionary<string, Clip>> ClipSets = new Dictionary<string, Dictionary<string, Clip>>();
+        private static readonly Dictionary<string, int> FrameSizes = new Dictionary<string, int>();
 
         /// <summary>World height (units) of the frame : the pipeline renders 4.3 m of the raw model, the game scales it by 0.79 (DruidHeight / raw height).</summary>
         private const float FrameUnits = 4.3f * 0.785f;
@@ -34,26 +40,32 @@ namespace Healer.Client
         private Material _material = null!;
         private Transform _quad = null!;
         private Mesh _mesh = null!;
+        private string _heroId = "";
+        private int _framePixels = 128;
         private string _clip = "";
         private int _frame = -1;
 
-        public static bool Has(string heroId) => heroId == "healer" && Clips().ContainsKey("idle");
+        public static bool Has(string heroId) => Sets.ContainsKey(heroId) && Clips(heroId).ContainsKey("idle");
 
-        private static Dictionary<string, Clip> Clips()
+        private static Dictionary<string, Clip> Clips(string heroId)
         {
-            if (_clips != null) return _clips;
-            _clips = new Dictionary<string, Clip>();
-            var text = Resources.Load<TextAsset>(Folder + "druid_anims");
-            if (text == null) return _clips;
+            if (ClipSets.TryGetValue(heroId, out var cached)) return cached;
+            var clips = new Dictionary<string, Clip>();
+            ClipSets[heroId] = clips;
+            if (!Sets.TryGetValue(heroId, out var set)) return clips;
+            var text = Resources.Load<TextAsset>($"Sprites/{set.Folder}/{set.Prefix}_anims");
+            if (text == null) return clips;
+            FrameSizes[heroId] = 128;
             foreach (var raw in text.text.Split('\n'))
             {
                 var t = raw.Trim().Split(' ');
-                if (t.Length != 4) continue;       // the "size N" line has two fields
-                var sheet = Resources.Load<Texture2D>(Folder + "druid_" + t[0]);
+                if (t.Length == 2 && t[0] == "size") { FrameSizes[heroId] = int.Parse(t[1], CultureInfo.InvariantCulture); continue; }
+                if (t.Length != 4) continue;
+                var sheet = Resources.Load<Texture2D>($"Sprites/{set.Folder}/{set.Prefix}_{t[0]}");
                 if (sheet == null) continue;
-                _clips[t[0]] = new Clip { Sheet = sheet, Frames = int.Parse(t[1], CultureInfo.InvariantCulture), Fps = int.Parse(t[2], CultureInfo.InvariantCulture), Loop = t[3] == "1" };
+                clips[t[0]] = new Clip { Sheet = sheet, Frames = int.Parse(t[1], CultureInfo.InvariantCulture), Fps = int.Parse(t[2], CultureInfo.InvariantCulture), Loop = t[3] == "1" };
             }
-            return _clips;
+            return clips;
         }
 
         /// <summary>Builds the sprite hero with the same root contract as a 3D model : a UnitRig (which the stage drives) and renderers to tint.</summary>
@@ -62,6 +74,9 @@ namespace Healer.Client
             var root = new GameObject("SpriteHero_" + heroId);
             var rig = root.AddComponent<UnitRig>();
             var hero = root.AddComponent<SpriteHero>();
+            hero._heroId = heroId;
+            hero._framePixels = FrameSizes.TryGetValue(heroId, out var px) ? px : 128;
+            Clips(heroId);
 
             var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
             Destroy(quad.GetComponent<Collider>());
@@ -85,7 +100,7 @@ namespace Healer.Client
         /// <summary>Shows frame `progress` (0 to 1) of a clip : the sheet is one row of frames, so a texture offset and scale pick the frame.</summary>
         private void Show(string clipName, float progress)
         {
-            if (!Clips().TryGetValue(clipName, out var clip)) return;
+            if (!Clips(_heroId).TryGetValue(clipName, out var clip)) return;
             int frame = Mathf.Clamp(Mathf.FloorToInt(progress * clip.Frames), 0, clip.Frames - 1);
             if (clipName == _clip && frame == _frame) return;
             if (clipName != _clip) _material.mainTexture = clip.Sheet;
@@ -98,7 +113,7 @@ namespace Healer.Client
         /// <summary>Looping clip : frame from the clock, at the clip's own speed.</summary>
         private void Play(string clipName)
         {
-            if (!Clips().TryGetValue(clipName, out var clip)) return;
+            if (!Clips(_heroId).TryGetValue(clipName, out var clip)) return;
             Show(clipName, Mathf.Repeat(Time.time * clip.Fps / clip.Frames, 1f));
         }
 
@@ -125,7 +140,6 @@ namespace Healer.Client
 
         /// <summary>Reference height of the pixel-art grid : one sprite pixel = round(Screen.height / 360) screen pixels (2 at 1280x720, 3 at 1080p).</summary>
         private const float ReferenceHeight = 360f;
-        private const int FramePixels = 128;
 
         /// <summary>
         /// Pixel-perfect placement (what a PixelPerfectCamera does, done here because the battle camera is still perspective) : the quad always
@@ -144,7 +158,7 @@ namespace Healer.Client
             float depth = Vector3.Dot(feet - ct.position, ct.forward);
             if (depth < 0.1f) return;
             float unitsPerPixel = 2f * depth * Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) / Screen.height;
-            float worldSize = FramePixels * texel * unitsPerPixel;
+            float worldSize = _framePixels * texel * unitsPerPixel;
             float root = Mathf.Max(0.0001f, transform.lossyScale.x);
             _quad.localScale = new Vector3(-worldSize / root, worldSize / root, 1f);
 
@@ -152,7 +166,7 @@ namespace Healer.Client
             float centerLift = worldSize * (0.5f - FeetMarginFraction);
             Vector3 center = feet + ct.up * centerLift;
             Vector3 sp = cam.WorldToScreenPoint(center);
-            float half = FramePixels * texel * 0.5f;
+            float half = _framePixels * texel * 0.5f;
             sp.x = Mathf.Round(sp.x - half) + half;
             sp.y = Mathf.Round(sp.y - half) + half;
             _quad.position = cam.ScreenToWorldPoint(new Vector3(sp.x, sp.y, depth));
