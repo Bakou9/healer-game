@@ -1,0 +1,43 @@
+{
+  "size": 128,
+  "colors": 28,
+  "yaw": 30.0,
+  "facing": "left",
+  "anims": {
+    "idle": {
+      "frames": 6,
+      "fps": 6,
+      "loop": true
+    },
+    "cast_raise": {
+      "frames": 4,
+      "fps": 12,
+      "loop": false
+    },
+    "cast_hold": {
+      "frames": 6,
+      "fps": 10,
+      "loop": true
+    },
+    "cast_release": {
+      "frames": 5,
+      "fps": 14,
+      "loop": false
+    },
+    "attack": {
+      "frames": 6,
+      "fps": 14,
+      "loop": false
+    },
+    "hit": {
+      "frames": 3,
+      "fps": 12,
+      "loop": false
+    },
+    "death": {
+      "frames": 7,
+      "fps": 8,
+      "loop": false
+    }
+  }
+}

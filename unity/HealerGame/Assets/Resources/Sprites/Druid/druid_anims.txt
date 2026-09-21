@@ -1,0 +1,8 @@
+size 128
+idle 6 6 1
+cast_raise 4 12 0
+cast_hold 6 10 1
+cast_release 5 14 0
+attack 6 14 0
+hit 3 12 0
+death 7 8 0
