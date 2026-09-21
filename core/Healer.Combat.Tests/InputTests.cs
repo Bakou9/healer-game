@@ -333,20 +333,29 @@ namespace Healer.Combat.Tests
             Assert.That(Layout.PauseButton.Bottom, Is.LessThanOrEqualTo(Layout.Zones.Skills.Y));
 
         [Test]
-        public void Les_allies_de_la_scene_sont_alignes_au_centre_sans_se_chevaucher()
+        public void Les_allies_de_la_scene_forment_une_colonne_a_gauche_face_au_boss()
         {
             foreach (int n in new[] { 3, 4, 5 })
             {
-                double prev = double.NegativeInfinity, sum = 0;
+                double prevX = double.PositiveInfinity, prevY = double.NegativeInfinity;
                 for (int i = 0; i < n; i++)
                 {
-                    double x = Layout.AllyStageX(i, n);
-                    Assert.That(x - prev, Is.GreaterThanOrEqualTo(150), $"{n} alliés, allié {i}");
-                    Assert.That(x, Is.GreaterThan(Layout.Zones.CenterX).And.LessThan(Layout.Zones.CenterX + Layout.Zones.CenterW));
-                    prev = x; sum += x;
+                    double x = Layout.AllyStageX(i, n), y = Layout.AllyStageFeetY(i, n);
+                    Assert.That(x, Is.LessThan(prevX), $"{n} alliés : l'allié {i} recule vers la gauche");
+                    Assert.That(y - prevY, Is.GreaterThanOrEqualTo(40).Or.EqualTo(double.PositiveInfinity), $"{n} alliés, allié {i} : assez d'écart vertical pour ne pas se masquer");
+                    Assert.That(x, Is.GreaterThan(Layout.Zones.CenterX), $"{n} alliés, allié {i} hors des cartes");
+                    Assert.That(x, Is.LessThan(Layout.BossStageX - 150), $"{n} alliés, allié {i} à gauche du boss");
+                    Assert.That(y, Is.LessThanOrEqualTo(700), $"{n} alliés, allié {i} dans l'écran");
+                    prevX = x; prevY = y;
                 }
-                Assert.That(sum / n, Is.EqualTo(Layout.GameW / 2).Within(0.001), $"{n} alliés centrés");
             }
+        }
+
+        [Test]
+        public void Le_boss_est_a_droite_dans_la_zone_centrale()
+        {
+            Assert.That(Layout.BossStageX, Is.GreaterThan(Layout.GameW / 2));
+            Assert.That(Layout.BossStageX, Is.LessThan(Layout.Zones.CenterX + Layout.Zones.CenterW));
         }
     }
 }

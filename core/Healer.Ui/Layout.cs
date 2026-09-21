@@ -244,8 +244,17 @@ namespace Healer.Ui
             return result;
         }
 
-        /// <summary>Position logique (x) du n-ième allié dans la scène 3D : en ligne, centrée, devant le boss.</summary>
-        public static double AllyStageX(int index, int count) => GameW / 2 + (index - (count - 1) / 2.0) * 165;
+        // Combat en vue de côté (D-072, comme Final Fantasy VI) : l'équipe est une colonne en diagonale à GAUCHE, le boss est à DROITE.
+        // L'allié d'indice 0 est le plus proche du boss (devant) ; les suivants reculent vers le bas-gauche.
+
+        /// <summary>Position logique (x) du n-ième allié dans la scène : colonne en diagonale à gauche, face au boss.</summary>
+        public static double AllyStageX(int index, int count) => 600 - index * 70;
+
+        /// <summary>Position logique (y, sol) du n-ième allié : la colonne descend de 216 px au total, quel que soit le nombre d'alliés.</summary>
+        public static double AllyStageFeetY(int index, int count) => 470 + (count <= 1 ? 0 : index * 216.0 / (count - 1));
+
+        /// <summary>Position logique (x, sol) du boss : à droite, face à l'équipe.</summary>
+        public const double BossStageX = 860, BossStageFeetY = 560;
 
         /// <summary>Bande de la barre de PV selon le ratio (seuils lisibles : > 60 %, > 30 %, sinon bas).</summary>
         public static HpBand HpBandFor(double ratio)

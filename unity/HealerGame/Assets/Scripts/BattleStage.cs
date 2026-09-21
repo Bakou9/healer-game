@@ -16,10 +16,12 @@ namespace Healer.Client
     {
         private const float BossDepth = 35f;
         private const float AllyDepth = 33f;
-        private const float BossFeetY = 452f;
-        private const float AllyFeetY = 640f;
+        private const float BossFeetY = (float)Layout.BossStageFeetY;   // combat de côté (D-072) : boss à droite
+        private const float AllyFeetY = 590f;                            // milieu de la colonne d'alliés (ligne de sol des effets d'ambiance)
+        /// <summary>Le personnage regarde vers la droite (vers le boss) en trois-quarts face à la caméra ; le boss, vers la gauche.</summary>
+        private const float AllyYaw = 145f, BossYaw = 215f;
         private const float BossScale = 2.1f;
-        private const float AllyScale = 1.85f;
+        private const float AllyScale = 1.45f;
 
         private sealed class UnitView
         {
@@ -221,7 +223,7 @@ namespace Healer.Client
 
         private void UpdateAtmosphere(float t)
         {
-            var center = WorldAt((float)Layout.GameW / 2f, AllyFeetY, AllyDepth);
+            var center = WorldAt((float)(Layout.AllyStageX(0, 4) + Layout.BossStageX) / 2f, AllyFeetY, AllyDepth);   // cercle rituel entre l'équipe et le boss
             _runeCircle.position = center + new Vector3(0f, 0.02f, 0f);
             _runeCircle.rotation = Quaternion.Euler(90f, 0f, 0f) * Quaternion.Euler(0f, 0f, t * 3.5f);
             _runeCircle.localScale = new Vector3(19f, 19f * 0.42f, 1f);
@@ -577,6 +579,8 @@ namespace Healer.Client
                 _units[a.Id] = view;
                 if (!_anims.ContainsKey(a.Id)) _anims[a.Id] = new UnitAnimator(a.Id);
                 _stageX[a.Id] = (float)Layout.AllyStageX(i, allies.Count);
+                _stageY[a.Id] = (float)Layout.AllyStageFeetY(i, allies.Count);
+                _stageDepth[a.Id] = AllyDepth - i * 1.5f;   // les plus bas sont plus proches de la caméra : ordre d'affichage correct
             }
             _looksSignature = LooksSignature();
             Debug.Log("[Healer] apparence : " + _looksSignature);
@@ -605,6 +609,8 @@ namespace Healer.Client
         }
 
         private readonly Dictionary<string, float> _stageX = new Dictionary<string, float>();
+        private readonly Dictionary<string, float> _stageY = new Dictionary<string, float>();
+        private readonly Dictionary<string, float> _stageDepth = new Dictionary<string, float>();
 
         private void ResetVisuals()
         {
@@ -649,7 +655,7 @@ namespace Healer.Client
             string? focusId = telegraph != null && telegraph.Type == "focusAttack" ? telegraph.TargetId : null; // victime annoncée d'une attaque ciblée
 
             // Boss.
-            var bp = WorldAt((float)Layout.GameW / 2f, BossFeetY, BossDepth);
+            var bp = WorldAt((float)Layout.BossStageX, BossFeetY, BossDepth);
             float bossShake = bigAttack ? Mathf.Sin(t * 45f) * 0.06f : 0f;
             double clock = battle.GetClock();
             var bossPose = _bossAnim.Sample(clock);
@@ -657,8 +663,8 @@ namespace Healer.Client
             _bossStrike = (float)bossPose.Lunge * (_lastBossBig ? 1f : 0.5f);
             float breathe = Mathf.Sin(t * 1.6f);
             var br = _boss.Root.transform;
-            br.position = bp + new Vector3(bossShake, breathe * 0.05f, -_bossStrike * 1.6f);
-            br.rotation = Quaternion.Euler(_bossStrike * 14f, 180f, 0f);
+            br.position = bp + new Vector3(-_bossStrike * 1.6f, breathe * 0.05f + bossShake, 0f);   // le coup du boss avance vers l'équipe (à gauche)
+            br.rotation = Quaternion.Euler(_bossStrike * 14f, BossYaw, 0f);
             _boss.Rig?.Apply(t, 0.4f, 0f, (float)bossPose.Lunge, (float)bossPose.Recoil, 0f);
             br.localScale = new Vector3(1f + _bossHit * 0.04f, 1f - _bossHit * 0.03f + breathe * 0.008f, 1f + _bossHit * 0.04f) * BossScale * _bossScaleFactor;
             Color core = phase.Index > 0 ? _coreFury : _coreCalm;
@@ -692,13 +698,13 @@ namespace Healer.Client
                 v.HitFlash = (float)pose.Recoil;
                 v.Lunge = (float)pose.Lunge;
                 v.HealGlow = (float)pose.Glow;
-                Vector3 home = WorldAt(_stageX[kv.Key], AllyFeetY, AllyDepth);
+                Vector3 home = WorldAt(_stageX[kv.Key], _stageY[kv.Key], _stageDepth[kv.Key]);
                 float bob = st.Alive ? Mathf.Abs(Mathf.Sin(t * 2.4f + v.Phase)) * 0.09f : 0f;
                 var tr = v.Root.transform;
                 float castRoot = v.Rig != null && v.Rig.Style != RigStyle.Default ? 0f : (float)pose.Cast; // les héros à gestes par phases lèvent eux-mêmes leurs bras : le corps entier ne se soulève ni ne se penche
-                tr.position = home + new Vector3(0, bob - v.HitFlash * 0.12f + castRoot * 0.2f - (float)pose.Fall * 0.3f, -v.Lunge * 1.2f + (float)pose.Recoil * 0.25f);
+                tr.position = home + new Vector3(v.Lunge * 1.2f - (float)pose.Recoil * 0.25f, bob - v.HitFlash * 0.12f + castRoot * 0.2f - (float)pose.Fall * 0.3f, 0f);   // le coup porté avance vers le boss (à droite), le coup reçu recule vers la gauche
                 float side = kv.Key == "healer" ? -10f : (kv.Key == "tank" ? 12f : kv.Key == "dps1" ? -6f : 8f);
-                tr.rotation = Quaternion.Euler(-castRoot * 10f, 180f + side * (1f - (float)pose.Fall), (float)pose.Fall * 78f);
+                tr.rotation = Quaternion.Euler(-castRoot * 10f, AllyYaw + side * 0.5f * (1f - (float)pose.Fall), (float)pose.Fall * 78f);
                 v.Rig?.ApplyPose(t, v.Phase, pose);
                 v.Bubble.SetActive(st.Alive && st.Shield > 0.5f);
                 v.Ring.SetActive(st.Alive && _ctl.Selection.Selected == kv.Key);
@@ -729,8 +735,8 @@ namespace Healer.Client
                 float progress = 1f - Mathf.Clamp01((float)(telegraph.MsRemaining / System.Math.Max(1.0, telegraph.TotalMs)));
                 float blink = 0.6f + 0.4f * Mathf.Sin(t * 16f);
                 _dangerMat.SetColor("_TintColor", new Color(1f, 0.25f, 0.2f, (0.12f + 0.55f * progress) * blink));
-                _dangerRing.transform.position = WorldAt((float)Layout.GameW / 2f, AllyFeetY, AllyDepth) + new Vector3(0f, 0.04f, 0f);
-                _dangerRing.transform.localScale = new Vector3(15f + 4f * (1f - progress), 6f + 1.6f * (1f - progress), 1f);
+                _dangerRing.transform.position = WorldAt((float)(Layout.AllyStageX(0, 4) + Layout.AllyStageX(3, 4)) / 2f, AllyFeetY, AllyDepth) + new Vector3(0f, 0.04f, 0f);   // sous la colonne d'alliés
+                _dangerRing.transform.localScale = new Vector3(10f + 3f * (1f - progress), 7f + 2f * (1f - progress), 1f);
             }
             UpdateFx(dt);
             UpdateAtmosphere(t);

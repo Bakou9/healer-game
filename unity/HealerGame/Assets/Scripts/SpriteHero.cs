@@ -49,7 +49,7 @@ namespace Healer.Client
             Destroy(quad.GetComponent<Collider>());
             quad.name = "Sprite";
             quad.transform.SetParent(root.transform, false);
-            quad.transform.localScale = new Vector3(FrameUnits, FrameUnits, 1f);
+            quad.transform.localScale = new Vector3(-FrameUnits, FrameUnits, 1f);   // sprites are drawn facing left : mirrored so the hero faces the boss on the right
             quad.transform.localPosition = new Vector3(0f, FrameUnits / 2f - FeetOffsetUnits, 0f);
             var mr = quad.GetComponent<MeshRenderer>();
             mr.sharedMaterial = new Material(Shader.Find("Sprites/Default")) { color = Color.white };

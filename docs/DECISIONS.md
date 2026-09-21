@@ -508,3 +508,12 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Résultat du premier essai** : `art-pixel/blender/sprites.py` produit 6 poses du druide v4 en 128 px, palette de 28 couleurs, contour 1 px. Vue de profil pur : le bâton cache le corps ; vue trois-quarts depuis le côté de la main libre, personnage tourné vers la gauche : lisible (crâne, bois, orbe, cristal). Voir `art-pixel/README.md`.
 - **À décider ensuite** (par l'utilisateur) : taille des sprites (128 ou moins, FFVI est plus petit), rendu des ombres et des contours, intégration Unity (sprite renderer + pixel-perfect camera), remplacement ou coexistence avec le rendu 3D.
 - **Question B** : aucune règle ni valeur de jeu modifiée.
+
+
+## D-072 — Side-view battle layout (team on the left, boss on the right)
+
+- **Date** : 2026-09-21 — **Statut** : Livrée sur la branche `pixel-art` (première version, à affiner à l'oeil).
+- **Demande** : réorganiser la scène comme Final Fantasy VI : équipe à gauche, boss à droite (précision de l'utilisateur : à gauche pour l'équipe, à droite pour le boss).
+- **Changements** (client et layout, aucune règle de combat) : `Layout.AllyStageX` / `AllyStageFeetY` placent les alliés en colonne diagonale à gauche (l'allié d'indice 0, devant, est le plus proche du boss), `Layout.BossStageX/FeetY` place le boss à droite. Les héros regardent vers la droite (yaw 145°, trois-quarts face caméra), le boss vers la gauche (215°). Un coup porté avance vers le boss, un coup reçu recule vers la gauche ; le coup du boss avance vers l'équipe. Les héros sont plus petits (échelle 1,45 au lieu de 1,85) pour tenir dans une colonne ; profondeur décalée par allié pour un ordre d'affichage correct. Anneau de danger sous la colonne d'alliés, cercle rituel entre l'équipe et le boss. Les sprites pixel art sont mis en miroir (dessinés face à gauche).
+- **Test remplacé (voulu)** : `Les_allies_de_la_scene_sont_alignes_au_centre_sans_se_chevaucher` exprimait l'ancienne exigence (ligne centrée) ; il est remplacé par `Les_allies_de_la_scene_forment_une_colonne_a_gauche_face_au_boss` et `Le_boss_est_a_droite_dans_la_zone_centrale`. C'est une conséquence directe de la demande de l'utilisateur, pas un contournement.
+- **Question B** : aucune règle ni valeur de jeu modifiée ; 772 tests et 13 scénarios e2e verts.
