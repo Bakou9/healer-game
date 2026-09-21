@@ -1,7 +1,7 @@
 """Druide de la Soigneuse, version 4 (D-069) : modèle haute définition en surfaces lissées.
 
-Lancer :  blender --background --python art/blender/druid_v4.py   (ou dans un Blender ouvert via le MCP : exec(open(...).read()))
-Sorties : art/blender/out/druid_v4_*.png (rendus de contrôle) et unity/HealerGame/Assets/Resources/Parts/DruidV4.fbx
+Lancer :  blender --background --python art-3d/blender/druid_v4.py   (ou dans un Blender ouvert via le MCP : exec(open(...).read()))
+Sorties : art-3d/blender/out/druid_v4_*.png (rendus de contrôle) et unity/HealerGame/Assets/Resources/Parts/DruidV4.fbx
 
 Personnage qui regarde vers -Y ; côté droit du personnage = x < 0 (il y tient le bâton). Pièces « <Pivot>__<Pièce> ».
 Méthode « corps d'abord » (D-068) : pose imposée, puis vêtements et ornements autour, puis contrôle automatique des dégagements.

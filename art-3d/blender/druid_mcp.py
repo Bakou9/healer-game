@@ -1,8 +1,8 @@
 """Druide de la Soigneuse, version 2 faite via le MCP Blender (D-067) : masque de crâne de cerf, robe plissée, bâton à croissant.
 Modèle de base, sans variantes d'équipement. Le premier druide (druid.py) est gardé de côté.
 
-Lancer :  blender --background --python art/blender/druid_mcp.py   (ou depuis un Blender ouvert via le MCP : exec(open(...).read()))
-Sorties : art/blender/out/druid_mcp_*.png (rendus de contrôle) et unity/HealerGame/Assets/Resources/Parts/DruidMcp.fbx
+Lancer :  blender --background --python art-3d/blender/druid_mcp.py   (ou depuis un Blender ouvert via le MCP : exec(open(...).read()))
+Sorties : art-3d/blender/out/druid_mcp_*.png (rendus de contrôle) et unity/HealerGame/Assets/Resources/Parts/DruidMcp.fbx
 
 Personnage qui regarde vers -Y. Pièces nommées « <Pivot>__<Pièce> » ; « Glow » = lumineux (voir lib.py).
 """

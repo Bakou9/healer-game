@@ -1,4 +1,4 @@
-"""Test de chaîne : un cristal, un rendu, une exportation. Lancer : blender --background --python art/blender/smoke_test.py"""
+"""Test de chaîne : un cristal, un rendu, une exportation. Lancer : blender --background --python art-3d/blender/smoke_test.py"""
 import os
 import sys
 sys.path.insert(0, os.path.dirname(__file__))

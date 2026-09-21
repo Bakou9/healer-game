@@ -83,6 +83,6 @@ effets qui masquent l'information (docs/UX.md, principe 6).
 
 ## Chaîne Blender (D-066)
 
-Scripts dans `art/blender/` (`lib.py` outils, `druid.py` exemple complet). Lancer :
-`"C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" --background --python art/blender/druid.py`.
+Scripts dans `art-3d/blender/` (`lib.py` outils, `druid.py` exemple complet). Lancer :
+`"C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" --background --python art-3d/blender/druid.py`.
 Conventions : mètres, Z haut, personnage face à -Y, pieds à z = 0 ; maillages `<Pivot>__<Pièce>` (Pivot ∈ Torso, Head, ArmL, ArmR, Cape, Weapon) ; « Glow » dans le nom = matériau lumineux ; objets vides `Pivot_<Nom>` aux articulations. Export FBX dans `Assets/Resources/Parts/` ; chargeur : `ModelFactory.ImportedDruid()`. Piège : couleurs FBX linéaires (`.gamma` côté Unity).

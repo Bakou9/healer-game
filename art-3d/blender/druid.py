@@ -1,7 +1,7 @@
 """Druide de la Soigneuse (héros « healer ») : modèle de base, sans variantes d'équipement.
 
-Lancer :  blender --background --python art/blender/druid.py
-Sorties : art/blender/out/druid_*.png (rendus de contrôle) et unity/HealerGame/Assets/Resources/Parts/Druid.fbx
+Lancer :  blender --background --python art-3d/blender/druid.py
+Sorties : art-3d/blender/out/druid_*.png (rendus de contrôle) et unity/HealerGame/Assets/Resources/Parts/Druid.fbx
 
 Personnage qui regarde vers -Y. Pièces nommées « <Pivot>__<Pièce> » ; « Glow » = lumineux (voir lib.py).
 """

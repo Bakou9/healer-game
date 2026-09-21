@@ -497,3 +497,14 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Client** : `UnitRig.ApplyPose` avec un style par héros (`RigStyle` : Melee pour le Garde, Bow pour l'Archère, Staff pour le Mage et la Soigneuse). Coup d'épée : levée, frappe rapide, retour, avec torsion du buste. Tir à l'arc : bras tendu, corde tirée, lâcher. Incantation : montée, tenue avec tremblement, lâcher vers l'avant (cape qui se soulève, main libre ouverte, bâton compensé pour rester presque droit). Les boss gardent l'ancien mouvement.
 - **Outil de développement** : dans la galerie, bouton « Ralenti » (1/10) et touches « . » / « , » pour avancer/reculer image par image de 50 ms (fige l'animation) ; utile pour examiner et capturer une phase précise.
 - **Question B** : aucune règle ni valeur de jeu modifiée ; seuls des canaux de présentation ont été ajoutés.
+
+
+## D-071 — Pixel-art side-view battle (FFVI style) : 3D-to-sprite pipeline experiment
+
+- **Date** : 2026-09-21 — **Statut** : Proposition en cours d'essai (branche `pixel-art`) ; rien n'est branché dans le jeu.
+- **Demande** de l'utilisateur : ranger la partie modélisation 3D dans un dossier à part, et tenter une approche pixel art en vue de côté (bataille comme Final Fantasy VI) avec la méthode Dead Cells ; à l'avenir, utiliser les termes techniques anglais.
+- **Organisation** : `art/` renommé `art-3d/` (scripts Blender, FBX sources) ; nouveau `art-pixel/` (pipeline de sprites). Les anciennes décisions gardent leurs chemins d'origine (`art/blender`) : lire `art-3d/blender`.
+- **Avis donné avant de commencer** : la performance n'est pas le vrai enjeu (un héros de 30 000 triangles passe sur mobile) ; le pixel art dessiné à la main n'est pas praticable pour Claude (pas d'outil de dessin, cohérence entre frames) ; le 3D-to-pixel l'est, et il permet de re-rendre automatiquement les variantes d'équipement.
+- **Résultat du premier essai** : `art-pixel/blender/sprites.py` produit 6 poses du druide v4 en 128 px, palette de 28 couleurs, contour 1 px. Vue de profil pur : le bâton cache le corps ; vue trois-quarts depuis le côté de la main libre, personnage tourné vers la gauche : lisible (crâne, bois, orbe, cristal). Voir `art-pixel/README.md`.
+- **À décider ensuite** (par l'utilisateur) : taille des sprites (128 ou moins, FFVI est plus petit), rendu des ombres et des contours, intégration Unity (sprite renderer + pixel-perfect camera), remplacement ou coexistence avec le rendu 3D.
+- **Question B** : aucune règle ni valeur de jeu modifiée.

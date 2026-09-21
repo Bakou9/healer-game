@@ -1,8 +1,8 @@
 """Druide de la Soigneuse, version 3 (D-068, « corps d'abord ») : pose imposée, mains à taille de figurine, bâton tenu au poing, grands bois, contrôle automatique des dégagements.
 Modèle de base, sans variantes d'équipement. Les versions 1 (druid.py) et 2 (druid_mcp.py) sont gardées comme replis.
 
-Lancer :  blender --background --python art/blender/druid_v3.py   (ou depuis un Blender ouvert via le MCP : exec(open(...).read()))
-Sorties : art/blender/out/druid_v3_*.png (rendus de contrôle) et unity/HealerGame/Assets/Resources/Parts/DruidV3.fbx
+Lancer :  blender --background --python art-3d/blender/druid_v3.py   (ou depuis un Blender ouvert via le MCP : exec(open(...).read()))
+Sorties : art-3d/blender/out/druid_v3_*.png (rendus de contrôle) et unity/HealerGame/Assets/Resources/Parts/DruidV3.fbx
 
 Personnage qui regarde vers -Y. Pièces nommées « <Pivot>__<Pièce> » ; « Glow » = lumineux (voir lib.py).
 """

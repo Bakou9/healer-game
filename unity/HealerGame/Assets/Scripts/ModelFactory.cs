@@ -381,7 +381,7 @@ namespace Healer.Client
         }
 
         /// <summary>
-        /// Druide de la Soigneuse, modélisé sous Blender (art/blender/druid_mcp.py, ou druid.py pour la première version) et exporté en FBX (Resources/Parts/Druid.fbx). Le fichier contient
+        /// Druide de la Soigneuse, modélisé sous Blender (art-3d/blender/druid_mcp.py, ou druid.py pour la première version) et exporté en FBX (Resources/Parts/Druid.fbx). Le fichier contient
         /// des maillages « Pivot__Pièce » et des objets vides « Pivot_<Pivot> » ; on reconstruit ici la hiérarchie du UnitRig avec des pivots
         /// PROPRES (sans rotation) aux articulations, on y range les pièces, et on normalise la taille. Renvoie null si le fichier est absent.
         /// </summary>
