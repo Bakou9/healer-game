@@ -17,6 +17,32 @@ recul, geste d'incantation, chute. Aucune modélisation, aucun rig, aucune image
    dans `art-2d/out/` et copie le résultat dans `unity/HealerGame/Assets/Resources/Art2D/`.
 4. Juger dans le combat : `lancer-le-jeu-2d.bat` (ou `HealerGame.exe -healer-art2d`), puis ajuster le prompt si besoin.
 
+## Chaîne autonome (D-076)
+
+Tout est automatisable sauf **écrire les polygones de découpe** (Claude les écrit en regardant la grille, quelques minutes par personnage).
+
+```bash
+node art-2d/tools/generate.mjs --essai        # montre ce qui serait généré, sans rien appeler
+node art-2d/tools/generate.mjs                # génère les illustrations manquantes (PAYANT, clé requise)
+blender --background --python art-2d/tools/process.py -- 512 --unity   # détourage, recadrage, mise à l échelle
+blender --background --python art-2d/tools/cutout.py -- <unité> --grille   # repère pour écrire les polygones
+blender --background --python art-2d/tools/cutout.py -- <unité> --unity    # découpe articulée
+npm run build:unity
+```
+
+**La clé d API n est jamais dans le dépôt ni vue par l assistant.** Vous la posez dans votre terminal :
+
+```
+PowerShell :  $env:OPENAI_API_KEY = "sk-..."
+Git Bash   :  export OPENAI_API_KEY="sk-..."
+```
+
+Les prompts vivent dans `art-2d/prompts.txt` (source unique : le script les lit, et ils sont repris au générique du jeu).
+
+Autres voies possibles vers la génération sans intervention : piloter un service déjà connecté dans votre navigateur (gratuit, lent, agit
+sous votre compte), ou installer un modèle d images local (gratuit et illimité, mais plusieurs gigaoctets à télécharger et une carte
+graphique nécessaire). Les deux demandent votre accord explicite.
+
 ## Outils (vérifier les limites gratuites et les conditions d'usage commercial de l'outil que VOUS utilisez : elles changent souvent)
 
 - Commencer par une **offre gratuite** (génération d'images de ChatGPT, Google Gemini, Microsoft Copilot / Designer). Coût nul, prise en main d'un quart d'heure.
