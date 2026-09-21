@@ -1,0 +1,5 @@
+size 128
+idle 6 6 1
+attack 8 14 0
+hit 3 12 0
+death 7 8 0
