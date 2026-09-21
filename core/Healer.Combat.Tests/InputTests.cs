@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System;
 using System.Linq;
 using Healer.Ui;
@@ -333,21 +334,29 @@ namespace Healer.Combat.Tests
             Assert.That(Layout.PauseButton.Bottom, Is.LessThanOrEqualTo(Layout.Zones.Skills.Y));
 
         [Test]
-        public void Les_allies_de_la_scene_forment_une_colonne_a_gauche_face_au_boss()
+        public void Les_allies_sont_en_quinconce_compacte_a_gauche_du_boss()
         {
+            // D-080 : deux alliés par colonne, décalés en hauteur. Aucune paire ne doit se confondre, et l'équipe
+            // doit tenir dans une zone compacte plutôt que de barrer l'écran en diagonale.
             foreach (int n in new[] { 3, 4, 5 })
             {
-                double prevX = double.PositiveInfinity, prevY = double.NegativeInfinity;
-                for (int i = 0; i < n; i++)
+                var places = new List<System.ValueTuple<double, double>>();
+                for (int i = 0; i < n; i++) places.Add((Layout.AllyStageX(i, n), Layout.AllyStageFeetY(i, n)));
+
+                foreach (var place in places)
                 {
-                    double x = Layout.AllyStageX(i, n), y = Layout.AllyStageFeetY(i, n);
-                    Assert.That(x, Is.LessThan(prevX), $"{n} alliés : l'allié {i} recule vers la gauche");
-                    Assert.That(y - prevY, Is.GreaterThanOrEqualTo(40).Or.EqualTo(double.PositiveInfinity), $"{n} alliés, allié {i} : assez d'écart vertical pour ne pas se masquer");
-                    Assert.That(x, Is.GreaterThan(Layout.Zones.CenterX), $"{n} alliés, allié {i} hors des cartes");
-                    Assert.That(x, Is.LessThan(Layout.BossStageX - 150), $"{n} alliés, allié {i} à gauche du boss");
-                    Assert.That(y, Is.LessThanOrEqualTo(700), $"{n} alliés, allié {i} dans l'écran");
-                    prevX = x; prevY = y;
+                    Assert.That(place.Item1, Is.GreaterThan(Layout.Zones.CenterX), $"{n} alliés : dans la zone centrale");
+                    Assert.That(place.Item1, Is.LessThan(Layout.BossStageX - 120), $"{n} alliés : à gauche du boss");
+                    Assert.That(place.Item2, Is.InRange(380.0, 700.0), $"{n} alliés : dans l'écran");
                 }
+                for (int i = 0; i < n; i++)
+                    for (int j = i + 1; j < n; j++)
+                    {
+                        double dx = System.Math.Abs(places[i].Item1 - places[j].Item1), dy = System.Math.Abs(places[i].Item2 - places[j].Item2);
+                        Assert.That(dx >= 90 || dy >= 90, Is.True, $"{n} alliés : {i} et {j} sont trop proches");
+                    }
+                double emprise = places.Max(p => p.Item1) - places.Min(p => p.Item1);
+                Assert.That(emprise, Is.LessThanOrEqualTo(320), $"{n} alliés : l'équipe reste compacte");
             }
         }
 

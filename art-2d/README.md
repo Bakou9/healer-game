@@ -123,12 +123,17 @@ casting) facing right, same flat magenta background ». Deux images de plus par 
 
 ## État
 
-| Unité | Illustration | En jeu |
+| Unité | Illustration | Parties articulées |
 |---|---|---|
-| Soigneuse (`healer`) | faite | oui, articulée en 3 parties |
-| Garde (`tank`) | à faire | — |
-| Archère (`dps1`) | à faire | — |
-| Mage (`dps2`) | à faire | — |
-| Boss (3) | à faire | — |
+| Soigneuse (`healer`) | faite | 6 (jambes, corps, tête, bras du bâton, bras libre) |
+| Garde (`tank`) | faite | 7 (jambes, corps, heaume, bras de l'épée en 2 segments, bras du bouclier) |
+| Archère (`dps1`) | faite | 6 (jambes, corps, tête, bras de l'arc, bras libre) |
+| Mage (`dps2`) | faite | 4 (corps, chapeau et tête, bras du livre, bras du bâton) |
+| Golem Ancestral (`boss1`) | faite | 6 |
+| Reine des Marais (`boss2`) | faite | 4 |
+| Seigneur de Cendre (`boss3`) | faite | 6 |
+
+Les boss portent le nom d'art `golem`, `marsh` et `ash` dans `art-2d/`, traduit en `boss1`, `boss2`, `boss3` au moment de la copie
+vers le jeu (table `VERS_JEU` dans les scripts). Leur illustration occupe un cadre 30 % plus haut : un boss doit dominer la scène.
 
 Tant qu'une unité n'a pas d'illustration, le jeu affiche son modèle 3D : les deux rendus coexistent sans rien casser.

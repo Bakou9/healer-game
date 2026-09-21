@@ -39,6 +39,9 @@ if (!unite) { console.error("Usage : node art-2d/tools/poses.mjs <unité> [poses
 const demandees = libres.slice(1).filter(p => p in POSES);
 const poses = demandees.length ? demandees : Object.keys(POSES);
 const force = Number(opt("force", 0.55));
+// --neuf : on REGÉNÈRE le personnage dans la pose voulue au lieu de retoucher l illustration.
+// La pose change vraiment (l image vers image, elle, n y arrive pas), mais le personnage dérive : à juger à l oeil.
+const neuf = args.includes("--neuf");
 const variantes = Number(opt("variantes", 1));
 const graine = Number(opt("graine", 1));
 const ETAPES = 10;   // en « image vers image », il faut plus d'étapes qu'en création pure : seule une fraction est réellement parcourue
@@ -76,6 +79,16 @@ if (!envoiImage.ok) { console.error("Envoi de l'image refusé :", (await envoiIm
 const { name: nomSource } = await envoiImage.json();
 
 function workflow(prompt, g) {
+  if (neuf) return {
+    1: { class_type: "CheckpointLoaderSimple", inputs: { ckpt_name: MODELE } },
+    2: { class_type: "CLIPTextEncode", inputs: { text: prompt, clip: ["1", 1] } },
+    3: { class_type: "CLIPTextEncode", inputs: { text: "", clip: ["1", 1] } },
+    4: { class_type: "EmptySD3LatentImage", inputs: { width: 1024, height: 1536, batch_size: 1 } },
+    5: { class_type: "KSampler", inputs: { seed: g, steps: 4, cfg: 1.0, sampler_name: "euler", scheduler: "simple", denoise: 1.0,
+                                            model: ["1", 0], positive: ["2", 0], negative: ["3", 0], latent_image: ["4", 0] } },
+    7: { class_type: "VAEDecode", inputs: { samples: ["5", 0], vae: ["1", 2] } },
+    8: { class_type: "SaveImage", inputs: { filename_prefix: "pose", images: ["7", 0] } },
+  };
   return {
     1: { class_type: "CheckpointLoaderSimple", inputs: { ckpt_name: MODELE } },
     2: { class_type: "CLIPTextEncode", inputs: { text: prompt, clip: ["1", 1] } },
@@ -118,7 +131,7 @@ for (const pose of poses) {
         if (!images.length) continue;
         const im = images[0];
         const vue = await fetch(`${HOTE}/view?filename=${encodeURIComponent(im.filename)}&subfolder=${encodeURIComponent(im.subfolder ?? "")}&type=${im.type ?? "output"}`);
-        fs.writeFileSync(path.join(ESSAIS, `${unite}_${pose}_f${String(force).replace(".", "")}_v${v}.png`), Buffer.from(await vue.arrayBuffer()));
+        fs.writeFileSync(path.join(ESSAIS, neuf ? `${unite}_${pose}_n${v}.png` : `${unite}_${pose}_f${String(force).replace(".", "")}_v${v}.png`), Buffer.from(await vue.arrayBuffer()));
         fini = true;
       }
       console.log(fini ? `écrit en ${((Date.now() - debut) / 1000).toFixed(0)} s` : "délai dépassé");

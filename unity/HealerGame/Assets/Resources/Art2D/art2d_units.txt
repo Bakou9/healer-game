@@ -1,7 +1,7 @@
-ash idle 305 512 1.000
+ash idle 243 512 1.000
 dps1 idle 285 512 1.000
 dps2 idle 281 512 1.000
-golem idle 321 512 1.000
-healer idle 248 512 1.000
-marsh idle 225 512 1.000
+golem idle 330 512 1.000
+healer idle 280 512 1.000
+marsh idle 306 512 1.000
 tank idle 264 512 1.000

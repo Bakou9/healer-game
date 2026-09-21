@@ -580,7 +580,7 @@ namespace Healer.Client
                 if (!_anims.ContainsKey(a.Id)) _anims[a.Id] = new UnitAnimator(a.Id);
                 _stageX[a.Id] = (float)Layout.AllyStageX(i, allies.Count);
                 _stageY[a.Id] = (float)Layout.AllyStageFeetY(i, allies.Count);
-                _stageDepth[a.Id] = AllyDepth - i * 1.5f;   // les plus bas sont plus proches de la caméra : ordre d'affichage correct
+                _stageDepth[a.Id] = AllyDepth - ((float)Layout.AllyStageFeetY(i, allies.Count) - 500f) / 30f;   // plus bas à l'écran = plus près de la caméra
             }
             _looksSignature = LooksSignature();
             Debug.Log("[Healer] apparence : " + _looksSignature);

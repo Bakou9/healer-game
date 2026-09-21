@@ -36,6 +36,13 @@ SEUIL_TEINTE = 0.075     # écart de teinte au fond en-deçà duquel un pixel es
 INTENSITE_MIN = 0.35     # en-dessous, le pixel est trop sombre pour être du fond : c'est le personnage
 FOND_JEU = np.array([26, 24, 40, 255], dtype=np.uint8)
 
+VERS_JEU = {"golem": "boss1", "marsh": "boss2", "ash": "boss3"}   # nom d'art -> identifiant du jeu (core/content/bossN.json)
+
+
+def nom_jeu(unite):
+    return VERS_JEU.get(unite, unite)
+
+
 
 def lire_png(chemin):
     """Renvoie un tableau (h, w, 4) de flottants, valeurs telles que stockées dans le PNG, première ligne en haut."""
@@ -251,7 +258,7 @@ for nom in sorted(os.listdir(INBOX)):
     print(f"TRAITE {unite} {pose} : {brut.shape[1]}x{brut.shape[0]} -> {w}x{h}")
     if VERS_UNITY:
         os.makedirs(UNITY, exist_ok=True)
-        ecrire_png(os.path.join(UNITY, f"{unite}_{pose}.png"), octets)
+        ecrire_png(os.path.join(UNITY, f"{nom_jeu(unite)}_{pose}.png"), octets)
 
 index = os.path.join(OUT, "art2d_units.txt")
 with open(index, "w", encoding="utf-8") as f:

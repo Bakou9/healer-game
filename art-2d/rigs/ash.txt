@@ -1,0 +1,34 @@
+# Découpe articulée : le Seigneur de Cendre (boss) (D-079). Coordonnées en % de l'illustration, origine en HAUT à gauche
+# (repère : art-2d/out/ash_grille.png).
+#
+#   partie <nom> <parent|-> <ordre> <pivot_x> <pivot_y>     ordre : petit = derrière
+#   poly   <x> <y> ...
+#   anim   <nom> <souffle> <coup> <recul> <lancer> <lache> <chute>   (degrés)
+#
+# Les polygones peuvent rester approximatifs : cutout.py rattache automatiquement à la partie la plus proche
+# tout morceau qu'aucun polygone ne couvre, donc rien ne disparaît. En revanche le corps DOIT déborder sous
+# chaque épaule mobile, sinon un trou s'ouvre quand le bras tourne.
+
+partie leg_l body 0 48 78
+poly 38 74  56 74  57 94  55 100  36 100  35 90
+anim leg_l 0.4 -5 4 -1 -2 0
+
+partie leg_r body 0 66 78
+poly 56 74  78 74  79 92  77 100  54 100  54 90
+anim leg_r -0.4 6 -3 1 2 0
+
+partie body - 1 56 76
+poly 36 22  80 22  83 46  82 66  76 86  40 86  34 66  32 46
+anim body 0.5 -8 9 -3 -6 0
+
+partie head body 2 58 24
+poly 36 0  84 0  85 14  76 26  60 31  46 26  36 12
+anim head -1 -6 13 -4 -3 0
+
+partie arm_sword body 3 34 34
+poly 0 4  46 4  48 44  38 56  16 54  0 42
+anim arm_sword 1.3 -32 11 -12 -22 0
+
+partie arm_r body 4 74 36
+poly 66 26  94 28  96 60  84 66  68 58  62 40
+anim arm_r -1.3 14 -16 8 12 0

@@ -507,6 +507,7 @@ namespace Healer.Client
 
         public static GameObject ForBoss(string id)
         {
+            if (Art2DUnit.Enabled && Art2DUnit.Has(id)) return Art2DUnit.Create(id);   // illustrations 2D (D-074)
             switch (id)
             {
                 case "boss2": return SwampQueen();

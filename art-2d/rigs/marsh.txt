@@ -1,0 +1,26 @@
+# Découpe articulée : la Reine des Marais (boss) (D-079). Coordonnées en % de l'illustration, origine en HAUT à gauche
+# (repère : art-2d/out/marsh_grille.png).
+#
+#   partie <nom> <parent|-> <ordre> <pivot_x> <pivot_y>     ordre : petit = derrière
+#   poly   <x> <y> ...
+#   anim   <nom> <souffle> <coup> <recul> <lancer> <lache> <chute>   (degrés)
+#
+# Les polygones peuvent rester approximatifs : cutout.py rattache automatiquement à la partie la plus proche
+# tout morceau qu'aucun polygone ne couvre, donc rien ne disparaît. En revanche le corps DOIT déborder sous
+# chaque épaule mobile, sinon un trou s'ouvre quand le bras tourne.
+
+partie body - 1 50 70
+poly 26 26  80 26  82 50  80 74  76 98  30 98  24 74  23 50
+anim body 0.8 -5 8 -4 -7 0
+
+partie head body 2 52 24
+poly 32 0  76 0  78 14  70 24  54 30  40 26  32 14
+anim head -1.2 -4 13 -5 -4 0
+
+partie arm_l body 3 32 32
+poly 10 14  40 14  42 50  34 62  16 64  8 50  8 22
+anim arm_l 1.4 -20 10 -26 -36 0
+
+partie arm_r body 4 68 32
+poly 60 26  84 26  86 58  78 66  62 62  56 44
+anim arm_r -1.4 -22 -12 -30 -40 0

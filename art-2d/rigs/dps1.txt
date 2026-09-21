@@ -1,0 +1,33 @@
+# Découpe articulée : l'Archère (D-079). Coordonnées en % de l'illustration, origine en HAUT à gauche
+# (repère : art-2d/out/dps1_grille.png).
+#
+#   partie <nom> <parent|-> <ordre> <pivot_x> <pivot_y>     ordre : petit = derrière
+#   poly   <x> <y> ...
+#   anim   <nom> <souffle> <coup> <recul> <lancer> <lache> <chute>   (degrés)
+#
+# Règles : une partie mobile ne doit pas être dupliquée dans celle du dessous (fantôme) ;
+# en revanche le corps DÉBORDE sous chaque épaule mobile, pour combler le trou quand le bras tourne.
+
+partie leg_l body 0 44 72
+poly 33 68  49 68  50 90  48 100  31 100  30 86
+anim leg_l 0.4 -5 4 -1 -2 0
+
+partie leg_r body 0 56 72
+poly 49 68  66 68  67 88  65 100  47 100  47 86
+anim leg_r -0.4 6 -3 1 2 0
+
+partie body - 1 50 70
+poly 30 22  70 22  73 44  72 62  68 78  34 78  29 62  27 44
+anim body 0.6 -7 9 -3 -5 0
+
+partie head body 2 50 26
+poly 35 2  65 2  67 14  62 26  50 31  40 26  34 14
+anim head -1 -5 14 -4 -3 0
+
+partie arm_bow body 3 66 32
+poly 59 16  95 18  96 64  80 68  61 50  56 30
+anim arm_bow -1.5 -26 -16 -10 -30 0
+
+partie arm_free body 4 36 32
+poly 25 24  43 24  45 50  38 63  23 61  21 40
+anim arm_free 1.5 20 10 8 14 0

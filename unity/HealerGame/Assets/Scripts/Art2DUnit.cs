@@ -53,7 +53,7 @@ namespace Healer.Client
         private readonly List<Partie> _parties = new List<Partie>();
         private readonly Dictionary<string, float[]> _animations = new Dictionary<string, float[]>();
         private Transform _plateau = null!;   // porte l'orientation face caméra : tout ce qui est dessous est du pur 2D
-        private float _phase;
+        private float _phase, _hauteurCadre = HauteurUnites;
         private UnitPose _pose;
 
         /// <summary>Construit l'unité avec le même contrat qu'un modèle 3D : un UnitRig (que la scène pilote) et des Renderer à teinter.</summary>
@@ -69,7 +69,10 @@ namespace Healer.Client
             vue._plateau = plateau.transform;
 
             var entiere = Texture(unitId + "_idle")!;
-            float largeurTotale = HauteurUnites * entiere.width / Mathf.Max(1, entiere.height);
+            // Un boss doit dominer la scène : son illustration occupe un cadre plus haut que celle d'un héros.
+            float hauteur = HauteurUnites * (unitId.StartsWith("boss") ? 1.3f : 1f);
+            vue._hauteurCadre = hauteur;
+            float largeurTotale = hauteur * entiere.width / Mathf.Max(1, entiere.height);
             var decoupe = Resources.Load<TextAsset>(Dossier + unitId + "_rig");
             if (decoupe != null) vue.Articuler(unitId, decoupe.text, largeurTotale);
             else vue.PieceUnique(entiere, largeurTotale);
@@ -129,7 +132,7 @@ namespace Healer.Client
         private Partie Ajouter(string nom, Partie? parent, int ordre, Vector2 pivotFrac, Vector2 pivotParentFrac, Rect zone, Texture2D tex, float largeur, bool deformable)
         {
             float X(float frac) => (frac - 0.5f) * largeur;
-            float Y(float frac) => frac * HauteurUnites;
+            float Y(float frac) => frac * _hauteurCadre;
 
             var pivot = new GameObject(nom);
             pivot.transform.SetParent(parent != null ? parent.Pivot : _plateau, false);
@@ -137,7 +140,7 @@ namespace Healer.Client
                 ? new Vector3(X(pivotFrac.x) - X(pivotParentFrac.x), Y(pivotFrac.y) - Y(pivotParentFrac.y), 0f)
                 : new Vector3(X(pivotFrac.x), Y(pivotFrac.y), 0f);
 
-            float w = zone.width * largeur, h = zone.height * HauteurUnites;
+            float w = zone.width * largeur, h = zone.height * _hauteurCadre;
             var image = new GameObject("Image");
             image.transform.SetParent(pivot.transform, false);
             image.transform.localPosition = new Vector3(

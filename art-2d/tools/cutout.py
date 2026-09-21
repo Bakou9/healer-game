@@ -38,6 +38,13 @@ GRILLE = "--grille" in args
 VERS_UNITY = "--unity" in args
 FOND_JEU = np.array([26, 24, 40, 255], dtype=np.uint8)
 
+VERS_JEU = {"golem": "boss1", "marsh": "boss2", "ash": "boss3"}   # nom d'art -> identifiant du jeu (core/content/bossN.json)
+
+
+def nom_jeu(unite):
+    return VERS_JEU.get(unite, unite)
+
+
 
 def lire_png(chemin):
     img = bpy.data.images.load(chemin)
@@ -145,10 +152,59 @@ def adoucir(masque, passes=2):
     return np.clip(m * 1.6, 0, 1)
 
 
+def rattacher_les_oublies(masques, opaque, reduction=2, iterations=400):
+    """
+    Garantit qu'AUCUN morceau du personnage ne disparaît.
+
+    Les polygones sont écrits à la main : il en manque toujours un bout (une main, un pan de cape, une corne).
+    Tout pixel visible qui n'appartient à aucun polygone serait purement et simplement perdu. On les retrouve donc
+    et on les donne à la partie la PLUS PROCHE, par propagation depuis les masques existants.
+    """
+    union = np.zeros(opaque.shape, dtype=bool)
+    for m in masques:
+        union |= m > 0.02
+    oublies = opaque & ~union
+    part = 100 * oublies.sum() / max(1, opaque.sum())
+    if not oublies.any():
+        print("  couverture : complète")
+        return masques
+    print(f"  couverture : {part:.1f} % du personnage n'était dans aucun polygone — rattaché au plus proche")
+
+    h, w = opaque.shape
+    hr, wr = h // reduction, w // reduction
+
+    def reduire(m):
+        return m[:hr * reduction, :wr * reduction].reshape(hr, reduction, wr, reduction).any(axis=(1, 3))
+
+    proprio = np.full((hr, wr), -1, dtype=np.int16)
+    for i, m in enumerate(masques):
+        pris = reduire(m > 0.5) & (proprio < 0)
+        proprio[pris] = i
+    libre = reduire(oublies) & (proprio < 0)
+    for _ in range(iterations):
+        if not libre.any():
+            break
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            src = np.roll(proprio, (dy, dx), (0, 1))
+            prendre = libre & (src >= 0)
+            if prendre.any():
+                proprio[prendre] = src[prendre]
+                libre &= ~prendre
+
+    grand = np.zeros((h, w), dtype=np.int16) - 1
+    grand[:hr * reduction, :wr * reduction] = np.repeat(np.repeat(proprio, reduction, axis=0), reduction, axis=1)
+    for i in range(len(masques)):
+        masques[i] = np.maximum(masques[i], ((grand == i) & oublies).astype(np.float32))
+    return masques
+
+
+# Tous les masques d'abord, pour pouvoir rattacher ce qu'aucun polygone ne couvre.
+masques = [adoucir(masque_polygone(p["poly"])) for p in parties]
+masques = rattacher_les_oublies(masques, img[..., 3] > 0.5)
+
 lignes_rig = [f"image {W} {H}"]
 apercus = []
-for p in parties:
-    masque = adoucir(masque_polygone(p["poly"]))
+for p, masque in zip(parties, masques):
     part = img.copy()
     part[..., 3] *= masque
     visible = part[..., 3] > 0.02
@@ -162,7 +218,7 @@ for p in parties:
     ecrire_png(os.path.join(PARTS, f"{UNITE}_{p['nom']}.png"), decoupe)
     if VERS_UNITY:
         os.makedirs(os.path.join(UNITY, "parts"), exist_ok=True)
-        ecrire_png(os.path.join(UNITY, "parts", f"{UNITE}_{p['nom']}.png"), decoupe)
+        ecrire_png(os.path.join(UNITY, "parts", f"{nom_jeu(UNITE)}_{p['nom']}.png"), decoupe)
     # coordonnées transmises au jeu, en fraction de l'illustration entière (origine en BAS à gauche, comme Unity)
     fx0, fy0 = x0 / W, 1.0 - y1 / H
     fw, fh = (x1 - x0) / W, (y1 - y0) / H
@@ -177,7 +233,7 @@ chemin_sortie = os.path.join(OUT, f"{UNITE}_rig.txt")
 with open(chemin_sortie, "w", encoding="utf-8") as f:
     f.write("\n".join(lignes_rig) + "\n")
 if VERS_UNITY:
-    with open(os.path.join(UNITY, f"{UNITE}_rig.txt"), "w", encoding="utf-8") as f:
+    with open(os.path.join(UNITY, f"{nom_jeu(UNITE)}_rig.txt"), "w", encoding="utf-8") as f:
         f.write("\n".join(lignes_rig) + "\n")
 
 # ---- aperçu : les parties réassemblées, chacune décalée, pour vérifier la découpe d'un coup d'oeil -------------------
