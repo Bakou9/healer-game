@@ -22,7 +22,8 @@ namespace Healer.EditorTools
         private const string Product = "Healer Game";
 
         // Budgets de triangles de docs/ART_3D.md.
-        private const int CharacterBudget = 3300; // 3000 pour les héros dessinés par le code ; un peu plus pour le druide modélisé sous Blender
+        private const int CharacterBudget = 3300; // héros dessinés par le code (figurines à facettes)
+        private const int ModeledBudget = 40000;  // héros modélisés sous Blender en surfaces lissées (D-069) : large marge pour un mobile, à surveiller avec plusieurs héros
         private const int BossBudget = 8000;
 
         private static string ProjectRoot => Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
@@ -131,7 +132,7 @@ namespace Healer.EditorTools
             Check("Garde", ModelFactory.Tank(), CharacterBudget, "Shield", "Helm", "Visor", "Head", "Torso", "ArmL", "ArmR");
             Check("Archère", ModelFactory.Archer(), CharacterBudget, "Bow", "Quiver", "Hood", "Head", "Torso", "ArmL", "ArmR");
             Check("Mage", ModelFactory.Mage(), CharacterBudget, "Hat", "Staff", "Orb", "Head", "Torso", "ArmL", "ArmR");
-            Check("Soigneuse", ModelFactory.Healer(), CharacterBudget, "Head", "Torso", "ArmL", "ArmR");
+            Check("Soigneuse", ModelFactory.Healer(), ModeledBudget, "Head", "Torso", "ArmL", "ArmR");
             Debug.Log(report.ToString());
         }
 

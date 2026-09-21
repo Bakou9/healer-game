@@ -479,3 +479,21 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Bois de cerf** (idée retenue par l'utilisateur) : agrandis, un broc frontal et quatre cors par côté.
 - **Budget** : 3 298 triangles (limite 3 300, contrôlée par le build) ; feuilles réduites en conséquence.
 - **Question B** : aucune règle ni valeur de jeu modifiée.
+
+
+## D-069 — Druid v4 : high-definition smooth-surface model, higher triangle budget for Blender-made heroes
+
+- **Date** : 2026-09-21 — **Statut** : Livrée (v1 à v3 conservées comme replis : le jeu charge `DruidV4`, à défaut `DruidV3`, `DruidMcp`, `Druid`).
+- **Retour de l'utilisateur** sur la v3 : pas à son goût ; il faut un druide entièrement nouveau et beaucoup plus de polygones. Il a aussi demandé pourquoi la limite de 3 300 triangles.
+- **Réponse sur la limite** : c'était un choix prudent (mobile d'abord) pour les figurines à facettes dessinées par le code, pas une contrainte technique. Un héros de 30 000 triangles passe sans difficulté sur un téléphone milieu de gamme. Nouveau budget `ModeledBudget = 40 000` (Builder) pour les héros modélisés sous Blender ; `CharacterBudget = 3 300` reste pour les figurines du code.
+- **Méthode** : `art/blender/lib2.py` (balayage de tubes à section variable, surfaces par anneaux, feuilles à deux faces, blobs lissés, boîtes arrondies) et `art/blender/druid_v4.py` : capuche drapée, masque de crâne de cerf, grands bois avec vignes et fleurs lumineuses, robe plissée, mains modelées (doigts qui enserrent le bâton, paume ouverte), bâton en cage de branches avec breloques, mante de feuilles, cape plissée. 30 830 triangles, normales exportées telles quelles (`mesh_smooth_type="OFF"`). Le contrôle automatique de dégagement du bâton (D-068) est conservé (11 cm).
+- **Question B** : aucune règle ni valeur de jeu modifiée.
+
+## D-070 — Phase-based attack and cast animations
+
+- **Date** : 2026-09-21 — **Statut** : Livrée en première version ; l'utilisateur veut approfondir plus tard.
+- **Constat** : les gestes étaient de simples allers-retours (sinus) ; une incantation était coupée net à son achèvement, et le bâton du druide balayait le sol en levant le bras.
+- **Cœur** (`UnitAnimator` / `UnitPose`, sans effet sur les golden) : nouveaux canaux `LungeProgress` (0 à 1 pendant le coup), `CastElapsedMs`, `CastDurationMs`, `Channeling`, et `Release` (lâcher du sort à la fin d'une incantation, s'éteint en 420 ms). Anciens canaux inchangés. 6 tests ajoutés.
+- **Client** : `UnitRig.ApplyPose` avec un style par héros (`RigStyle` : Melee pour le Garde, Bow pour l'Archère, Staff pour le Mage et la Soigneuse). Coup d'épée : levée, frappe rapide, retour, avec torsion du buste. Tir à l'arc : bras tendu, corde tirée, lâcher. Incantation : montée, tenue avec tremblement, lâcher vers l'avant (cape qui se soulève, main libre ouverte, bâton compensé pour rester presque droit). Les boss gardent l'ancien mouvement.
+- **Outil de développement** : dans la galerie, bouton « Ralenti » (1/10) et touches « . » / « , » pour avancer/reculer image par image de 50 ms (fige l'animation) ; utile pour examiner et capturer une phase précise.
+- **Question B** : aucune règle ni valeur de jeu modifiée ; seuls des canaux de présentation ont été ajoutés.

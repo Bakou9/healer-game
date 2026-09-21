@@ -1,8 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
+using Healer.Combat;
+using Healer.Combat.Presentation;
 using Healer.Combat.Progress;
 using Healer.Ui;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Healer.Client
 {
@@ -28,6 +31,11 @@ namespace Healer.Client
         public int Pose { get; private set; }
         public bool Fury { get; private set; }
         public bool AutoRotate { get; private set; } = true;
+        /// <summary>Ralenti (1/10) pour bien voir la préparation, la frappe et le retour d'un geste.</summary>
+        public bool SlowMo { get; private set; }
+        private float _animTime;
+        /// <summary>Image par image : la touche « . » avance le geste de 50 ms et fige l'animation (utile pour examiner et capturer une phase précise) ; « Ralenti » la relance.</summary>
+        public bool Frozen { get; private set; }
         public string Info { get; private set; } = "";
 
         private GameFlow _flow = null!;
@@ -36,6 +44,10 @@ namespace Healer.Client
         private GameObject? _model;
         private UnitRig? _rig;
         private bool _active;
+        // Les gestes sont ceux du combat : le cœur (UnitAnimator) reçoit de faux événements en boucle, comme en jeu.
+        private UnitAnimator _anim = new UnitAnimator("gallery");
+        private double _cycleAt;
+        private int _step;
         private float _yaw, _zoom = 1f;
         private readonly List<GameObject> _hidden = new List<GameObject>();
         private readonly MaterialPropertyBlock _block = new MaterialPropertyBlock();
@@ -44,7 +56,7 @@ namespace Healer.Client
         public Entry Current => Entries[Mathf.Clamp(Index, 0, Entries.Count - 1)];
 
         /// <summary>Change quand l'interface doit être redessinée (sélection, paliers, pose, rotation automatique).</summary>
-        public string Signature => $"{Index}|{WeaponTier}|{ArmorTier}|{Pose}|{Fury}|{AutoRotate}|{Info}";
+        public string Signature => $"{Index}|{WeaponTier}|{ArmorTier}|{Pose}|{Fury}|{AutoRotate}|{SlowMo}|{Info}";
 
         public void Init(GameFlow flow, BattleStage stage, Camera cam)
         {
@@ -58,9 +70,10 @@ namespace Healer.Client
         public void Select(int index) { Index = Mathf.Clamp(index, 0, Entries.Count - 1); Fury = false; Pose = 0; Rebuild(); }
         public void SetWeaponTier(int tier) { WeaponTier = tier; Rebuild(); }
         public void SetArmorTier(int tier) { ArmorTier = tier; Rebuild(); }
-        public void SetPose(int pose) { Pose = pose; Info = Describe(); }
+        public void SetPose(int pose) { Pose = pose; ResetAnimator(); Info = Describe(); }
         public void SetFury(bool fury) { Fury = fury; }
         public void ToggleAutoRotate() { AutoRotate = !AutoRotate; }
+        public void ToggleSlowMo() { SlowMo = !SlowMo; Frozen = false; }
         public void Turn(float degrees) { AutoRotate = false; _yaw += degrees; }
         public void Zoom(float factor) { _zoom = Mathf.Clamp(_zoom * factor, 0.5f, 2f); }
 
@@ -110,6 +123,7 @@ namespace Healer.Client
             }
             _model.name = "Gallery_" + entry.Id;
             _rig = _model.GetComponent<UnitRig>();
+            ResetAnimator();
             Info = Describe();
             Debug.Log($"[Healer] galerie : {entry.Id} {ModelFactory.TriangleCount(_model)} triangles");
         }
@@ -138,17 +152,56 @@ namespace Healer.Client
 
         // ---- Affichage -----------------------------------------------------------------------------------
 
+        private void ResetAnimator()
+        {
+            if (Entries.Count == 0) return;
+            var e = Current;
+            _anim = new UnitAnimator(e.Id, e.IsBoss);
+            _step = 0;
+            _cycleAt = _animTime * 1000.0;
+        }
+
+        private void Send(BattleEvent e, double now) { e.TimeMs = now; _anim.OnEvent(e); }
+
+        /// <summary>Rejoue en boucle l'événement de combat qui déclenche la pose choisie (incantation tenue puis lâchée, coup, coup reçu, chute).</summary>
+        private void DrivePose(double now)
+        {
+            var e = Current;
+            switch (Pose)
+            {
+                case 1 when !e.IsBoss:
+                    if (_step == 0) { Send(new BattleEvent { Type = "castStarted", CasterId = e.Id, SkillId = "heal_single", Amount = 2200 }, now); _cycleAt = now; _step = 1; }
+                    else if (_step == 1 && now - _cycleAt >= 2200) { Send(new BattleEvent { Type = "skillUsed", CasterId = e.Id, SkillId = "heal_single" }, now); _step = 2; }
+                    else if (_step == 2 && now - _cycleAt >= 3500) _step = 0;
+                    break;
+                case 2:
+                    if (_step == 0 || now - _cycleAt >= 1500) { Send(e.IsBoss ? new BattleEvent { Type = "bossAction" } : new BattleEvent { Type = "bossDamaged", SourceId = e.Id, Amount = 30 }, now); _cycleAt = now; _step = 1; }
+                    break;
+                case 3:
+                    if (_step == 0 || now - _cycleAt >= 1200) { Send(e.IsBoss ? new BattleEvent { Type = "bossDamaged", Amount = 30 } : new BattleEvent { Type = "unitDamaged", UnitId = e.Id, Amount = 30 }, now); _cycleAt = now; _step = 1; }
+                    break;
+                case 4:
+                    if (_step == 0) { Send(new BattleEvent { Type = "unitDied", UnitId = e.Id }, now); _step = 1; }
+                    break;
+            }
+        }
+
         private void Animate()
         {
             var entry = Current;
-            float t = Time.unscaledTime;
+            var kb = Keyboard.current;
+            if (kb != null && kb.periodKey.wasPressedThisFrame) { Frozen = true; _animTime += 0.05f; }
+            else if (kb != null && kb.commaKey.wasPressedThisFrame) { Frozen = true; _animTime = Mathf.Max(0f, _animTime - 0.05f); }
+            if (!Frozen) _animTime += Time.unscaledDeltaTime * (SlowMo ? 0.1f : 1f);
+            float t = _animTime;
             if (AutoRotate) _yaw += 24f * Time.unscaledDeltaTime;
 
-            float cast = Pose == 1 ? 0.5f + 0.5f * Mathf.Sin(t * 2.2f) : 0f;
-            float lunge = Pose == 2 ? Mathf.Max(0f, Mathf.Sin(t * 3f)) : 0f;
-            float recoil = Pose == 3 ? Mathf.Max(0f, Mathf.Sin(t * 3f)) : 0f;
-            float fall = Pose == 4 ? 1f : 0f;
-            _rig?.Apply(t, 0.3f, cast, lunge, recoil, fall);
+            double now = t * 1000.0;
+            DrivePose(now);
+            var pose = _anim.Sample(now);
+            bool styled = _rig != null && _rig.Style != RigStyle.Default;
+            float cast = styled ? 0f : (float)pose.Cast, lunge = (float)pose.Lunge, recoil = (float)pose.Recoil, fall = (float)pose.Fall;
+            _rig?.ApplyPose(t, 0.3f, pose);
 
             float scale = (entry.IsBoss ? 2.1f * ModelFactory.BossScaleFactor(entry.Id) : 2.2f) * _zoom;
             float depth = entry.IsBoss ? 32f : 20f;

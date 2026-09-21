@@ -387,7 +387,7 @@ namespace Healer.Client
         /// </summary>
         private static GameObject? ImportedDruid()
         {
-            var prefab = Resources.Load<GameObject>("Parts/DruidV3") ?? Resources.Load<GameObject>("Parts/DruidMcp") ?? Resources.Load<GameObject>("Parts/Druid"); // v3 « corps d'abord », à défaut v2 puis v1 (replis)
+            var prefab = Resources.Load<GameObject>("Parts/DruidV4") ?? Resources.Load<GameObject>("Parts/DruidV3") ?? Resources.Load<GameObject>("Parts/DruidMcp") ?? Resources.Load<GameObject>("Parts/Druid"); // v3 « corps d'abord », à défaut v2 puis v1 (replis)
             if (prefab == null) return null;
             var src = Object.Instantiate(prefab);
             src.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
@@ -663,14 +663,22 @@ namespace Healer.Client
         public static GameObject ForCharacter(string id, string role, Healer.Combat.Progress.AppearanceSet? appearance = null)
         {
             var look = new Look(appearance);
+            GameObject model;
+            RigStyle style;
             switch (id)
             {
-                case "tank": return Tank(look);
-                case "dps1": return Archer(look);
-                case "dps2": return Mage(look);
-                case "healer": return Healer(look);
+                case "tank": model = Tank(look); style = RigStyle.Melee; break;
+                case "dps1": model = Archer(look); style = RigStyle.Bow; break;
+                case "dps2": model = Mage(look); style = RigStyle.Staff; break;
+                case "healer": model = Healer(look); style = RigStyle.Staff; break;
+                default:
+                    model = role == "tank" ? Tank(look) : role == "healer" ? Healer(look) : Archer(look);
+                    style = role == "tank" ? RigStyle.Melee : role == "healer" ? RigStyle.Staff : RigStyle.Bow;
+                    break;
             }
-            return role == "tank" ? Tank(look) : role == "healer" ? Healer(look) : Archer(look);
+            var rig = model.GetComponent<UnitRig>();
+            if (rig != null) rig.Style = style;
+            return model;
         }
 
         public static int TriangleCount(GameObject model)

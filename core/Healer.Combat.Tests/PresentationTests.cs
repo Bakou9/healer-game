@@ -823,4 +823,72 @@ namespace Healer.Combat.Tests
             Assert.That(crit, Is.GreaterThan(normal));
         }
     }
+
+    /// <summary>Phases du geste : préparation, frappe, retour ; incantation tenue puis lâchée (D-070).</summary>
+    public class UnitAnimatorPhaseTests
+    {
+        [Test]
+        public void La_progression_du_coup_va_de_0_a_1_pendant_l_elan_et_reste_nulle_ailleurs()
+        {
+            var a = new UnitAnimator("dps1");
+            Assert.That(a.Sample(500).LungeProgress, Is.EqualTo(0));
+            a.OnEvent(new BattleEvent { Type = "bossDamaged", TimeMs = 1000, SourceId = "dps1", Amount = 30 });
+            Assert.That(a.Sample(1000 + UnitAnimator.LungeMs * 0.25).LungeProgress, Is.EqualTo(0.25).Within(1e-9));
+            Assert.That(a.Sample(1000 + UnitAnimator.LungeMs * 0.75).LungeProgress, Is.EqualTo(0.75).Within(1e-9));
+            Assert.That(a.Sample(1000 + UnitAnimator.LungeMs + 1).LungeProgress, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Le_geste_de_lancer_donne_son_temps_ecoule_et_sa_duree()
+        {
+            var a = new UnitAnimator("healer");
+            a.OnEvent(new BattleEvent { Type = "castStarted", TimeMs = 1000, CasterId = "healer", SkillId = "heal_single", Amount = 1800 });
+            var p = a.Sample(1600);
+            Assert.That(p.CastElapsedMs, Is.EqualTo(600).Within(1e-9));
+            Assert.That(p.CastDurationMs, Is.EqualTo(1800).Within(1e-9));
+            Assert.That(p.Channeling, Is.True);
+            Assert.That(a.Sample(2900).CastDurationMs, Is.EqualTo(0), "hors geste");
+        }
+
+        [Test]
+        public void Un_sort_instantane_n_est_pas_une_incantation()
+        {
+            var a = new UnitAnimator("healer");
+            a.OnEvent(new BattleEvent { Type = "skillUsed", TimeMs = 500, CasterId = "healer", SkillId = "shield" });
+            var p = a.Sample(600);
+            Assert.That(p.Channeling, Is.False);
+            Assert.That(p.CastDurationMs, Is.EqualTo(UnitAnimator.CastMs));
+            Assert.That(p.Release, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void A_la_fin_d_une_incantation_le_sort_est_lache_puis_le_geste_retombe()
+        {
+            var a = new UnitAnimator("healer");
+            a.OnEvent(new BattleEvent { Type = "castStarted", TimeMs = 1000, CasterId = "healer", SkillId = "heal_single", Amount = 1000 });
+            a.OnEvent(new BattleEvent { Type = "skillUsed", TimeMs = 2000, CasterId = "healer", SkillId = "heal_single" });
+            Assert.That(a.Sample(2000).Release, Is.EqualTo(1).Within(1e-9));
+            Assert.That(a.Sample(2000 + UnitAnimator.ReleaseMs / 2).Release, Is.InRange(0.01, 0.99));
+            Assert.That(a.Sample(2000 + UnitAnimator.ReleaseMs).Release, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Une_incantation_interrompue_ne_lache_rien()
+        {
+            var a = new UnitAnimator("healer");
+            a.OnEvent(new BattleEvent { Type = "castStarted", TimeMs = 1000, CasterId = "healer", SkillId = "heal_single", Amount = 1000 });
+            a.OnEvent(new BattleEvent { Type = "castFailed", TimeMs = 1400, CasterId = "healer", SkillId = "heal_single", Reason = "target" });
+            Assert.That(a.Sample(1500).Release, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Un_nouveau_combat_remet_les_phases_a_zero()
+        {
+            var a = new UnitAnimator("healer");
+            a.OnEvent(new BattleEvent { Type = "castStarted", TimeMs = 1000, CasterId = "healer", SkillId = "heal_single", Amount = 1000 });
+            a.OnEvent(new BattleEvent { Type = "skillUsed", TimeMs = 2000, CasterId = "healer", SkillId = "heal_single" });
+            a.OnEvent(new BattleEvent { Type = "battleStarted", TimeMs = 0 });
+            Assert.That(a.Sample(2100).Release, Is.EqualTo(0));
+        }
+    }
 }

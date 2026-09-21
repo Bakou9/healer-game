@@ -161,6 +161,7 @@ namespace Healer.Client
             Btn(new Rect(x + 182, y, 78, 38), "▶", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.GalleryControl, () => g.Turn(35f));
             Btn(new Rect(x, y + 46, 126, 38), "Zoom −", Layout.Font.Small, Ui.ButtonFill, Ui.ButtonStroke, UiAction.GalleryControl, () => g.Zoom(0.85f));
             Btn(new Rect(x + 134, y + 46, 126, 38), "Zoom +", Layout.Font.Small, Ui.ButtonFill, Ui.ButtonStroke, UiAction.GalleryControl, () => g.Zoom(1.18f));
+            Btn(new Rect(x, y + 92, 260, 38), g.SlowMo ? "Ralenti ✓" : "Ralenti", Layout.Font.Small, g.SlowMo ? Ui.PrimaryFill : Ui.ButtonFill, g.SlowMo ? Ui.PrimaryStroke : Ui.ButtonStroke, UiAction.GalleryControl, g.ToggleSlowMo);
 
             Txt(new Rect(270, 672, w - 540, 30), g.Info, Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, false);
         }

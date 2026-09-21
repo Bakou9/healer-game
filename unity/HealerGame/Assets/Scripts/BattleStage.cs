@@ -695,10 +695,11 @@ namespace Healer.Client
                 Vector3 home = WorldAt(_stageX[kv.Key], AllyFeetY, AllyDepth);
                 float bob = st.Alive ? Mathf.Abs(Mathf.Sin(t * 2.4f + v.Phase)) * 0.09f : 0f;
                 var tr = v.Root.transform;
-                tr.position = home + new Vector3(0, bob - v.HitFlash * 0.12f + (float)pose.Cast * 0.2f - (float)pose.Fall * 0.3f, -v.Lunge * 1.2f + (float)pose.Recoil * 0.25f);
+                float castRoot = v.Rig != null && v.Rig.Style != RigStyle.Default ? 0f : (float)pose.Cast; // les héros à gestes par phases lèvent eux-mêmes leurs bras : le corps entier ne se soulève ni ne se penche
+                tr.position = home + new Vector3(0, bob - v.HitFlash * 0.12f + castRoot * 0.2f - (float)pose.Fall * 0.3f, -v.Lunge * 1.2f + (float)pose.Recoil * 0.25f);
                 float side = kv.Key == "healer" ? -10f : (kv.Key == "tank" ? 12f : kv.Key == "dps1" ? -6f : 8f);
-                tr.rotation = Quaternion.Euler(-(float)pose.Cast * 10f, 180f + side * (1f - (float)pose.Fall), (float)pose.Fall * 78f);
-                v.Rig?.Apply(t, v.Phase, (float)pose.Cast, (float)pose.Lunge, (float)pose.Recoil, (float)pose.Fall);
+                tr.rotation = Quaternion.Euler(-castRoot * 10f, 180f + side * (1f - (float)pose.Fall), (float)pose.Fall * 78f);
+                v.Rig?.ApplyPose(t, v.Phase, pose);
                 v.Bubble.SetActive(st.Alive && st.Shield > 0.5f);
                 v.Ring.SetActive(st.Alive && _ctl.Selection.Selected == kv.Key);
                 bool poisoned = st.Effects.Count > 0;
