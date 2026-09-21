@@ -30,7 +30,11 @@ blender --background --python art-2d/tools/cutout.py -- <unité> --unity    # d�
 npm run build:unity
 ```
 
-**La clé d API n est jamais dans le dépôt ni vue par l assistant.** Vous la posez dans votre terminal :
+**La clé d API n est jamais dans le dépôt ni vue par l assistant.** Deux façons de la fournir :
+
+1. **Un fichier `.env` à la racine** (à écrire une fois) : copiez `.env.exemple` en `.env` et mettez-y `OPENAI_API_KEY=sk-...`.
+   Il est ignoré par git, et le script **refuse de démarrer** si ce n est pas le cas — impossible de le committer par accident.
+2. **Une variable d environnement** posée dans le terminal :
 
 ```
 PowerShell :  $env:OPENAI_API_KEY = "sk-..."

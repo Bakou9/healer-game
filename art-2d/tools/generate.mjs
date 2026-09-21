@@ -7,22 +7,51 @@
  *   --essai     n'appelle rien : montre ce qui serait demandé et ce que ça coûterait (à lancer en premier)
  *   --forcer    regénère même si l'image existe déjà
  *
- * La CLÉ D'API n'est jamais écrite dans le dépôt ni vue par l'assistant : le script la lit dans la variable
- * d'environnement OPENAI_API_KEY, que vous posez vous-même dans votre terminal :
- *   PowerShell :  $env:OPENAI_API_KEY = "sk-..."
- *   Git Bash   :  export OPENAI_API_KEY="sk-..."
+ * La CLÉ D'API n'est jamais écrite dans le dépôt ni vue par l'assistant. Deux façons de la fournir :
+ *   - un fichier « .env » à la racine (recommandé : à écrire une fois) contenant  OPENAI_API_KEY=sk-...
+ *     Le script le charge tout seul, et REFUSE de s'exécuter si ce fichier n'est pas ignoré par git.
+ *   - ou une variable d'environnement posée dans le terminal :
+ *       PowerShell :  $env:OPENAI_API_KEY = "sk-..."
+ *       Git Bash   :  export OPENAI_API_KEY="sk-..."
  *
  * Chaque appel est PAYANT (quelques centimes par image). Le script ne s'exécute donc jamais tout seul :
  * il faut une clé présente, et il affiche le détail avant d'appeler.
  *
  * Les prompts viennent de art-2d/prompts.txt (source unique, aussi reprise au générique du jeu).
  */
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ICI = path.dirname(fileURLToPath(import.meta.url));
 const RACINE = path.resolve(ICI, "..", "..");
+
+/**
+ * Charge un fichier « .env » local. Garde-fou : si ce fichier n'est pas ignoré par git, on s'arrête —
+ * mieux vaut refuser de travailler que risquer de committer une clé d'API.
+ */
+function chargerEnv() {
+  const fichier = path.join(RACINE, ".env");
+  if (!fs.existsSync(fichier)) return;
+  try {
+    execFileSync("git", ["check-ignore", "-q", ".env"], { cwd: RACINE, stdio: "ignore" });
+  } catch {
+    console.error("DANGER : le fichier .env n'est pas ignoré par git — ajoutez « .env » au .gitignore avant de continuer.");
+    process.exit(1);
+  }
+  for (const brute of fs.readFileSync(fichier, "utf8").split("\n")) {
+    const ligne = brute.trim();
+    if (!ligne || ligne.startsWith("#")) continue;
+    const sep = ligne.indexOf("=");
+    if (sep < 1) continue;
+    const nom = ligne.slice(0, sep).trim();
+    const valeur = ligne.slice(sep + 1).trim().replace(/^["']|["']$/g, "");
+    if (valeur && !process.env[nom]) process.env[nom] = valeur;
+  }
+}
+
+chargerEnv();
 const INBOX = path.join(RACINE, "art-2d", "inbox");
 const PROMPTS = path.join(RACINE, "art-2d", "prompts.txt");
 

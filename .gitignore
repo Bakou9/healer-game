@@ -34,3 +34,8 @@ unity/**/MemoryCaptures/
 # Contenu copié depuis core/content par l'outil d'Éditeur (source de vérité : core/content)
 unity/HealerGame/Assets/StreamingAssets/content/
 unity/HealerGame/Assets/StreamingAssets/content.meta
+
+# Secrets locaux : JAMAIS versionnés (clés d'API des outils de génération, voir art-2d/README.md)
+.env
+.env.*
+!.env.exemple
