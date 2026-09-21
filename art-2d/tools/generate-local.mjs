@@ -36,8 +36,11 @@ const essai = args.includes("--essai");
 const forcer = args.includes("--forcer");
 const tout = args.includes("--tout");
 const iGraine = args.indexOf("--graine");
+const iVariantes = args.indexOf("--variantes");
+const variantes = iVariantes >= 0 ? Math.max(1, Number(args[iVariantes + 1])) : 1;
+const ESSAIS = path.join(RACINE, "art-2d", "essais");
 const graineBase = iGraine >= 0 ? Number(args[iGraine + 1]) : 1;
-const demandes = args.filter((a, i) => !a.startsWith("--") && (iGraine < 0 || i !== iGraine + 1));
+const demandes = args.filter((a, i) => !a.startsWith("--") && i !== iGraine + 1 && i !== iVariantes + 1);
 
 // ---- prompts -------------------------------------------------------------------------------------
 let style = "";
@@ -54,9 +57,13 @@ for (const brute of fs.readFileSync(PROMPTS, "utf8").split("\n")) {
 }
 
 fs.mkdirSync(INBOX, { recursive: true });
-const cible = u => path.join(INBOX, `${u.id}_idle.png`);
+// En mode variantes, les essais vont dans art-2d/essais/ : on ne touche pas aux illustrations retenues.
+const cible = (u, v) => variantes > 1
+  ? path.join(ESSAIS, `${u.id}_v${String(v).padStart(2, "0")}.png`)
+  : path.join(INBOX, `${u.id}_idle.png`);
+if (variantes > 1) fs.mkdirSync(ESSAIS, { recursive: true });
 let aFaire = unites.filter(u => (demandes.length ? demandes.includes(u.id) : true));
-if (!forcer) aFaire = aFaire.filter(u => !fs.existsSync(cible(u)));
+if (!forcer && variantes === 1) aFaire = aFaire.filter(u => !fs.existsSync(cible(u, 0)));
 
 // ---- vérifications -------------------------------------------------------------------------------
 // On appelle le Python embarqué directement : le .bat fourni finit par « pause » et resterait bloqué en tâche détachée.
@@ -110,7 +117,7 @@ function workflow(prompt, graine) {
   };
 }
 
-async function generer(u, graine) {
+async function generer(u, graine, v) {
   const prompt = `${style}\n\n${u.description}`;
   const envoi = await fetch(`${HOTE}/prompt`, {
     method: "POST",
@@ -132,23 +139,27 @@ async function generer(u, graine) {
     if (images.length === 0) continue;
     const im = images[0];
     const vue = await fetch(`${HOTE}/view?filename=${encodeURIComponent(im.filename)}&subfolder=${encodeURIComponent(im.subfolder ?? "")}&type=${im.type ?? "output"}`);
-    fs.writeFileSync(cible(u), Buffer.from(await vue.arrayBuffer()));
+    fs.writeFileSync(cible(u, v), Buffer.from(await vue.arrayBuffer()));
     return true;
   }
   throw new Error("délai dépassé");
 }
 
-let ok = 0;
+let ok = 0, total = 0;
 for (const [i, u] of aFaire.entries()) {
-  process.stdout.write(`  ${u.id.padEnd(8)} … `);
-  const debut = Date.now();
-  try {
-    await generer(u, graineBase + i);
-    console.log(`écrit en ${((Date.now() - debut) / 1000).toFixed(0)} s`);
-    ok++;
-  } catch (e) {
-    console.log(`échec : ${e.message}`);
+  for (let v = 0; v < variantes; v++) {
+    total++;
+    process.stdout.write(`  ${u.id.padEnd(8)} ${variantes > 1 ? "v" + v + " " : ""}… `);
+    const debut = Date.now();
+    try {
+      await generer(u, graineBase + i * 1000 + v, v);
+      console.log(`écrit en ${((Date.now() - debut) / 1000).toFixed(0)} s`);
+      ok++;
+    } catch (e) {
+      console.log(`échec : ${e.message}`);
+    }
   }
 }
-console.log(`\n${ok}/${aFaire.length} image(s) générée(s).`);
-if (ok > 0) console.log("Suite : blender --background --python art-2d/tools/process.py -- 512 --unity");
+console.log(`\n${ok}/${total} image(s) générée(s).`);
+if (ok > 0 && variantes > 1) console.log("Variantes dans art-2d/essais/ — planche de comparaison : node art-2d/tools/planche.mjs");
+else if (ok > 0) console.log("Suite : blender --background --python art-2d/tools/process.py -- 512 --unity");

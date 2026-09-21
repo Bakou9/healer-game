@@ -32,8 +32,8 @@ nums = [a for a in args if not a.startswith("--")]
 HAUTEUR = int(nums[0]) if nums else 512          # hauteur finale de l'illustration, en pixels
 VERS_UNITY = "--unity" in args
 
-SEUIL_PLEIN = 0.42                               # distance au-delà de laquelle le pixel est totalement opaque
-SEUIL_VIDE = 0.16                                # distance en-deçà de laquelle le pixel est totalement transparent
+SEUIL_TEINTE = 0.075     # écart de teinte au fond en-deçà duquel un pixel est considéré comme du fond
+INTENSITE_MIN = 0.35     # en-dessous, le pixel est trop sombre pour être du fond : c'est le personnage
 FOND_JEU = np.array([26, 24, 40, 255], dtype=np.uint8)
 
 
@@ -60,50 +60,128 @@ def ecrire_png(chemin, arr8):
                 + bloc(b"IDAT", zlib.compress(lignes, 9)) + bloc(b"IEND", b""))
 
 
-def couleur_de_fond(a, bande=4):
+def couleur_de_fond(a, coin=80):
     """
-    Couleur du fond, MESURÉE sur les bords au lieu d'être supposée : les générateurs d'images ne rendent jamais
-    exactement le magenta demandé (l'un donne #FF00FF, l'autre un rose plus sombre). On prend la médiane du pourtour.
+    Carte du fond, MESURÉE au lieu d'être supposée. Les générateurs ne rendent jamais le magenta demandé tel quel :
+    la couleur change d'un modèle à l'autre, et surtout elle VARIE dans l'image (dégradé, vignette, lueur colorée).
+    On mesure donc les quatre coins et on interpole entre eux : chaque pixel est comparé au fond de sa région,
+    ce qui évite de laisser de grands aplats de fond accrochés au personnage.
     """
     rgb = a[..., :3]
-    bord = np.concatenate([
-        rgb[:bande].reshape(-1, 3), rgb[-bande:].reshape(-1, 3),
-        rgb[:, :bande].reshape(-1, 3), rgb[:, -bande:].reshape(-1, 3),
-    ])
-    fond = np.median(bord, axis=0)
-    ecart = np.abs(bord - fond).mean()
-    if ecart > 0.06:
-        print(f"ATTENTION : le fond n'est pas uni (écart moyen {ecart:.3f}) — le détourage risque d'être imparfait.")
-    return fond
+    h, w = rgb.shape[:2]
+    hg = np.median(rgb[:coin, :coin].reshape(-1, 3), axis=0)
+    hd = np.median(rgb[:coin, -coin:].reshape(-1, 3), axis=0)
+    bg = np.median(rgb[-coin:, :coin].reshape(-1, 3), axis=0)
+    bd = np.median(rgb[-coin:, -coin:].reshape(-1, 3), axis=0)
+    u = np.linspace(0, 1, w)[None, :, None]
+    v = np.linspace(0, 1, h)[:, None, None]
+    haut = hg[None, None, :] * (1 - u) + hd[None, None, :] * u
+    bas = bg[None, None, :] * (1 - u) + bd[None, None, :] * u
+    carte = haut * (1 - v) + bas * v
+    ecart = np.abs(np.stack([hg, hd, bg, bd]) - np.median(np.stack([hg, hd, bg, bd]), axis=0)).mean()
+    moyen = (hg + hd + bg + bd) / 4
+    print(f"  fond mesuré : #{''.join(f'{int(c * 255):02X}' for c in moyen)}" + (f" (dégradé, écart {ecart:.2f})" if ecart > 0.03 else ""))
+    return carte
 
 
 def detourer(a):
-    """Alpha depuis la distance à la couleur de fond mesurée, puis décontamination de la frange."""
+    """
+    Sépare le personnage de son fond.
+
+    On ne compare PAS à une distance absolue : selon le générateur, le fond est un magenta vif ou un violet sombre,
+    souvent en dégradé, avec une ombre portée et un halo ajoutés d'office. Le point commun de tous ces pixels de fond,
+    c'est d'avoir la TEINTE du fond, à l'intensité près (fond assombri = ombre, fond éclairci = halo). On efface donc
+    les pixels alignés avec la couleur du fond, en épargnant les plus sombres, qui appartiennent au personnage.
+
+    Une distance absolue, elle, rendait à moitié transparentes les teintes moyennes du personnage, puis leur retirait
+    du magenta : les armures gris-bleu viraient au vert.
+    """
     rgb = a[..., :3]
     FOND = couleur_de_fond(a)
-    print(f"  fond mesuré : #{''.join(f'{int(c * 255):02X}' for c in FOND)}")
-    dist = np.sqrt(((rgb - FOND) ** 2).sum(axis=2) / 3.0)
-    alpha = np.clip((dist - SEUIL_VIDE) / (SEUIL_PLEIN - SEUIL_VIDE), 0.0, 1.0)
 
-    # Ombre portée et halo : les générateurs en ajoutent malgré la consigne (ils ignorent les tournures négatives).
-    # Or un pixel d'ombre, ou de halo, n'est que la couleur du fond assombrie ou éclaircie : il reste ALIGNÉ avec elle
-    # (même teinte, intensité différente). On l'efface donc, sauf les pixels très sombres, qui appartiennent au personnage.
-    norme = max((FOND ** 2).sum(), 1e-6)
-    intensite = (rgb * FOND).sum(axis=2) / norme
-    residu = np.sqrt(((rgb - intensite[..., None] * FOND) ** 2).sum(axis=2) / 3.0)
-    modulation = (residu < 0.05) & (intensite > 0.35)
-    efface = modulation.sum()
-    if efface:
-        print(f"  ombre/halo effacés : {efface} pixels ({100 * efface / modulation.size:.1f} %)")
-    alpha[modulation] = 0.0
-    # décontamination : couleur = (observée - fond * (1 - alpha)) / alpha, seulement là où le pixel est partiellement opaque
+    norme = np.maximum((FOND ** 2).sum(axis=2), 1e-6)
+    intensite = (rgb * FOND).sum(axis=2) / norme                      # 1 = la couleur du fond, < 1 plus sombre, > 1 plus clair
+    residu = np.sqrt(((rgb - intensite[..., None] * FOND) ** 2).sum(axis=2) / 3.0)   # écart de teinte au fond
+    est_fond = (residu < SEUIL_TEINTE) & (intensite > INTENSITE_MIN)
+    part = 100 * est_fond.mean()
+    print(f"  fond (dégradé, ombre et halo compris) : {part:.1f} %")
+    if part > 97 or part < 25:
+        print("  ATTENTION : proportion de fond inhabituelle — vérifiez l'aperçu.")
+
+    # Bord adouci d'un pixel : sans cela la découpe est en escalier sur les diagonales.
+    plein = (~est_fond).astype(np.float32)
+    lisse = plein.copy()
+    lisse[1:, :] += plein[:-1, :]
+    lisse[:-1, :] += plein[1:, :]
+    lisse[:, 1:] += plein[:, :-1]
+    lisse[:, :-1] += plein[:, 1:]
+    alpha = np.clip(lisse / 5.0 * 1.8, 0.0, 1.0)
+    alpha[plein > 0.5] = 1.0                                          # l'intérieur reste pleinement opaque
+
+    # Décontamination : uniquement sur la frange, là où la couleur du fond a bavé dans celle du personnage.
     partiel = (alpha > 0.02) & (alpha < 0.98)
     propre = rgb.copy()
     a_part = alpha[partiel][:, None]
-    propre[partiel] = np.clip((rgb[partiel] - FOND * (1 - a_part)) / np.maximum(a_part, 1e-3), 0, 1)
+    propre[partiel] = np.clip((rgb[partiel] - FOND[partiel] * (1 - a_part)) / np.maximum(a_part, 1e-3), 0, 1)
     sortie = np.zeros_like(a)
     sortie[..., :3] = propre
     sortie[..., 3] = alpha
+    return sortie
+
+
+def garder_le_personnage(a, reduction=4, rayon=14):
+    """
+    Ne garde que le personnage et ce qui le touche : les générateurs ajoutent volontiers un élément de décor
+    flottant (un soleil, une lune, une volute), qui deviendrait une tache isolée une fois le fond retiré.
+
+    On étiquette les zones opaques sur une image réduite (assez précis, et bien plus rapide), on garde la plus
+    grande, puis toute zone qui la touche à moins de `rayon` pixels — ainsi un orbe tenu en main reste, mais un
+    astre à l'autre bout de l'image disparaît.
+    """
+    plein = a[..., 3] > 0.5
+    if not plein.any():
+        return a
+    h, w = plein.shape
+    hr, wr = h // reduction, w // reduction
+    petit = plein[:hr * reduction, :wr * reduction].reshape(hr, reduction, wr, reduction).any(axis=(1, 3))
+
+    # Étiquetage : chaque pixel prend le plus grand numéro de son voisinage, jusqu'à stabilité.
+    lab = np.where(petit, np.arange(petit.size).reshape(petit.shape), -1)
+    for _ in range(400):
+        avant = lab
+        v = lab.copy()
+        v[1:, :] = np.maximum(v[1:, :], lab[:-1, :])
+        v[:-1, :] = np.maximum(v[:-1, :], lab[1:, :])
+        v[:, 1:] = np.maximum(v[:, 1:], lab[:, :-1])
+        v[:, :-1] = np.maximum(v[:, :-1], lab[:, 1:])
+        lab = np.where(petit, v, -1)
+        if np.array_equal(lab, avant):
+            break
+
+    numeros, tailles = np.unique(lab[petit], return_counts=True)
+    principal = numeros[tailles.argmax()]
+    garde = lab == principal
+    # dilatation du personnage, pour rattraper ce qu'il touche presque
+    rr = max(1, rayon // reduction)
+    proche = garde.copy()
+    for _ in range(rr):
+        d = proche.copy()
+        d[1:, :] |= proche[:-1, :]
+        d[:-1, :] |= proche[1:, :]
+        d[:, 1:] |= proche[:, :-1]
+        d[:, :-1] |= proche[:, 1:]
+        proche = d
+    for n, t in zip(numeros, tailles):
+        if n != principal and (proche & (lab == n)).any():
+            garde |= lab == n
+
+    rejete = (~garde) & petit
+    if rejete.any():
+        print(f"  éléments détachés retirés : {100 * rejete.sum() / max(1, petit.sum()):.1f} % de la matière")
+    masque = np.zeros((h, w), dtype=bool)
+    masque[:hr * reduction, :wr * reduction] = np.repeat(np.repeat(garde, reduction, axis=0), reduction, axis=1)
+    sortie = a.copy()
+    sortie[..., 3] *= masque
     return sortie
 
 
@@ -163,7 +241,7 @@ for nom in sorted(os.listdir(INBOX)):
     unite, _, pose = base.partition("_")
     pose = pose or "idle"
     brut = lire_png(os.path.join(INBOX, nom))
-    fini = redimensionner(recadrer(detourer(brut)), HAUTEUR)
+    fini = redimensionner(recadrer(garder_le_personnage(detourer(brut))), HAUTEUR)
     octets = vers_octets(fini)
     chemin = os.path.join(OUT, f"{unite}_{pose}.png")
     ecrire_png(chemin, octets)
