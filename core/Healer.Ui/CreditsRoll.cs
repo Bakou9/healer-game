@@ -42,6 +42,18 @@ namespace Healer.Ui
             lines.Add(new CreditLine(CreditLineKind.Space));
             lines.Add(new CreditLine(CreditLineKind.Heading, "Outils"));
             foreach (var t in data.Tools) AddEntry(lines, t);
+            if (data.Ai.Count > 0)
+            {
+                lines.Add(new CreditLine(CreditLineKind.Space));
+                lines.Add(new CreditLine(CreditLineKind.Heading, "Contenus générés par IA"));
+                foreach (var a in data.Ai)
+                {
+                    lines.Add(new CreditLine(CreditLineKind.Space));
+                    lines.Add(new CreditLine(CreditLineKind.Name, "« " + a.Name + " » — " + a.Author));
+                    lines.Add(new CreditLine(CreditLineKind.Detail, a.UsedFor));
+                    lines.Add(new CreditLine(CreditLineKind.Detail, a.Url));
+                }
+            }
             lines.Add(new CreditLine(CreditLineKind.Space));
             lines.Add(new CreditLine(CreditLineKind.Thanks, "Merci d'avoir joué !"));
             return lines;

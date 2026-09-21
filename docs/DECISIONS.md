@@ -556,3 +556,30 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
   dans `art-2d/README.md`).
 - **Le 3D reste en place** comme repli (`art-3d/`, `art-pixel/`, modèles et sprites commités) : aucun retour en arrière n'est fermé.
 - **Question B** : aucune règle ni valeur de jeu modifiée ; seules la présentation et la politique de crédits ont changé.
+
+
+## D-075 — Personnages 2D articulés (cutout) et déclaration des contenus générés par IA
+
+- **Date** : 2026-09-21 — **Statut** : Livrée pour la Soigneuse sur la branche `pixel-art`.
+- **Constat de l'utilisateur** : « les animations sont très moches, il n'y a pas moyen d'articuler le personnage ? » — l'illustration
+  affichée d'un seul tenant ne pouvait que se pencher et respirer, ce qui ne suffit pas à lire un geste.
+- **Découpe articulée** (`art-2d/tools/cutout.py`, `art-2d/rigs/<unité>.txt`) : l'illustration est découpée en quelques parties par des
+  polygones écrits à la main, chacune avec son parent, son ordre d'affichage et son pivot ; le script produit une image par partie, un
+  fichier de rig pour le jeu, une grille de repérage en pourcentages et un aperçu des parties (avec les pivots) pour vérifier la découpe.
+  Soigneuse : `body` (robe, bâton, bras porteur), `head` (capuche, masque, bois), `arm_free` (bras tendu, lumière).
+- **Deux règles apprises**, notées dans `art-2d/README.md` : une partie mobile ne doit pas être dupliquée dans celle du dessous (sinon
+  son fantôme apparaît dès qu'elle tourne) ; un accessoire qui traverse le corps en diagonale reste dans le corps (l'extraire laisse une bande vide).
+- **Client** : `Art2DUnit` monte la hiérarchie des pivots sous un plateau qui fait face à la caméra (tout ce qui est dessous est du 2D pur),
+  fait tourner chaque partie selon `UnitPose` (incantation : le bras se lève ; lâcher : il pousse vers le boss ; coup reçu : tête et buste
+  partent en arrière ; chute : bascule autour des pieds) et fait onduler le bas de la robe. Une unité sans fichier de découpe reste affichée
+  d'un seul tenant : on peut ajouter une illustration avant de la découper.
+- **Crédits et contenus IA** : l'outil employé est **ChatGPT (OpenAI)**. Ses conditions d'utilisation (1er janvier 2026) disent : « vous (a)
+  conservez vos droits de propriété sur les Données d'entrée et (b) possédez les Données de sortie. Par la présente, nous vous cédons tous nos
+  droits, titres et intérêts, le cas échéant, sur les Données de Sortie. » L'usage commercial est donc permis et l'image nous appartient ; en
+  revanche les sorties ne sont pas exclusives (« d'autres utilisateurs peuvent recevoir des sorties similaires »).
+- **Remise en cause de spec (préambule A)** : un contenu généré par IA n'entre dans aucune des deux catégories de D-060. Ce n'est pas une
+  ressource tierce sous licence (la sortie nous est cédée), ni un simple outil. Nouvelle section `ai` dans `credits.json`, avec sa propre
+  règle (`CreditPolicy.AiProblems`) qui exige l'outil, son éditeur, sa source, l'usage et **le prompt** — c'est la traçabilité que Steam et
+  Google Play demandent de déclarer. Le générique affiche la section « Contenus générés par IA ». 4 tests ajoutés (dont : un contenu IA sans
+  prompt est refusé ; une ressource importée sous copyleft reste refusée).
+- **Question B** : aucune règle ni valeur de jeu modifiée ; présentation et politique de crédits seulement.

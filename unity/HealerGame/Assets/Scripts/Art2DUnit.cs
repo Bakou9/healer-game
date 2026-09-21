@@ -6,13 +6,12 @@ using UnityEngine;
 namespace Healer.Client
 {
     /// <summary>
-    /// Unité affichée par une illustration 2D (D-074, option -healer-art2d) : une seule image par unité
-    /// (Resources/Art2D/&lt;id&gt;_idle.png, préparée par art-2d/tools/process.py) posée sur une grille face caméra, animée
-    /// PAR LE CODE à partir de l'attitude calculée par le cœur (UnitPose) : respiration, ondulation du tissu, élan d'attaque,
-    /// recul, geste d'incantation, chute. Aucune règle de jeu ici, et aucune image d'animation à dessiner.
+    /// Unité affichée par une illustration 2D articulée (D-074, D-075 ; option -healer-art2d). L'illustration est découpée en
+    /// quelques parties (corps, tête, bras) par art-2d/tools/cutout.py ; chacune pivote autour de son articulation, comme un
+    /// pantin de papier. Les gestes viennent uniquement de l'attitude calculée par le cœur (UnitPose) : rien n'est dessiné
+    /// image par image, et aucune règle de jeu n'est ici.
     ///
-    /// La grille (quelques dizaines de triangles) permet de déformer l'illustration : le bas reste planté au sol, le haut
-    /// respire et s'incline, ce qui donne de la vie sans découper le personnage en morceaux.
+    /// Sans fichier de découpe, l'illustration entière sert de pièce unique : une unité peut donc arriver avant d'être découpée.
     /// </summary>
     public sealed class Art2DUnit : MonoBehaviour
     {
@@ -20,61 +19,146 @@ namespace Healer.Client
         public static bool Enabled;
 
         private const string Dossier = "Art2D/";
-        /// <summary>Hauteur locale de l'illustration, en unités : la même que les modèles 3D (ModelFactory.DruidHeight), pour garder les échelles de la scène.</summary>
+        /// <summary>Hauteur locale de l'illustration, en unités : la même que les modèles 3D, pour garder les échelles de la scène.</summary>
         private const float HauteurUnites = 3.1f;
-        private const int Colonnes = 5, Rangs = 9;
+        private const int Colonnes = 5, Rangs = 7;
 
         private static readonly Dictionary<string, Texture2D?> Cache = new Dictionary<string, Texture2D?>();
 
-        public static bool Has(string unitId) => Charger(unitId) != null;
+        public static bool Has(string unitId) => Texture(unitId + "_idle") != null;
 
-        private static Texture2D? Charger(string unitId)
+        private static Texture2D? Texture(string nom)
         {
-            if (!Cache.TryGetValue(unitId, out var tex))
+            if (!Cache.TryGetValue(nom, out var tex))
             {
-                tex = Resources.Load<Texture2D>(Dossier + unitId + "_idle");
-                Cache[unitId] = tex;
+                tex = Resources.Load<Texture2D>(Dossier + nom);
+                Cache[nom] = tex;
             }
             return tex;
         }
 
-        private Transform _plan = null!;
-        private Mesh _mesh = null!;
-        private Vector3[] _repos = null!, _travail = null!;
-        private float _hauteur, _largeur, _phase;
+        /// <summary>Une partie articulée : son pivot (qui tourne) et son image (posée en décalé sous ce pivot).</summary>
+        private sealed class Partie
+        {
+            public string Nom = "";
+            public Transform Pivot = null!;
+            public Mesh? Grille;            // seulement pour le corps : ondulation du tissu
+            public Vector3[]? Repos;
+            public Vector3[]? Travail;
+            public float Hauteur;
+        }
+
+        private readonly List<Partie> _parties = new List<Partie>();
+        private Transform _plateau = null!;   // porte l'orientation face caméra : tout ce qui est dessous est du pur 2D
+        private float _phase;
         private UnitPose _pose;
 
-        /// <summary>Construit l'unité 2D avec le même contrat qu'un modèle 3D : un UnitRig (que la scène pilote) et des Renderer à teinter.</summary>
+        /// <summary>Construit l'unité avec le même contrat qu'un modèle 3D : un UnitRig (que la scène pilote) et des Renderer à teinter.</summary>
         public static GameObject Create(string unitId)
         {
             var racine = new GameObject("Art2D_" + unitId);
             var rig = racine.AddComponent<UnitRig>();
             var vue = racine.AddComponent<Art2DUnit>();
-            var tex = Charger(unitId)!;
-
-            vue._hauteur = HauteurUnites;
-            vue._largeur = HauteurUnites * tex.width / Mathf.Max(1, tex.height);
             vue._phase = Mathf.Abs(unitId.GetHashCode() % 100) * 0.1f;
 
-            var plan = new GameObject("Illustration");
-            plan.transform.SetParent(racine.transform, false);
-            vue._plan = plan.transform;
+            var plateau = new GameObject("Plateau");
+            plateau.transform.SetParent(racine.transform, false);
+            vue._plateau = plateau.transform;
 
-            vue._mesh = Grille(vue._largeur, vue._hauteur);
-            vue._repos = vue._mesh.vertices;
-            vue._travail = new Vector3[vue._repos.Length];
-            plan.AddComponent<MeshFilter>().sharedMesh = vue._mesh;
-            var mr = plan.AddComponent<MeshRenderer>();
-            mr.sharedMaterial = new Material(Shader.Find("Sprites/Default")) { mainTexture = tex, color = Color.white };
-            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            mr.receiveShadows = false;
+            var entiere = Texture(unitId + "_idle")!;
+            float largeurTotale = HauteurUnites * entiere.width / Mathf.Max(1, entiere.height);
+            var decoupe = Resources.Load<TextAsset>(Dossier + unitId + "_rig");
+            if (decoupe != null) vue.Articuler(unitId, decoupe.text, largeurTotale);
+            else vue.PieceUnique(entiere, largeurTotale);
 
             rig.PoseHook = vue.OnPose;
             return racine;
         }
 
-        /// <summary>Grille dont l'origine est au MILIEU DU BAS (les pieds) : la chute tourne alors autour des pieds.</summary>
-        private static Mesh Grille(float largeur, float hauteur)
+        // ---- Construction ---------------------------------------------------------------------------------------
+
+        private void PieceUnique(Texture2D tex, float largeur)
+        {
+            _parties.Add(Ajouter("body", null, 0, new Vector2(0.5f, 0f), Vector2.zero, new Rect(0f, 0f, 1f, 1f), tex, largeur, true));
+        }
+
+        /// <summary>Lit le fichier produit par cutout.py : « partie nom parent ordre x y largeur hauteur pivotX pivotY » (fractions, origine en bas à gauche).</summary>
+        private void Articuler(string unitId, string texte, float largeur)
+        {
+            var pivots = new Dictionary<string, Partie>();
+            var ancres = new Dictionary<string, Vector2>();
+            foreach (var brute in texte.Split('\n'))
+            {
+                var t = brute.Trim().Split(' ');
+                if (t.Length != 10 || t[0] != "partie") continue;
+                string nom = t[1], parent = t[2];
+                int ordre = int.Parse(t[3], CultureInfo.InvariantCulture);
+                float F(int i) => float.Parse(t[i], CultureInfo.InvariantCulture);
+                var zone = new Rect(F(4), F(5), F(6), F(7));
+                var pivot = new Vector2(F(8), F(9));
+                var tex = Texture("parts/" + unitId + "_" + nom);
+                if (tex == null) continue;
+                var parente = parent != "-" && pivots.TryGetValue(parent, out var pp) ? pp : null;
+                var pivotParent = parent != "-" && ancres.TryGetValue(parent, out var ap) ? ap : Vector2.zero;
+                var partie = Ajouter(nom, parente, ordre, pivot, pivotParent, zone, tex, largeur, nom == "body");
+                pivots[nom] = partie;
+                ancres[nom] = pivot;
+                _parties.Add(partie);
+            }
+        }
+
+        /// <summary>
+        /// Place une partie. Tout est exprimé en fractions de l'illustration entière (origine en bas à gauche), converties ici
+        /// en unités : x depuis le milieu de l'illustration, y depuis le sol. Le pivot porte la rotation, l'image est posée
+        /// en décalé sous lui, et un petit écart en z met les parties dans le bon ordre d'affichage.
+        /// </summary>
+        private Partie Ajouter(string nom, Partie? parent, int ordre, Vector2 pivotFrac, Vector2 pivotParentFrac, Rect zone, Texture2D tex, float largeur, bool deformable)
+        {
+            float X(float frac) => (frac - 0.5f) * largeur;
+            float Y(float frac) => frac * HauteurUnites;
+
+            var pivot = new GameObject(nom);
+            pivot.transform.SetParent(parent != null ? parent.Pivot : _plateau, false);
+            pivot.transform.localPosition = parent != null
+                ? new Vector3(X(pivotFrac.x) - X(pivotParentFrac.x), Y(pivotFrac.y) - Y(pivotParentFrac.y), 0f)
+                : new Vector3(X(pivotFrac.x), Y(pivotFrac.y), 0f);
+
+            float w = zone.width * largeur, h = zone.height * HauteurUnites;
+            var image = new GameObject("Image");
+            image.transform.SetParent(pivot.transform, false);
+            image.transform.localPosition = new Vector3(
+                X(zone.x + zone.width / 2f) - X(pivotFrac.x),
+                Y(zone.y + zone.height / 2f) - Y(pivotFrac.y),
+                -0.02f * ordre);
+
+            var mesh = deformable ? Grille(w, h) : Quad(w, h);
+            var partie = new Partie { Nom = nom, Pivot = pivot.transform, Hauteur = h };
+            if (deformable)
+            {
+                partie.Grille = mesh;
+                partie.Repos = mesh.vertices;
+                partie.Travail = new Vector3[partie.Repos.Length];
+            }
+            image.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var mr = image.AddComponent<MeshRenderer>();
+            mr.sharedMaterial = new Material(Shader.Find("Sprites/Default")) { mainTexture = tex, color = Color.white };
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            mr.receiveShadows = false;
+            return partie;
+        }
+
+        private static Mesh Quad(float w, float h)
+        {
+            var mesh = new Mesh { name = "Art2DQuad" };
+            mesh.vertices = new[] { new Vector3(-w / 2, -h / 2, 0), new Vector3(w / 2, -h / 2, 0), new Vector3(-w / 2, h / 2, 0), new Vector3(w / 2, h / 2, 0) };
+            mesh.uv = new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(0, 1), new Vector2(1, 1) };
+            mesh.triangles = new[] { 0, 2, 1, 1, 2, 3 };
+            mesh.RecalculateNormals();
+            return mesh;
+        }
+
+        /// <summary>Grille du corps : permet de faire onduler le bas de la robe sans toucher au haut (où sont la tête et les bras).</summary>
+        private static Mesh Grille(float w, float h)
         {
             var sommets = new Vector3[Colonnes * Rangs];
             var uv = new Vector2[sommets.Length];
@@ -83,7 +167,7 @@ namespace Healer.Client
                 {
                     float u = c / (float)(Colonnes - 1), v = r / (float)(Rangs - 1);
                     int i = r * Colonnes + c;
-                    sommets[i] = new Vector3((u - 0.5f) * largeur, v * hauteur, 0f);
+                    sommets[i] = new Vector3((u - 0.5f) * w, (v - 0.5f) * h, 0f);
                     uv[i] = new Vector2(u, v);
                 }
             var tris = new List<int>();
@@ -101,7 +185,11 @@ namespace Healer.Client
             return mesh;
         }
 
+        // ---- Animation ------------------------------------------------------------------------------------------
+
         private void OnPose(in UnitPose pose) => _pose = pose;
+
+        private Partie? Trouver(string nom) => _parties.Find(p => p.Nom == nom);
 
         private void LateUpdate()
         {
@@ -109,32 +197,48 @@ namespace Healer.Client
             if (cam == null) return;
             float t = Time.time;
             float chute = (float)_pose.Fall, vivant = 1f - chute;
-            float elan = (float)_pose.Lunge, recul = (float)_pose.Recoil;
+            float elan = (float)_pose.Lunge, recul = (float)_pose.Recoil, lache = (float)_pose.Release;
             float lancer = _pose.CastDurationMs > 0 ? Mathf.Clamp01((float)_pose.CastElapsedMs / 260f) : 0f;
-            float lache = (float)_pose.Release;
-
-            // Face caméra ; la chute bascule le personnage autour de ses pieds.
-            _plan.rotation = cam.transform.rotation * Quaternion.Euler(0f, 0f, -78f * chute);
-            _plan.position = transform.position;
-
             float souffle = Mathf.Sin(t * 1.7f + _phase);
-            // Inclinaison du haut du corps : vers le boss quand il frappe ou lance, en arrière quand il encaisse.
-            float penche = (elan * 0.20f + lache * 0.12f - recul * 0.14f - lancer * 0.05f) * vivant;
-            float etire = (1f + 0.016f * souffle - elan * 0.03f - recul * 0.04f + lancer * 0.02f) * vivant + chute;
 
-            for (int i = 0; i < _repos.Length; i++)
+            // Le plateau porte l'orientation face caméra et la bascule de la chute (autour des pieds).
+            _plateau.rotation = cam.transform.rotation * Quaternion.Euler(0f, 0f, -74f * chute);
+            _plateau.localPosition = Vector3.zero;
+
+            // Le personnage regarde vers la droite (vers le boss) : un angle NÉGATIF le penche vers l'ennemi.
+            float penche = (-elan * 13f - lache * 8f + recul * 11f + lancer * 3f) * vivant;
+            float leveBras = (souffle * 2.5f + lancer * 44f - lache * 52f - recul * 20f) * vivant;
+            float tete = (-souffle * 1.8f - elan * 8f + recul * 15f - lancer * 7f) * vivant;
+
+            foreach (var p in _parties)
             {
-                var p = _repos[i];
-                float v = p.y / _hauteur;                       // 0 aux pieds, 1 au sommet
-                float prise = v * v;                            // le bas reste planté au sol
-                float onde = Mathf.Sin(t * 1.5f + _phase + v * 2.4f) * 0.022f * _hauteur * prise * vivant;
-                _travail[i] = new Vector3(
-                    p.x * (1f - 0.02f * souffle * v) + (penche * _hauteur * prise) + onde,
-                    p.y * etire,
-                    p.z);
+                float angle = p.Nom switch
+                {
+                    "body" => penche,
+                    "head" => tete,
+                    "arm_free" => leveBras,
+                    _ => souffle * 1.5f * vivant,
+                };
+                p.Pivot.localRotation = Quaternion.Euler(0f, 0f, angle);
+                if (p.Nom == "body")
+                    p.Pivot.localScale = new Vector3(1f - 0.008f * souffle, 1f + 0.014f * souffle - recul * 0.03f, 1f);
+                if (p.Grille != null && p.Repos != null && p.Travail != null) Onduler(p, t, vivant);
             }
-            _mesh.vertices = _travail;
-            _mesh.RecalculateBounds();
+        }
+
+        /// <summary>Ondulation du tissu : forte en bas de la robe, nulle en haut (là où sont accrochées la tête et les bras).</summary>
+        private void Onduler(Partie p, float t, float vivant)
+        {
+            float demi = p.Hauteur / 2f;
+            for (int i = 0; i < p.Repos!.Length; i++)
+            {
+                var s = p.Repos[i];
+                float v = 1f - (s.y + demi) / p.Hauteur;                 // 0 en haut, 1 en bas
+                float prise = v * v;
+                p.Travail![i] = new Vector3(s.x + Mathf.Sin(t * 1.4f + _phase + v * 3.1f) * 0.035f * prise * vivant, s.y, s.z);
+            }
+            p.Grille!.vertices = p.Travail;
+            p.Grille.RecalculateBounds();
         }
     }
 }

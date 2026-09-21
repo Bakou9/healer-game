@@ -19,6 +19,8 @@ namespace Healer.Combat
         public string? Folder { get; set; }
         /// <summary>Vrai si nous avons modifié la ressource (à indiquer avec une licence CC-BY).</summary>
         public bool Modified { get; set; }
+        /// <summary>Contenu généré par IA seulement : le prompt employé, conservé pour la déclaration exigée par les boutiques (D-075).</summary>
+        public string? Prompt { get; set; }
     }
 
     /// <summary>Contenu de core/content/credits.json : les ressources externes (assets) et les outils remerciés au générique.</summary>
@@ -27,6 +29,8 @@ namespace Healer.Combat
         public string Title { get; set; } = "Healer Game";
         public List<CreditEntry> Assets { get; set; } = new List<CreditEntry>();
         public List<CreditEntry> Tools { get; set; } = new List<CreditEntry>();
+        /// <summary>Contenus générés par IA (D-075) : ni ressource tierce sous licence, ni simple outil. Déclaration exigée par Steam et Google Play.</summary>
+        public List<CreditEntry> Ai { get; set; } = new List<CreditEntry>();
 
         public static CreditsData FromJson(string json) => JsonConvert.DeserializeObject<CreditsData>(json) ?? new CreditsData();
     }
@@ -47,6 +51,23 @@ namespace Healer.Combat
         /// peut être sous copyleft sans que cela touche le jeu ni les fichiers qu'il produit.
         /// </summary>
         public static readonly IReadOnlyList<string> ToolLicenses = new[] { "Unity-Engine", "MIT", "Apache-2.0", "BSD-3-Clause", "GPL-3.0", "LGPL-2.1" };
+
+        /// <summary>
+        /// Règles d'un contenu généré par IA (D-075). Ce n'est pas une ressource tierce sous licence : les conditions de l'outil
+        /// nous cèdent la sortie, donc elle nous appartient. Ce qui compte ici, c'est la TRAÇABILITÉ : quel outil, quelle adresse,
+        /// pour quoi, et avec quel prompt — c'est ce que Steam et Google Play demandent de déclarer.
+        /// </summary>
+        public static IReadOnlyList<string> AiProblems(CreditEntry e)
+        {
+            var list = new List<string>();
+            if (string.IsNullOrWhiteSpace(e.Name)) list.Add("nom de l'outil manquant");
+            if (string.IsNullOrWhiteSpace(e.Author)) list.Add("éditeur de l'outil manquant");
+            if (string.IsNullOrWhiteSpace(e.Url)) list.Add("source (URL) manquante");
+            else if (!e.Url.StartsWith("https://", StringComparison.Ordinal)) list.Add("l'URL doit commencer par https://");
+            if (string.IsNullOrWhiteSpace(e.UsedFor)) list.Add("usage manquant");
+            if (string.IsNullOrWhiteSpace(e.Prompt)) list.Add("prompt manquant (exigé pour la déclaration des boutiques)");
+            return list;
+        }
 
         public static IReadOnlyList<string> Problems(CreditEntry e, bool isAsset)
         {

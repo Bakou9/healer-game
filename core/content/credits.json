@@ -54,5 +54,15 @@
       "url": "https://ffmpeg.org",
       "usedFor": "Aperçus animés des personnages (GIF et vidéo)"
     }
+  ],
+  "ai": [
+    {
+      "name": "ChatGPT (génération d'images)",
+      "author": "OpenAI",
+      "license": "",
+      "url": "https://chatgpt.com",
+      "usedFor": "Illustration des héros et des boss en combat",
+      "prompt": "Dark fantasy game character illustration, painterly digital art, clean readable silhouette, limited moody palette with one glowing accent color, strong rim light from behind, full body, standing idle pose, three-quarter view facing RIGHT, centered, isolated on a perfectly flat solid magenta (#FF00FF) background, no ground, no cast shadow, no text, no border, no watermark. Consistent proportions : slightly stylized, about 5 heads tall, large readable hands and weapon. + une description par personnage (voir art-2d/README.md)"
+    }
   ]
 }

@@ -124,5 +124,27 @@ namespace Healer.Combat.Tests
             var sans_licence = new CreditEntry { Name = "Illustrations", Author = "Outil IA", License = "À préciser", Url = "https://exemple.org", UsedFor = "Héros", Folder = "Art2D" };
             Assert.That(CreditPolicy.Problems(sans_licence, true), Is.Not.Empty, "tant que la licence n'est pas vérifiée, la ressource ne peut pas être livrée");
         }
+
+        [Test]
+        public void Les_contenus_generes_par_IA_sont_traces_outil_source_et_prompt()
+        {
+            // D-075 : la sortie nous appartient (conditions d'OpenAI), donc pas de licence tierce à vérifier ;
+            // ce qui est exigé, c'est de pouvoir déclarer quel outil et quel prompt, comme le demandent Steam et Google Play.
+            var data = Data();
+            Assert.That(data.Ai, Is.Not.Empty, "les illustrations générées par IA doivent être déclarées");
+            foreach (var e in data.Ai)
+                Assert.That(CreditPolicy.AiProblems(e), Is.Empty, e.Name);
+            var lignes = CreditsRoll.Build(data);
+            Assert.That(lignes.Any(l => l.Text.Contains("IA")), Is.True, "le générique affiche la section des contenus générés par IA");
+            foreach (var e in data.Ai)
+                Assert.That(lignes.Any(l => l.Text.Contains(e.Name)), Is.True, e.Name + " doit apparaître au générique");
+        }
+
+        [Test]
+        public void Un_contenu_IA_sans_prompt_est_refuse()
+        {
+            var sans = new CreditEntry { Name = "Outil", Author = "Éditeur", Url = "https://exemple.org", UsedFor = "Illustrations" };
+            Assert.That(CreditPolicy.AiProblems(sans), Is.Not.Empty);
+        }
     }
 }

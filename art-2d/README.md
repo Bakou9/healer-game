@@ -61,6 +61,25 @@ chest and cyan runes along the arms, small spikes on the head, menacing, fills t
 
 Les autres boss viendront ensuite : Reine des Marais (souveraine des marécages, lueur violette), Seigneur de Cendre (seigneur de braise, lueur orangée).
 
+
+## Articuler un personnage (D-075)
+
+Une illustration figée donne des animations pauvres. On la découpe donc en quelques parties qui pivotent autour de leurs articulations
+(« cutout animation », comme Spine ou DragonBones) :
+
+1. Produire le repère : `blender --background --python art-2d/tools/cutout.py -- <unité> --grille`
+   → `art-2d/out/<unité>_grille.png`, l'illustration quadrillée en pourcentages (lignes tous les 5 %, rouges tous les 25 %).
+2. Écrire `art-2d/rigs/<unité>.txt` : une partie par bloc, avec son parent, son ordre d'affichage, son pivot et son polygone.
+3. Découper : `blender --background --python art-2d/tools/cutout.py -- <unité> --unity`
+   → une image par partie, le fichier de rig pour le jeu, et `<unité>_parts_apercu.png` pour vérifier la découpe d'un coup d'œil.
+
+**Règle apprise sur la Soigneuse** : une partie qui bouge ne doit pas être dupliquée dans la partie du dessous, sinon son fantôme
+apparaît dès qu'elle tourne. Le corps s'arrête donc sous le cou et avant l'épaule du bras mobile. À l'inverse, un accessoire qui
+traverse le corps en diagonale (le bâton de la Soigneuse) reste dans le corps : l'extraire laisserait une bande vide.
+
+Découpe actuelle de la Soigneuse : `body` (robe, bâton, bras porteur), `head` (capuche, masque, bois), `arm_free` (bras tendu, lumière).
+Trois parties suffisent à animer respiration, incantation, attaque, coup reçu et chute.
+
 ## Poses supplémentaires (seulement si l'image de repos est bonne)
 
 Donner l'illustration acceptée en référence et demander : « same character, same outfit, same style, now in an attack pose (mid strike / shooting /
@@ -70,7 +89,7 @@ casting) facing right, same flat magenta background ». Deux images de plus par 
 
 | Unité | Illustration | En jeu |
 |---|---|---|
-| Soigneuse (`healer`) | faite | oui |
+| Soigneuse (`healer`) | faite | oui, articulée en 3 parties |
 | Garde (`tank`) | à faire | — |
 | Archère (`dps1`) | à faire | — |
 | Mage (`dps2`) | à faire | — |
