@@ -358,9 +358,11 @@ namespace Healer.Combat.Tests
         {
             var p = PlayerProfile.NewGame(C);
             Progression.Complete(p, C, L1, ProgressFixtures.Win());
-            // D-084 : l'XP du Soigneur (E02-T06) passe aussi par le portefeuille, comme l'or -> 2 écritures.
-            Assert.That(p.Wallet.Ledger, Has.Count.EqualTo(2));
-            Assert.That(p.Wallet.Ledger.All(e => e.Reason.Contains("l1")), Is.True);
+            // D-084/D-085 : l'XP du Soigneur (E02-T06) passe aussi par le portefeuille, comme l'or (2 écritures
+            // "l1" au moins) ; si la première victoire fait déjà franchir un niveau, une 3ᵉ écriture de points
+            // de talent s'ajoute (raison "niveau N", pas liée à un niveau de campagne précis).
+            Assert.That(p.Wallet.Ledger.Count(e => e.Reason.Contains("l1")), Is.EqualTo(2));
+            Assert.That(p.Wallet.Ledger.All(e => e.Reason.Contains("l1") || e.Reason.StartsWith("niveau ")), Is.True);
         }
 
         [Test]

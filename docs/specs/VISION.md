@@ -67,13 +67,15 @@ hauteur humaine (voir `docs/EQUILIBRAGE.md` §3).
 ## 6. Le soigneur et sa spécialisation
 
 Le joueur fait progresser **un** soigneur. En montant de **niveau** (XP gagnée
-en combat), il gagne des **points de talent** à dépenser dans des **choix de
-spécialisation** parmi quatre voies (D-084, décision ferme de l'utilisateur —
-remplace la proposition initiale à 3 voies). Chaque voie a **12 paliers**
-(48 au total), un **choix entre 2 talents** par palier, coûtant chacun 1 point
-(24 points obtenus en tout : de quoi vider complètement 2 voies sur 4, ou
-répartir plus finement — un vrai choix de spécialisation, pas un « tout
-débloquer »). Le dernier palier de chaque voie est un **capstone** qui débloque
+en combat, **60 niveaux**, D-085), il gagne des **points de talent** (1 par
+niveau franchi, 59 au total) à dépenser dans des **choix de spécialisation**
+parmi quatre voies (D-084, décision ferme de l'utilisateur — remplace la
+proposition initiale à 3 voies). Chaque voie a **12 paliers** (48 au total),
+un **choix entre 2 talents** par palier ; le coût croît par quart de voie
+(1/2/3/4 points selon le palier, D-085) — **30 points pour vider une voie
+complète**, donc 59 points obtenus = un peu moins de 2 voies sur 4, un vrai
+choix de spécialisation, pas un « tout débloquer ». Le dernier palier de
+chaque voie est un **capstone** qui débloque
 un sort exclusif plutôt que de modifier un sort existant.
 
 | Voie | Fantasme | Force | Capstone |

@@ -1018,3 +1018,27 @@ pouvoir souffrir »). **Je ne tranche pas seul (D-016/D-017)** : options pour la
   de chasser des coordonnées à l'aveugle sans image de référence). **Recommandé avant de considérer ce travail
   fiable : ouvrir le jeu (`lancer-le-jeu.bat` ou l'Éditeur) et regarder l'Atelier et l'écran Personnages.**
 - Reliques : aucune UI (voir T07 ci-dessus).
+
+## D-085 — 60 niveaux, coût en points croissant par rang (retour utilisateur sur D-084)
+
+- **Date** : 2026-09-22 — **Statut** : Ferme (décision explicite de l'utilisateur).
+- **Décisions** : 60 niveaux (au lieu de 25) ; le coût en points d'un palier n'est plus uniforme (1 partout) mais
+  croît par quart de voie — laissé à mon jugement (« si ça correspond à ta vision »).
+- **Choix retenu** : coût = 1/2/3/4 points selon le quart de la voie (rangs 1-3 / 4-6 / 7-9 / 10-12), soit
+  3×1+3×2+3×3+3×4 = **30 points pour vider une voie complète**. Courbe régénérée : niveaux 2 à 60, 1 point par
+  niveau franchi = **59 points au total**, soit un peu moins de 2 voies pleines sur 4 — je garde le MÊME ratio
+  « 2 voies sur 4 » que D-084 (qui donnait 24 points pour 24 requis/voie), pour préserver le principe déjà
+  posé : un vrai choix de spécialisation, pas un « tout débloquer ». `RewardXp`/`RepeatXp` des 3 niveaux
+  (`core/content/levels.json`) mis à l'échelle (×~5, la courbe totale passant de 8190 à 46970 XP).
+- **Équilibrage explicitement reporté** : l'utilisateur a demandé de corriger l'équilibrage plus tard, une fois
+  toutes les décisions tranchées. Je n'ai donc PAS retouché les magnitudes des talents pour ce changement :
+  seul le coût/la courbe de niveaux a changé. `UpgradeBalanceTests` reste à 23 échecs sur 470 (inchangé), signe
+  que ce changement structurel n'a pas déplacé la mesure (attendu : les magnitudes elles-mêmes sont identiques).
+- **Un test corrigé** (comportement changé, pas un bug) : `Toute_recompense_passe_par_le_portefeuille_avec_une_raison`
+  attendait exactement 2 écritures au portefeuille pour la première victoire ; avec la nouvelle courbe (seuil du
+  niveau 2 plus bas), cette première victoire fait déjà franchir un niveau et ajoute une 3ᵉ écriture (points de
+  talent) — corrigé pour vérifier les 2 écritures "l1" (or + XP) sans figer le total exact, plus robuste aux
+  futurs ajustements de la courbe.
+- **Documentation** : `VISION.md` §6 et les tickets T03/T06 citent encore « 24 points »/« niveau 25 » (D-084,
+  pas encore mis à jour avec les nouveaux chiffres — à faire lors de la prochaine passe documentaire, pas
+  urgent puisque l'équilibrage lui-même est en pause).

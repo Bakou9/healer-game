@@ -643,7 +643,7 @@
       "tier": 13,
       "voie": "lumiere",
       "palierDansVoie": 4,
-      "cost": 1,
+      "cost": 2,
       "options": [
         {
           "id": "lum_r4_vif",
@@ -687,7 +687,7 @@
       "tier": 14,
       "voie": "egide",
       "palierDansVoie": 4,
-      "cost": 1,
+      "cost": 2,
       "options": [
         {
           "id": "egi_r4_leger",
@@ -731,7 +731,7 @@
       "tier": 15,
       "voie": "purification",
       "palierDansVoie": 4,
-      "cost": 1,
+      "cost": 2,
       "options": [
         {
           "id": "pur_r4_efficace",
@@ -775,7 +775,7 @@
       "tier": 16,
       "voie": "vitalite",
       "palierDansVoie": 4,
-      "cost": 1,
+      "cost": 2,
       "options": [
         {
           "id": "vit_r4_robustesse",
@@ -811,7 +811,7 @@
       "tier": 17,
       "voie": "lumiere",
       "palierDansVoie": 5,
-      "cost": 1,
+      "cost": 2,
       "options": [
         {
           "id": "lum_r5_partage",
@@ -845,7 +845,7 @@
       "tier": 18,
       "voie": "egide",
       "palierDansVoie": 5,
-      "cost": 1,
+      "cost": 2,
       "options": [
         {
           "id": "egi_r5_veille",
@@ -884,7 +884,7 @@
       "tier": 19,
       "voie": "purification",
       "palierDansVoie": 5,
-      "cost": 1,
+      "cost": 2,
       "options": [
         {
           "id": "pur_r5_discipline",
@@ -921,7 +921,7 @@
       "tier": 20,
       "voie": "vitalite",
       "palierDansVoie": 5,
-      "cost": 1,
+      "cost": 2,
       "options": [
         {
           "id": "vit_r5_soutien",
@@ -960,7 +960,7 @@
       "tier": 21,
       "voie": "lumiere",
       "palierDansVoie": 6,
-      "cost": 1,
+      "cost": 2,
       "options": [
         {
           "id": "lum_r6_ferveur",
@@ -998,7 +998,7 @@
       "tier": 22,
       "voie": "egide",
       "palierDansVoie": 6,
-      "cost": 1,
+      "cost": 2,
       "options": [
         {
           "id": "egi_r6_sangfroid",
@@ -1035,7 +1035,7 @@
       "tier": 23,
       "voie": "purification",
       "palierDansVoie": 6,
-      "cost": 1,
+      "cost": 2,
       "options": [
         {
           "id": "pur_r6_etendue",
@@ -1068,7 +1068,7 @@
       "tier": 24,
       "voie": "vitalite",
       "palierDansVoie": 6,
-      "cost": 1,
+      "cost": 2,
       "options": [
         {
           "id": "vit_r6_soin_stable",
@@ -1106,7 +1106,7 @@
       "tier": 25,
       "voie": "lumiere",
       "palierDansVoie": 7,
-      "cost": 1,
+      "cost": 3,
       "options": [
         {
           "id": "lum_r7_vif",
@@ -1150,7 +1150,7 @@
       "tier": 26,
       "voie": "egide",
       "palierDansVoie": 7,
-      "cost": 1,
+      "cost": 3,
       "options": [
         {
           "id": "egi_r7_leger",
@@ -1194,7 +1194,7 @@
       "tier": 27,
       "voie": "purification",
       "palierDansVoie": 7,
-      "cost": 1,
+      "cost": 3,
       "options": [
         {
           "id": "pur_r7_efficace",
@@ -1238,7 +1238,7 @@
       "tier": 28,
       "voie": "vitalite",
       "palierDansVoie": 7,
-      "cost": 1,
+      "cost": 3,
       "options": [
         {
           "id": "vit_r7_robustesse",
@@ -1274,7 +1274,7 @@
       "tier": 29,
       "voie": "lumiere",
       "palierDansVoie": 8,
-      "cost": 1,
+      "cost": 3,
       "options": [
         {
           "id": "lum_r8_partage",
@@ -1308,7 +1308,7 @@
       "tier": 30,
       "voie": "egide",
       "palierDansVoie": 8,
-      "cost": 1,
+      "cost": 3,
       "options": [
         {
           "id": "egi_r8_veille",
@@ -1347,7 +1347,7 @@
       "tier": 31,
       "voie": "purification",
       "palierDansVoie": 8,
-      "cost": 1,
+      "cost": 3,
       "options": [
         {
           "id": "pur_r8_discipline",
@@ -1384,7 +1384,7 @@
       "tier": 32,
       "voie": "vitalite",
       "palierDansVoie": 8,
-      "cost": 1,
+      "cost": 3,
       "options": [
         {
           "id": "vit_r8_soutien",
@@ -1423,7 +1423,7 @@
       "tier": 33,
       "voie": "lumiere",
       "palierDansVoie": 9,
-      "cost": 1,
+      "cost": 3,
       "options": [
         {
           "id": "lum_r9_ferveur",
@@ -1461,7 +1461,7 @@
       "tier": 34,
       "voie": "egide",
       "palierDansVoie": 9,
-      "cost": 1,
+      "cost": 3,
       "options": [
         {
           "id": "egi_r9_sangfroid",
@@ -1498,7 +1498,7 @@
       "tier": 35,
       "voie": "purification",
       "palierDansVoie": 9,
-      "cost": 1,
+      "cost": 3,
       "options": [
         {
           "id": "pur_r9_etendue",
@@ -1531,7 +1531,7 @@
       "tier": 36,
       "voie": "vitalite",
       "palierDansVoie": 9,
-      "cost": 1,
+      "cost": 3,
       "options": [
         {
           "id": "vit_r9_soin_stable",
@@ -1569,7 +1569,7 @@
       "tier": 37,
       "voie": "lumiere",
       "palierDansVoie": 10,
-      "cost": 1,
+      "cost": 4,
       "options": [
         {
           "id": "lum_r10_vif",
@@ -1613,7 +1613,7 @@
       "tier": 38,
       "voie": "egide",
       "palierDansVoie": 10,
-      "cost": 1,
+      "cost": 4,
       "options": [
         {
           "id": "egi_r10_leger",
@@ -1657,7 +1657,7 @@
       "tier": 39,
       "voie": "purification",
       "palierDansVoie": 10,
-      "cost": 1,
+      "cost": 4,
       "options": [
         {
           "id": "pur_r10_efficace",
@@ -1701,7 +1701,7 @@
       "tier": 40,
       "voie": "vitalite",
       "palierDansVoie": 10,
-      "cost": 1,
+      "cost": 4,
       "options": [
         {
           "id": "vit_r10_robustesse",
@@ -1737,7 +1737,7 @@
       "tier": 41,
       "voie": "lumiere",
       "palierDansVoie": 11,
-      "cost": 1,
+      "cost": 4,
       "options": [
         {
           "id": "lum_r11_partage",
@@ -1771,7 +1771,7 @@
       "tier": 42,
       "voie": "egide",
       "palierDansVoie": 11,
-      "cost": 1,
+      "cost": 4,
       "options": [
         {
           "id": "egi_r11_veille",
@@ -1810,7 +1810,7 @@
       "tier": 43,
       "voie": "purification",
       "palierDansVoie": 11,
-      "cost": 1,
+      "cost": 4,
       "options": [
         {
           "id": "pur_r11_discipline",
@@ -1847,7 +1847,7 @@
       "tier": 44,
       "voie": "vitalite",
       "palierDansVoie": 11,
-      "cost": 1,
+      "cost": 4,
       "options": [
         {
           "id": "vit_r11_soutien",
@@ -1886,7 +1886,7 @@
       "tier": 45,
       "voie": "lumiere",
       "palierDansVoie": 12,
-      "cost": 1,
+      "cost": 4,
       "options": [
         {
           "id": "lum_r12_maitrise",
@@ -1914,7 +1914,7 @@
       "tier": 46,
       "voie": "egide",
       "palierDansVoie": 12,
-      "cost": 1,
+      "cost": 4,
       "options": [
         {
           "id": "egi_r12_maitrise",
@@ -1942,7 +1942,7 @@
       "tier": 47,
       "voie": "purification",
       "palierDansVoie": 12,
-      "cost": 1,
+      "cost": 4,
       "options": [
         {
           "id": "pur_r12_maitrise",
@@ -1975,7 +1975,7 @@
       "tier": 48,
       "voie": "vitalite",
       "palierDansVoie": 12,
-      "cost": 1,
+      "cost": 4,
       "options": [
         {
           "id": "vit_r12_endurance",
