@@ -249,7 +249,9 @@ namespace Healer.Ui
 
         // Disposition en QUINCONCE (D-080) : deux par colonne, décalés en hauteur. Une simple diagonale mangeait la moitié
         // de l'écran ; ici l'équipe tient dans un carré compact, chacun reste lisible et personne n'en cache un autre.
-        private const double ColonneX = 620, PasColonne = 120, RangY = 520, PasRang = 100, MonteeColonne = 40;
+        // Colonne de tête plus à gauche et rangs plus espacés (retour utilisateur) : l'équipe se voit mieux et reste
+        // loin du boss ; MonteeColonne conserve la perspective (les colonnes du fond remontent et donc rapetissent).
+        private const double ColonneX = 560, PasColonne = 100, RangY = 520, PasRang = 140, MonteeColonne = 55;
 
         /// <summary>Position logique (x) du n-ième allié : deux alliés par colonne, les colonnes reculent vers la gauche.</summary>
         public static double AllyStageX(int index, int count) => ColonneX - (index / 2) * PasColonne;

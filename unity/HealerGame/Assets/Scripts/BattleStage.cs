@@ -68,8 +68,20 @@ namespace Healer.Client
         // Effets : anneaux au sol, faisceaux entre le soigneur et sa cible, anneau de danger avant l'attaque de zone.
         private sealed class RingFx { public GameObject Go = null!; public Material Mat = null!; public float Age = 99f; public float Size; public Color Color; }
         private sealed class BeamFx { public LineRenderer Line = null!; public float Age = 99f; public Color Color; }
+        /// <summary>Projectile d'une attaque à distance (D-081) : vole de la source à la cible puis déclenche l'impact à l'arrivée,
+        /// au lieu de faire glisser tout le personnage vers le boss (ce qui n'a pas de sens pour un sort lancé à distance).</summary>
+        private sealed class ProjectileFx
+        {
+            public GameObject Go = null!;
+            public Material Mat = null!;
+            public float Age = 99f, Duration = 0.3f;
+            public Vector3 From, To;
+            public Color Color;
+            public bool ArrivedHandled;
+        }
         private readonly List<RingFx> _rings = new List<RingFx>();
         private readonly List<BeamFx> _beams = new List<BeamFx>();
+        private readonly List<ProjectileFx> _projectiles = new List<ProjectileFx>();
         private GameObject _dangerRing = null!;
         private Material _dangerMat = null!;
         private float _bossHit;
@@ -480,6 +492,18 @@ namespace Healer.Client
                 line.enabled = false;
                 _beams.Add(new BeamFx { Line = line });
             }
+            var dotTex = SoftDot(64);
+            for (int i = 0; i < 4; i++)
+            {
+                var go = new GameObject("ProjectileFx");
+                go.transform.SetParent(transform, false);
+                go.AddComponent<MeshFilter>().sharedMesh = QuadMesh();
+                var mat = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended")) { mainTexture = dotTex };
+                go.AddComponent<MeshRenderer>().sharedMaterial = mat;
+                go.transform.localScale = new Vector3(0.7f, 0.7f, 1f);
+                go.SetActive(false);
+                _projectiles.Add(new ProjectileFx { Go = go, Mat = mat });
+            }
             _dangerRing = new GameObject("DangerRing");
             _dangerRing.transform.SetParent(transform, false);
             _dangerRing.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
@@ -702,7 +726,9 @@ namespace Healer.Client
                 float bob = st.Alive ? Mathf.Abs(Mathf.Sin(t * 2.4f + v.Phase)) * 0.09f : 0f;
                 var tr = v.Root.transform;
                 float castRoot = v.Rig != null && v.Rig.Style != RigStyle.Default ? 0f : (float)pose.Cast; // les héros à gestes par phases lèvent eux-mêmes leurs bras : le corps entier ne se soulève ni ne se penche
-                tr.position = home + new Vector3(v.Lunge * 1.2f - (float)pose.Recoil * 0.25f, bob - v.HitFlash * 0.12f + castRoot * 0.2f - (float)pose.Fall * 0.3f, 0f);   // le coup porté avance vers le boss (à droite), le coup reçu recule vers la gauche
+                // Le Mage attaque à distance (projectile, ci-dessus) : il reste sur place, il ne fonce plus vers le boss (D-081).
+                float lungeX = kv.Key == "dps2" ? 0f : v.Lunge * 1.2f;
+                tr.position = home + new Vector3(lungeX - (float)pose.Recoil * 0.25f, bob - v.HitFlash * 0.12f + castRoot * 0.2f - (float)pose.Fall * 0.3f, 0f);   // le coup porté avance vers le boss (à droite), le coup reçu recule vers la gauche
                 float side = kv.Key == "healer" ? -10f : (kv.Key == "tank" ? 12f : kv.Key == "dps1" ? -6f : 8f);
                 tr.rotation = Quaternion.Euler(-castRoot * 10f, AllyYaw + side * 0.5f * (1f - (float)pose.Fall), (float)pose.Fall * 78f);
                 v.Rig?.ApplyPose(t, v.Phase, pose);
@@ -828,6 +854,9 @@ namespace Healer.Client
                     }
                     break;
                 case "bossDamaged":
+                    // Attaque à distance (Mage) : un projectile part de lui vers le boss au lieu de le faire glisser (D-081).
+                    if (e.SourceId == "dps2" && _units.TryGetValue(e.SourceId, out var caster))
+                        Fire(caster.Root.transform.position + Vector3.up * 1.5f, _boss.Root.transform.position + Vector3.up * 1.7f, DamageColor(e), 0.3f);
                     break;
                 case "bossAction":
                     _lastBossBig = e.Action == "bigAttack";
@@ -860,6 +889,15 @@ namespace Healer.Client
             fx.Line.enabled = true;
         }
 
+        /// <summary>Tire un projectile (attaque à distance) : vole en arc de la source à la cible, puis éclate à l'arrivée (D-081).</summary>
+        private void Fire(Vector3 from, Vector3 to, Color color, float duration)
+        {
+            var fx = _projectiles.OrderByDescending(p => p.Age).First();
+            fx.Age = 0f; fx.Duration = duration; fx.From = from; fx.To = to; fx.Color = color; fx.ArrivedHandled = false;
+            fx.Go.transform.position = from;
+            fx.Go.SetActive(true);
+        }
+
         private void UpdateFx(float dt)
         {
             foreach (var r in _rings)
@@ -881,6 +919,22 @@ namespace Healer.Client
                 var c = new Color(b.Color.r, b.Color.g, b.Color.b, 0.9f * (1f - k));
                 b.Line.startColor = c;
                 b.Line.endColor = new Color(c.r, c.g, c.b, c.a * 0.3f);
+            }
+            foreach (var p in _projectiles)
+            {
+                if (!p.Go.activeSelf) continue;
+                p.Age += dt;
+                float k = Mathf.Clamp01(p.Age / p.Duration);
+                if (k >= 1f)
+                {
+                    if (!p.ArrivedHandled) { p.ArrivedHandled = true; Burst(_impact, p.To, p.Color, 10, 3f); }
+                    p.Go.SetActive(false);
+                    continue;
+                }
+                float arc = Mathf.Sin(k * Mathf.PI) * 0.55f;   // léger arc plutôt qu'une ligne droite : plus lisible comme sort lancé
+                p.Go.transform.position = Vector3.Lerp(p.From, p.To, k) + Vector3.up * arc;
+                p.Go.transform.rotation = _cam.transform.rotation;   // billboard face caméra
+                p.Mat.SetColor("_TintColor", p.Color);
             }
         }
 

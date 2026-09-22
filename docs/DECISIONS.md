@@ -633,3 +633,19 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
 - **Reste à faire** pour l'interface PC : clic direct sur un personnage dans la scène, journal de combat, barre
   d'incantation du boss, fenêtre redimensionnable au-delà de la grille logique.
 - **Question B** : aucune règle ni valeur de jeu modifiée ; disposition et interface seulement.
+
+## D-081 — Disposition resserrée, projectile du Mage
+
+- **Date** : 2026-09-22 — **Statut** : Livrée sur la branche `pixel-art`.
+- **Demande** : décaler l'équipe vers la gauche et l'espacer davantage verticalement (tout en gardant la perspective) ;
+  faire partir un projectile du Mage lors de son attaque plutôt que de le faire glisser vers le boss.
+- **Disposition** (`Layout.AllyStageX/AllyStageFeetY`) : colonne de tête à 560 (était 620), pas entre colonnes réduit
+  à 100 (était 120) pour garder la marge avec `CenterX`, pas vertical entre les deux rangs porté à 140 (était 100),
+  montée par colonne (perspective : le fond recule et remonte) portée à 55 (était 40). Le test
+  `Les_allies_sont_en_quinconce_compacte_a_gauche_du_boss` couvre toujours ces contraintes sans modification.
+- **Projectile du Mage** (`BattleStage.ProjectileFx`, `Fire()`) : à l'événement `bossDamaged` dont la source est `dps2`,
+  un petit projectile lumineux (couleur du type de dégât) part de sa position vers le boss en 0,3 s avec un léger arc,
+  puis déclenche une petite explosion à l'arrivée. Le Mage ne glisse plus vers le boss pendant son attaque (l'offset de
+  position `v.Lunge` est neutralisé pour `dps2` uniquement) ; son geste de bâton (déjà existant, D-070) continue de jouer.
+  Les autres héros (mêlée) gardent leur glissement inchangé.
+- **Question B** : aucune règle ni valeur de jeu modifiée ; disposition et effets visuels seulement.
