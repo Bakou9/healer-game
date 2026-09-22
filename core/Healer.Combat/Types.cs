@@ -14,6 +14,9 @@ namespace Healer.Combat
         public double MaxHp { get; set; }
         public double Atk { get; set; }
         public double Def { get; set; }
+        /// <summary>Intervalle entre deux attaques automatiques, en ms (D-082). Absent = Battle.AllyAttackIntervalMs (comportement historique).
+        /// Chaque personnage a sa propre cadence ; à cadence différente, l'attaque (Atk) est recalculée pour garder le même dps moyen.</summary>
+        public double? AttackIntervalMs { get; set; }
         /// <summary>Seul le soigneur en a besoin.</summary>
         public double? MaxMana { get; set; }
         public double? ManaRegenPerSec { get; set; }

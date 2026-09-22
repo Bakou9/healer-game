@@ -649,3 +649,70 @@ Cinq demandes de l'utilisateur après avoir joué (statuts : faits ; le point 5 
   position `v.Lunge` est neutralisé pour `dps2` uniquement) ; son geste de bâton (déjà existant, D-070) continue de jouer.
   Les autres héros (mêlée) gardent leur glissement inchangé.
 - **Question B** : aucune règle ni valeur de jeu modifiée ; disposition et effets visuels seulement.
+
+## D-082 — Cadence d'attaque par personnage, et attaque du Soigneur entre ses incantations
+
+- **Date** : 2026-09-22 — **Statut** : Livrée sur la branche `pixel-art` ; **2 mesures d'équilibrage restent hors bornes,
+  à valider par l'utilisateur (voir plus bas)**.
+- **Demande** : donner à chaque personnage sa propre vitesse d'attaque (Archère > Garde > Mage > Soigneuse, du plus rapide
+  au plus lent), en gardant le même dps moyen par personnage, et donner au Soigneur une attaque basique quand il n'incante pas.
+
+### Ce qui a changé
+
+- `CharacterDef.AttackIntervalMs` (nullable, `core/content/characters.json`) : intervalle d'attaque propre à chaque
+  personnage. Absent = `Battle.AllyAttackIntervalMs` (1600 ms, comportement historique). Nouvelles valeurs :
+  Archère 900 ms, Garde 1400 ms, Mage 1900 ms, Soigneuse 2600 ms.
+- Le Soigneur attaque désormais entre ses incantations (`RunAllyAttacks` n'exclut plus `Role == "healer"`), mais jamais
+  PENDANT une incantation (`_cast != null` bloque l'attaque ce tick, sans consommer le cooldown : elle se déclenche dès
+  que le Soigneur est libre). Son `atk` (12, déjà présent dans les données mais inutilisé) sert enfin.
+- **Un bug de clonage corrigé en cours de route** : `LoadoutApplier.Clone(CharacterDef)` recopiait chaque champ un par un
+  et avait oublié le nouveau `AttackIntervalMs`, si bien que tout personnage équipé (donc TOUT combat réel, y compris les
+  golden et les mesures d'équilibrage) retombait silencieusement sur l'intervalle historique de 1600 ms. Corrigé ; toutes
+  les mesures ci-dessous sont faites APRÈS ce correctif, avec la cadence réellement appliquée.
+- **dps du Mage** (`BattleStage.cs`, D-081) : reste inchangé, le projectile part toujours de sa position.
+
+### Remise en cause de spec (préambule A)
+
+« Garder le même dps moyen » ne se réduit pas à une règle de trois sur `Atk` (`Atk' = Atk × intervalle_neuf / intervalle_ancien`) :
+la formule de dégâts soustrait la Défense du boss **par coup** (`dmg = max(1, raw - Def)`), donc un personnage qui frappe
+plus souvent avec de plus petits coups perd une part plus grande de ses dégâts à cette soustraction fixe. Un premier
+calcul naïf a fait TRIPLER le dps de l'Archère et chuter celui du Mage de 29 % : corrigé par une formule qui intègre
+Def et la résistance du boss de référence dans le recalcul d'Atk (documentée dans le code source de la session, pas
+dans un fichier séparé — à formaliser si D-082 est repris).
+
+### Verdict d'équilibrage et mesures (préambule B)
+
+Mesuré avec `BalanceTests`/`BossRosterBalanceTests` (100 seeds par profil, 3 boss). Base avant ce ticket : 100 % de
+tests d'équilibrage verts.
+
+**Après calibrage (Garde atk 34/1400 ms, Archère 47/900 ms, Mage 98/1900 ms, Soigneuse 12/2600 ms — nouveau) :**
+100 tests sur 104 passent. **4 échecs restants, tous dérivés de 2 mesures hors bornes :**
+
+| Mesure | Borne | Obtenu | Écart |
+|---|---|---|---|
+| Boss3, joueur attentif, morts | ≤ 10 % | 13 % | combat légèrement plus dur qu'avant |
+| Boss2, joueur attentif, PV minimum moyen | ≤ 45 % | 46,8 % | combat légèrement plus facile qu'avant |
+
+Ces deux mesures tirent en **sens opposés** (boss3 trop dur, boss2 trop facile) : ce n'est pas un déséquilibre global
+mais une tension entre boss, chacun ayant sa propre Défense et ses propres résistances. Un ajustement global des `Atk`
+par personnage ne peut pas satisfaire les deux à la fois (vérifié : pousser dans un sens améliore l'un et dégrade l'autre).
+La résoudre proprement demanderait de retoucher `Def`/`resist` de boss2 et/ou boss3, ou d'accepter cette dérive.
+
+**Je ne tranche pas seul (D-016/D-017)** : à l'utilisateur de choisir parmi
+1. accepter cette dérive modeste (boss3 un peu plus dangereux, boss2 un peu plus facile) et geler l'équilibrage ici ;
+2. me laisser retoucher `Def`/`resist` de boss2 et boss3 pour refermer l'écart (change directement le ressenti de ces
+   deux combats, pas seulement la vitesse d'attaque) ;
+3. revenir sur l'ordre de vitesse demandé (par ex. resserrer les intervalles, moins extrêmes que 900–2600 ms) pour réduire
+   l'effet de la Défense fixe.
+
+### Tests
+
+- `RulesTests`/`MechanicsTests` : l'arène isolée (`Arena.Make`) donnait un intervalle géant (1e9 ms) à son soigneur
+  fictif, pour continuer à isoler UNE mécanique via le tank sans que l'attaque du soigneur ne s'y mélange.
+- `Le_soigneur_n_inflige_rien_et_les_trois_autres_si` renommé et réécrit : le soigneur inflige maintenant des dégâts,
+  mais nettement moins que le plus faible des trois autres (`< weakestDps / 2`).
+- 4 tests d'équipement (`UpgradeTests.cs`) et 1 scénario e2e (`tools/unity-e2e.ps1`) mettaient en dur l'ancien `Atk` du
+  Garde (35) ou de l'Archère (70) : mis à jour aux nouvelles valeurs de base (34 et 47).
+- 9 fichiers golden régénérés (`npm run test:update-golden` n'existe pas côté Unity ; régénérés en supprimant puis en
+  relançant le test `[Explicit] Creer_les_golden_manquants`) : la cadence et les montants de chaque `bossDamaged`
+  changent forcément (nouvelle vitesse, nouvelle valeur d'Atk, et le Soigneur apparaît désormais dans la trace).

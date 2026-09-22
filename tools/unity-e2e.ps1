@@ -342,7 +342,7 @@ Tap $level1[0] $level1[1] "niveau 1"
 Stop-Game
 $f2 = Log
 Expect $f2 "sauvegarde : chargée" "la sauvegarde est rechargée"
-Expect $f2 "équipe : tank atk 39 " "l'Épée niveau 3 donne +12 % d'attaque au Garde (35 -> 39)"
+Expect $f2 "équipe : tank atk 38 " "l'Épée niveau 3 donne +12 % d'attaque au Garde (34 -> 38, D-082)"
 Expect $f2 "Soin 15 mana" "le talent Soins vifs baisse le coût du Soin (18 -> 15)"
 Expect $f2 "apparence : .*tank:armor=tank.armor@0,weapon=tank.weapon@1" "l'Épée niveau 3 change l'aspect de l'arme du Garde (palier Raffiné) et pas son armure"
 }

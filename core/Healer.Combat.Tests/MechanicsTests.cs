@@ -20,7 +20,9 @@ namespace Healer.Combat.Tests
             };
             boss?.Invoke(b);
             var tank = new CharacterDef { Id = "tank", Name = "Garde", Role = "tank", MaxHp = 1e9, Atk = 50, Def = 10 };
-            var healer = new CharacterDef { Id = "healer", Name = "Vous", Role = "healer", MaxHp = 1e9, Atk = 0, Def = 10, MaxMana = 100, ManaRegenPerSec = 6 };
+            // Atk = 0 et un intervalle géant : ce soigneur n'attaque pas (D-082 lui a donné une attaque entre ses incantations,
+            // mais ces arènes isolent UNE mécanique via le tank — un test dédié couvre l'attaque du soigneur séparément).
+            var healer = new CharacterDef { Id = "healer", Name = "Vous", Role = "healer", MaxHp = 1e9, Atk = 0, AttackIntervalMs = 1e9, Def = 10, MaxMana = 100, ManaRegenPerSec = 6 };
             allies?.Invoke(tank, healer);
             var sk = content.Skills;
             foreach (var s in sk) s.CastMs = 0; // isolé : un test active l'incantation explicitement

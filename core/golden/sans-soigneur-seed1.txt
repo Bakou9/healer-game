@@ -1,143 +1,171 @@
-1600ms bossDamaged par tank 12
-1600ms bossDamaged par dps1 42
-1600ms bossDamaged par dps2 195 CRIT [magic]
+900ms bossDamaged par dps1 22
+1400ms bossDamaged par tank 11
+1800ms bossDamaged par dps1 62 CRIT
+1900ms bossDamaged par dps2 105 [magic]
 2200ms bossAction attack
 2200ms unitDamaged dps2 50 (absorbé 0)
-3200ms bossDamaged par tank 12
-3200ms bossDamaged par dps1 42
-3200ms bossDamaged par dps2 88 [magic]
+2600ms bossDamaged par healer 1
+2700ms bossDamaged par dps1 22
+2800ms bossDamaged par tank 11
+3600ms bossDamaged par dps1 22
+3800ms bossDamaged par dps2 105 [magic]
+4200ms bossDamaged par tank 11
 4400ms bossAction attack
 4400ms unitDamaged dps1 48 (absorbé 0)
-4800ms bossDamaged par tank 12
-4800ms bossDamaged par dps1 42
-4800ms bossDamaged par dps2 88 [magic]
-6400ms bossDamaged par tank 12
-6400ms bossDamaged par dps1 42
-6400ms bossDamaged par dps2 88 [magic]
+4500ms bossDamaged par dps1 22
+5200ms bossDamaged par healer 1
+5400ms bossDamaged par dps1 62 CRIT
+5600ms bossDamaged par tank 11
+5700ms bossDamaged par dps2 105 [magic]
+6300ms bossDamaged par dps1 22
 6600ms bossAction bigAttack zone
 6600ms unitDamaged tank 81 (absorbé 0)
 6600ms unitDamaged dps1 135 (absorbé 0)
 6600ms unitDamaged dps2 137 (absorbé 0)
 6600ms unitDamaged healer 131 (absorbé 0)
-8000ms bossDamaged par tank 12
-8000ms bossDamaged par dps1 42
-8000ms bossDamaged par dps2 88 [magic]
+7000ms bossDamaged par tank 11
+7200ms bossDamaged par dps1 62 CRIT
+7600ms bossDamaged par dps2 105 [magic]
+7800ms bossDamaged par healer 1
+8100ms bossDamaged par dps1 22
+8400ms bossDamaged par tank 11
 8800ms bossAction attack
 8800ms unitDamaged tank 16 (absorbé 0)
-9600ms bossDamaged par tank 12
-9600ms bossDamaged par dps1 42
-9600ms bossDamaged par dps2 195 CRIT [magic]
+9000ms bossDamaged par dps1 62 CRIT
+9500ms bossDamaged par dps2 105 [magic]
+9800ms bossDamaged par tank 11
+9900ms bossDamaged par dps1 22
+10400ms bossDamaged par healer 1
+10800ms bossDamaged par dps1 22
 11000ms bossAction attack
-11000ms unitDamaged dps1 48 (absorbé 0)
-11200ms bossDamaged par tank 12
-11200ms bossDamaged par dps1 42
-11200ms bossDamaged par dps2 88 [magic]
-12800ms bossDamaged par tank 12
-12800ms bossDamaged par dps1 101 CRIT
-12800ms bossDamaged par dps2 88 [magic]
+11000ms unitDamaged tank 16 (absorbé 0)
+11200ms bossDamaged par tank 11
+11400ms bossDamaged par dps2 105 [magic]
+11700ms bossDamaged par dps1 22
+12600ms bossDamaged par tank 11
+12600ms bossDamaged par dps1 22
+13000ms bossDamaged par healer 1
 13200ms bossAction attack
 13200ms unitDamaged dps2 50 (absorbé 0)
-14400ms bossDamaged par tank 12
-14400ms bossDamaged par dps1 42
-14400ms bossDamaged par dps2 88 [magic]
+13300ms bossDamaged par dps2 105 [magic]
+13500ms bossDamaged par dps1 22
+14000ms bossDamaged par tank 11
+14400ms bossDamaged par dps1 22
+15200ms bossDamaged par dps2 105 [magic]
+15300ms bossDamaged par dps1 22
+15400ms bossDamaged par tank 11
 15400ms bossAction bigAttack zone
 15400ms unitDamaged tank 81 (absorbé 0)
 15400ms unitDamaged dps1 135 (absorbé 0)
 15400ms unitDamaged dps2 137 (absorbé 0)
 15400ms unitDied dps2
 15400ms unitDamaged healer 131 (absorbé 0)
-16000ms bossDamaged par tank 12
-16000ms bossDamaged par dps1 42
-17600ms bossDamaged par tank 12
-17600ms bossDamaged par dps1 42
+15600ms bossDamaged par healer 1
+16200ms bossDamaged par dps1 22
+16800ms bossDamaged par tank 11
+17100ms bossDamaged par dps1 62 CRIT
 17600ms bossAction attack
-17600ms unitDamaged tank 16 (absorbé 0)
-19200ms bossDamaged par tank 12
-19200ms bossDamaged par dps1 42
+17600ms unitDamaged dps1 48 (absorbé 0)
+18000ms bossDamaged par dps1 62 CRIT
+18200ms bossDamaged par tank 11
+18200ms bossDamaged par healer 1
+18900ms bossDamaged par dps1 62 CRIT
+19600ms bossDamaged par tank 11
+19800ms bossDamaged par dps1 22
 19800ms bossAction attack
-19800ms unitDamaged tank 16 (absorbé 0)
-20800ms bossDamaged par tank 12
-20800ms bossDamaged par dps1 42
+19800ms unitDamaged dps1 48 (absorbé 0)
+20700ms bossDamaged par dps1 22
+20800ms bossDamaged par healer 1
+21000ms bossDamaged par tank 11
+21600ms bossDamaged par dps1 22
 22000ms bossAction attack
-22000ms unitDamaged dps1 48 (absorbé 0)
-22400ms bossDamaged par tank 12
-22400ms bossDamaged par dps1 42
-24000ms bossDamaged par tank 12
-24000ms bossDamaged par dps1 101 CRIT
+22000ms unitDamaged tank 16 (absorbé 0)
+22400ms bossDamaged par tank 11
+22500ms bossDamaged par dps1 22
+23400ms bossDamaged par dps1 22
+23400ms bossDamaged par healer 1
+23800ms bossDamaged par tank 11
 24200ms bossAction bigAttack zone
 24200ms unitDamaged tank 81 (absorbé 0)
 24200ms unitDamaged dps1 135 (absorbé 0)
 24200ms unitDied dps1
 24200ms unitDamaged healer 131 (absorbé 0)
-25600ms bossDamaged par tank 12
+25200ms bossDamaged par tank 11
+26000ms bossDamaged par healer 1
 26400ms bossAction attack
 26400ms unitDamaged tank 16 (absorbé 0)
-27200ms bossDamaged par tank 12
+26600ms bossDamaged par tank 11
+28000ms bossDamaged par tank 11
+28600ms bossDamaged par healer 1
 28600ms bossAction attack
 28600ms unitDamaged tank 16 (absorbé 0)
-28800ms bossDamaged par tank 12
-30400ms bossDamaged par tank 12
+29400ms bossDamaged par tank 11
+30800ms bossDamaged par tank 11
 30800ms bossAction attack
 30800ms unitDamaged tank 16 (absorbé 0)
-32000ms bossDamaged par tank 12
+31200ms bossDamaged par healer 1
+32200ms bossDamaged par tank 11
 33000ms bossAction bigAttack zone
 33000ms unitDamaged tank 81 (absorbé 0)
 33000ms unitDamaged healer 131 (absorbé 0)
 33000ms unitDied healer
-33600ms bossDamaged par tank 12
-35200ms bossDamaged par tank 12
+33600ms bossDamaged par tank 11
+35000ms bossDamaged par tank 11
 35200ms bossAction attack
 35200ms unitDamaged tank 16 (absorbé 0)
-36800ms bossDamaged par tank 12
+36400ms bossDamaged par tank 11
 37400ms bossAction attack
 37400ms unitDamaged tank 16 (absorbé 0)
-38400ms bossDamaged par tank 12
+37800ms bossDamaged par tank 11
+39200ms bossDamaged par tank 11
 39600ms bossAction attack
 39600ms unitDamaged tank 16 (absorbé 0)
-40000ms bossDamaged par tank 12
-41600ms bossDamaged par tank 12
+40600ms bossDamaged par tank 11
 41800ms bossAction bigAttack zone
 41800ms unitDamaged tank 81 (absorbé 0)
-43200ms bossDamaged par tank 12
+42000ms bossDamaged par tank 11
+43400ms bossDamaged par tank 11
 44000ms bossAction attack
 44000ms unitDamaged tank 16 (absorbé 0)
-44800ms bossDamaged par tank 12
+44800ms bossDamaged par tank 11
+46200ms bossDamaged par tank 11
 46200ms bossAction attack
 46200ms unitDamaged tank 16 (absorbé 0)
-46400ms bossDamaged par tank 12
-48000ms bossDamaged par tank 12
+47600ms bossDamaged par tank 11
 48400ms bossAction attack
 48400ms unitDamaged tank 16 (absorbé 0)
-49600ms bossDamaged par tank 12
+49000ms bossDamaged par tank 11
+50400ms bossDamaged par tank 11
 50600ms bossAction bigAttack zone
 50600ms unitDamaged tank 81 (absorbé 0)
-51200ms bossDamaged par tank 12
-52800ms bossDamaged par tank 12
+51800ms bossDamaged par tank 11
 52800ms bossAction attack
 52800ms unitDamaged tank 16 (absorbé 0)
-54400ms bossDamaged par tank 12
+53200ms bossDamaged par tank 11
+54600ms bossDamaged par tank 11
 55000ms bossAction attack
 55000ms unitDamaged tank 16 (absorbé 0)
-56000ms bossDamaged par tank 12
+56000ms bossDamaged par tank 11
 57200ms bossAction attack
 57200ms unitDamaged tank 16 (absorbé 0)
-57600ms bossDamaged par tank 12
-59200ms bossDamaged par tank 12
+57400ms bossDamaged par tank 11
+58800ms bossDamaged par tank 11
 59400ms bossAction bigAttack zone
 59400ms unitDamaged tank 81 (absorbé 0)
-60800ms bossDamaged par tank 12
+60200ms bossDamaged par tank 11
+61600ms bossDamaged par tank 11
 61600ms bossAction attack
 61600ms unitDamaged tank 16 (absorbé 0)
-62400ms bossDamaged par tank 12
+63000ms bossDamaged par tank 11
 63800ms bossAction attack
 63800ms unitDamaged tank 16 (absorbé 0)
-64000ms bossDamaged par tank 12
-65600ms bossDamaged par tank 12
+64400ms bossDamaged par tank 11
+65800ms bossDamaged par tank 11
 66000ms bossAction attack
 66000ms unitDamaged tank 16 (absorbé 0)
-67200ms bossDamaged par tank 12
+67200ms bossDamaged par tank 11
 68200ms bossAction bigAttack zone
 68200ms unitDamaged tank 81 (absorbé 0)
 68200ms unitDied tank
 68200ms battleEnded defeat
-FINAL defeat t=68200 boss=5442 tank:0/0/0 dps1:0/0/0 dps2:0/0/0 healer:0/0/100
+FINAL defeat t=68200 boss=5468 tank:0/0/0 dps1:0/0/0 dps2:0/0/0 healer:0/0/100

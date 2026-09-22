@@ -200,7 +200,7 @@ namespace Healer.Combat.Tests
         {
             var l = new Loadout(); l.Equipment["tank_weapon"] = 1;
             var (ch, _) = Apply(l);
-            Assert.That(Ch(ch, "tank").Atk, Is.EqualTo(Math.Floor(35 * 1.04 + 0.5))); // 36,4 -> 36
+            Assert.That(Ch(ch, "tank").Atk, Is.EqualTo(Math.Floor(34 * 1.04 + 0.5))); // 35,36 -> 35 (D-082 : base 34, était 35)
         }
 
         [Test]
@@ -208,7 +208,7 @@ namespace Healer.Combat.Tests
         {
             var l = new Loadout(); l.Equipment["tank_weapon"] = 5;
             var (ch, _) = Apply(l);
-            Assert.That(Ch(ch, "tank").Atk, Is.EqualTo(Math.Floor(35 * 1.20 + 0.5))); // +20 %
+            Assert.That(Ch(ch, "tank").Atk, Is.EqualTo(Math.Floor(34 * 1.20 + 0.5))); // +20 % (D-082 : base 34, était 35)
         }
 
         [Test]
@@ -225,7 +225,7 @@ namespace Healer.Combat.Tests
         {
             var l = new Loadout(); l.Equipment["tank_weapon"] = 5;
             var (ch, _) = Apply(l);
-            Assert.That(Ch(ch, "dps1").Atk, Is.EqualTo(70));
+            Assert.That(Ch(ch, "dps1").Atk, Is.EqualTo(47)); // D-082 : base 47, était 70
             Assert.That(Ch(ch, "healer").Atk, Is.EqualTo(12));
         }
 
@@ -307,7 +307,7 @@ namespace Healer.Combat.Tests
         {
             var l = new Loadout(); l.Equipment["fantome"] = 3; l.Talents[9] = "rien"; l.Talents[1] = "inexistant";
             Assert.DoesNotThrow(() => Apply(l));
-            Assert.That(Ch(Apply(l).ch, "tank").Atk, Is.EqualTo(35));
+            Assert.That(Ch(Apply(l).ch, "tank").Atk, Is.EqualTo(34)); // D-082 : base 34, était 35
         }
 
         [Test]

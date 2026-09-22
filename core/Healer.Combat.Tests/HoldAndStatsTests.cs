@@ -250,11 +250,14 @@ namespace Healer.Combat.Tests
         }
 
         [Test]
-        public void Le_soigneur_n_inflige_rien_et_les_trois_autres_si()
+        public void Le_soigneur_inflige_bien_moins_que_les_trois_autres_qui_infligent_tous()
         {
+            // D-082 : le soigneur attaque désormais lui aussi entre ses incantations, mais son rôle reste le soin :
+            // sa contribution aux dégâts doit rester nettement la plus faible de l'équipe, pas comparable aux trois autres.
             var s = Played(7);
-            Assert.That(s.DamageByAlly.ContainsKey("healer"), Is.False);
-            foreach (var id in new[] { "tank", "dps1", "dps2" }) Assert.That(s.DamageByAlly[id], Is.GreaterThan(0), id);
+            foreach (var id in new[] { "tank", "dps1", "dps2", "healer" }) Assert.That(s.DamageByAlly[id], Is.GreaterThan(0), id);
+            double weakestDps = new[] { s.DamageByAlly["tank"], s.DamageByAlly["dps1"], s.DamageByAlly["dps2"] }.Min();
+            Assert.That(s.DamageByAlly["healer"], Is.LessThan(weakestDps / 2), "le soigneur ne doit pas rivaliser avec les dps");
         }
 
         [Test]

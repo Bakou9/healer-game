@@ -12,7 +12,7 @@ namespace Healer.Combat
     /// </summary>
     public sealed class Battle
     {
-        /// <summary>Intervalle d'attaque automatique des alliés non-soigneurs.</summary>
+        /// <summary>Intervalle d'attaque automatique par défaut, si un personnage ne précise pas le sien (D-082).</summary>
         public const double AllyAttackIntervalMs = 1600;
 
         private sealed class RunningEffect
@@ -36,6 +36,7 @@ namespace Healer.Combat
             public double Atk;
             public double Def;
             public double ManaRegenPerSec;
+            public double AttackIntervalMs;
             public double NextAttackAt;
             public double ArmorPct;
             public double DodgePct;
@@ -105,29 +106,34 @@ namespace Healer.Combat
             };
         }
 
-        private static Unit ToUnit(CharacterDef c) => new Unit
+        private static Unit ToUnit(CharacterDef c)
         {
-            Id = c.Id,
-            Name = c.Name,
-            Role = c.Role,
-            MaxHp = c.MaxHp,
-            Hp = c.MaxHp,
-            MaxMana = c.MaxMana ?? 0,
-            Mana = c.MaxMana ?? 0,
-            Shield = 0,
-            Alive = true,
-            Atk = c.Atk,
-            Def = c.Def,
-            ManaRegenPerSec = c.ManaRegenPerSec ?? 0,
-            NextAttackAt = AllyAttackIntervalMs,
-            ArmorPct = Math.Max(0, Math.Min(80, c.ArmorPct)),
-            DodgePct = Math.Max(0, Math.Min(60, c.DodgePct)),
-            CritPct = Math.Max(0, Math.Min(100, c.CritPct)),
-            CritMult = c.CritMultPct,
-            ThreatMod = Math.Max(0, c.ThreatMod),
-            DamageType = string.IsNullOrEmpty(c.DamageType) ? "physical" : c.DamageType,
-            Resist = c.Resist,
-        };
+            double interval = c.AttackIntervalMs ?? AllyAttackIntervalMs;
+            return new Unit
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Role = c.Role,
+                MaxHp = c.MaxHp,
+                Hp = c.MaxHp,
+                MaxMana = c.MaxMana ?? 0,
+                Mana = c.MaxMana ?? 0,
+                Shield = 0,
+                Alive = true,
+                Atk = c.Atk,
+                Def = c.Def,
+                ManaRegenPerSec = c.ManaRegenPerSec ?? 0,
+                AttackIntervalMs = interval,
+                NextAttackAt = interval,
+                ArmorPct = Math.Max(0, Math.Min(80, c.ArmorPct)),
+                DodgePct = Math.Max(0, Math.Min(60, c.DodgePct)),
+                CritPct = Math.Max(0, Math.Min(100, c.CritPct)),
+                CritMult = c.CritMultPct,
+                ThreatMod = Math.Max(0, c.ThreatMod),
+                DamageType = string.IsNullOrEmpty(c.DamageType) ? "physical" : c.DamageType,
+                Resist = c.Resist,
+            };
+        }
 
         // ---- Aléa des mécaniques : on ne tire un nombre QUE si une chance est non nulle (les combats sans ces mécaniques
         // ---- consomment exactement les mêmes tirages qu'avant : leurs références golden ne bougent pas).
@@ -427,7 +433,9 @@ namespace Healer.Combat
         {
             foreach (var unit in _allies)
             {
-                if (!unit.Alive || unit.Role == "healer") continue;
+                if (!unit.Alive) continue;
+                // Le soigneur attaque aussi entre ses incantations (D-082), mais jamais PENDANT : une seule action à la fois.
+                if (unit.Role == "healer" && _cast != null) continue;
                 if (now >= unit.NextAttackAt)
                 {
                     bool crit = Roll(unit.CritPct);
@@ -439,7 +447,7 @@ namespace Healer.Combat
                     _boss.Hp -= dmg;
                     unit.Threat += dmg * unit.ThreatMod / 100.0;
                     Emit(new BattleEvent { Type = "bossDamaged", TimeMs = now, SourceId = unit.Id, Amount = dmg, Crit = crit, DamageType = unit.DamageType });
-                    unit.NextAttackAt = now + AllyAttackIntervalMs;
+                    unit.NextAttackAt = now + unit.AttackIntervalMs;
                 }
             }
         }
