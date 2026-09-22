@@ -5,7 +5,7 @@ titre: Application des talents dans la simulation
 type: Feature
 priorité: P0
 phase: 2
-statut: À faire
+statut: En cours
 taille: L
 dépendances: E02-T01, E01-T08
 ---
@@ -16,12 +16,19 @@ dépendances: E02-T01, E01-T08
 Les talents modifient les sorts (valeurs, coûts, recharges) ou ajoutent des effets.
 
 ## Critères d'acceptation
-- [ ] Modificateurs appliqués sans `if` par talent
-- [ ] La simulation reçoit un build en entrée (déterminisme conservé)
-- [ ] Événements inchangés ou étendus proprement
+- [x] Modificateurs appliqués sans `if` par talent (`LoadoutApplier.Apply`, générique sur `Stat`/`Skill.Field`,
+      y compris le déverrouillage de sort par `UnlocksSkill` — un seul bloc générique, pas un `if` par capstone)
+- [x] La simulation reçoit un build en entrée (déterminisme conservé — `LoadoutApplier` clone, ne mute jamais
+      le contenu source ; `Battle` reste seedée)
+- [x] Événements inchangés ou étendus proprement (aucun nouveau type d'événement ; les capstones émettent les
+      événements `skillUsed`/`healed`/`shielded`/`castStarted` existants)
 
 ## Tests automatiques exigés
-Tests unitaires par type de modificateur ; goldens par voie.
+Tests unitaires par type de modificateur (`LoadoutApplierTests`, verts) ; goldens par voie : pas encore faits
+(pas de golden dédié « avec talents » — seuls les goldens de base, sans loadout, existent). À ajouter si l'UI
+de choix de talents (T05/T10) est reprise.
 
 ## Impact équilibrage
-Oui.
+Oui. Mesuré (D-083, `UpgradeBalanceTests`, 100 seeds × 3 boss) : bug de fond trouvé et corrigé (les 3 sorts
+capstone ne se déclenchaient jamais — famine de mana, cf. D-083), puis rééquilibrage. Verdict partiel :
+9 mesures encore hors bornes sur 142, à valider avec l'utilisateur avant de clore.

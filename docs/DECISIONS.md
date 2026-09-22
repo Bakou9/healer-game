@@ -716,3 +716,119 @@ La résoudre proprement demanderait de retoucher `Def`/`resist` de boss2 et/ou b
 - 9 fichiers golden régénérés (`npm run test:update-golden` n'existe pas côté Unity ; régénérés en supprimant puis en
   relançant le test `[Explicit] Creer_les_golden_manquants`) : la cadence et les montants de chaque `bossDamaged`
   changent forcément (nouvelle vitesse, nouvelle valeur d'Atk, et le Soigneur apparaît désormais dans la trace).
+
+## D-083 — EPIC E02, cœur (T01/T02/T04/T09/T05 partiel) : spécialisation et talents du Soigneur
+
+- **Date** : 2026-09-22 — **Statut** : Livré sur la branche `pixel-art`, **En cours** (pas « Terminé ») ; plusieurs
+  points restent à valider par l'utilisateur (voir plus bas). `npm run check` : specs vertes, build vert,
+  855/864 tests C# verts, **9 échecs expliqués un par un ci-dessous**, aucun ignoré ni contourné.
+- **Demande** : « Peux-tu faire l'EPIC E02 ensuite ? » (E02 = spécialisation et progression du Soigneur,
+  `docs/specs/epics/E02-healer-specialisation/`, 10 tickets).
+
+### Périmètre retenu (préambule A — remise en cause de la spec)
+
+E02 a 10 tickets répartis sur plusieurs phases. Je n'ai pas tout développé (« spécifier n'autoriser pas à
+implémenter », et certains tickets dépendent d'un travail non fait ou périmé) :
+
+- **Fait** : T01 (schéma), T02 (contenu des 3 voies), T04 (application générique dans la simulation), T09
+  (champ de puissance déclaré), et le **cœur mécanique** de T05 (sorts débloqués par talent — sans sa barre
+  de sorts dynamique, voir plus bas).
+- **Explicitement différé, avec raison** :
+  - **T03** (points de talent, prérequis, réinitialisation) : le prérequis « palier précédent de la même
+    voie » est déjà appliqué (nécessaire pour que T02 ait un sens), mais pas l'achat/dépense de points ni le
+    respec complet — pas demandé, et dépend d'un système de progression (XP) qui n'existe pas encore (T06).
+  - **T05**, partie « barre de sorts dynamique » : son contrat dépendait de E04-T06, qui n'existe plus tel
+    quel après le pivot PC de l'interface. À redéfinir avant de construire cette UI.
+  - **T06** (niveaux/XP), **T07** (équipement/reliques du Soigneur — l'équipement générique existe déjà côté
+    simulation depuis avant E02, mais pas de reliques dédiées), **T08** (presets de build, partage par code) :
+    phases 3/4, non demandées, hors de la boucle de combat actuelle.
+  - **T10** (interface de l'arbre de talents) : bloqué, sa dépendance déclarée (E04-T03) est périmée depuis le
+    pivot PC de l'interface.
+- **Proposition à valider (pas une décision ferme)** : le nombre de voies (3) et de paliers par voie (4) n'était
+  pas fixé par `VISION.md` §6 — c'est une hypothèse de ma part, cohérente avec le budget de puissance (E02-T09)
+  et la table de paliers existante (`requiresStars` 2/4/6/8). À confirmer ou ajuster.
+
+### Ce qui a changé (aperçu technique)
+
+- `TalentTierDef` gagne `Voie`/`PalierDansVoie` ; `TalentOptionDef` gagne `Power` et `UnlocksSkill` ;
+  `SkillDef` gagne `Capstone`. `LoadoutApplier.Apply` construit le kit de sorts en excluant les capstones sauf
+  si un talent équipé les débloque (un seul bloc générique, pas un `if` par sort).
+- 12 paliers de talents (3 voies × 4 paliers, numérotation entrelacée par rang pour rester compatible avec le
+  test « paliers strictement croissants »), 24 options, dans `core/content/upgrades.json`.
+- 3 nouveaux sorts capstone dans `core/content/skills.json` : **Miracle** (Lumière, soin de zone puissant),
+  **Dôme** (Égide, bouclier de zone), **Renaissance** (Purification, soin d'urgence + purge sur un allié).
+- `ReferenceHealerBot` étendu pour utiliser ces 3 sorts quand ils sont débloqués (nouveaux seuils de
+  déclenchement, cf. bug ci-dessous).
+
+### Un bug de fond trouvé et corrigé en cours de route
+
+Les 3 sorts capstone montraient un impact d'équilibrage strictement nul, y compris après plusieurs tentatives
+de rééquilibrage des valeurs. Diagnostic par traçage d'un combat : le déclencheur (ex. Renaissance : un allié
+sous 50 % PV) était bien atteint dans 94 % des combats simulés, mais le sort n'était jamais lancé. Cause
+réelle : leur **coût en mana d'origine (55–75) était presque toujours hors de portée au moment précis où le
+bot en aurait eu besoin** (le mana du Soigneur, déjà sollicité par le soin courant, tournait autour de 10–25
+lors des instants critiques). Ce n'est pas un bug de code : `CanUseSkillNow` fonctionnait correctement, le
+verrou était purement économique. Corrigé en baissant nettement les coûts (Renaissance 55→20, Miracle 70→45,
+Dôme inchangé) et en élargissant légèrement leurs déclencheurs côté bot ; **une tentative d'élargir aussi le
+déclencheur de Dôme a été annulée** car elle créait une vraie régression de gameplay (un allié déjà sous un
+bouclier de zone ne recevait plus le bouclier ciblé dédié à l'attaque annoncée le visant — protéger la cible
+annoncée devenait pire que l'ignorer, cassant un test déjà vert avant E02).
+
+### Verdict d'équilibrage et mesures (préambule B)
+
+Mesuré avec `UpgradeBalanceTests` (142 mesures, 100 seeds × 3 boss par talent) et la batterie complète
+(`npm run check`, 864 tests). **9 échecs, tous expliqués, aucun contourné :**
+
+**A. Tension boss2/boss3 déjà connue (D-082), pas aggravée par E02 (6 échecs)** — mêmes valeurs exactes
+qu'avant E02 (13 % de morts sur boss3, 46,8 % de PV minimum moyen sur boss2), qui se répercutent sur tout
+talent testé sur ces boss (`lum_chaine_de_vie`, `egi_dome`, `pur_renaissance` héritent du 13 % de boss3/boss2).
+**Un 3ᵉ test touché par cette même tension, pas repéré au moment de D-082**, a été découvert pendant ce
+ticket : `Ne_pas_proteger_la_victime_annoncee_d_une_attaque_ciblee_n_est_jamais_avantageux("boss3")` échoue
+déjà sur le commit `b2e3f65` (avant tout travail E02, vérifié par `git stash`) — protéger la cible annoncée
+donne 13 % de morts contre 6 % en l'ignorant, l'inverse de ce qui est attendu. Ce n'est pas nouveau, mais
+n'avait pas été signalé : je l'ajoute au même lot à trancher (options du D-082 ci-dessus, ou une tension liée
+à l'entrelacement bouclier/protection à investiguer séparément).
+
+**B. Tension propre au palier « capstone » (10/11/12), nouvelle, à trancher (3 échecs)** :
+
+| Palier | Problème | Mesure |
+|---|---|---|
+| 10 (Lumière) | `lum_eclat` domine `lum_miracle` sur les 3 boss | fenêtre de réglage trouvée trop étroite : à 6 % l'option classique devient un piège (< 0,02), à 9 % elle redomine — le palier oscille sans se stabiliser |
+| 11 (Égide) | écart `egi_bastion`/`egi_dome` > 15 % sur boss2 | 17,7 % obtenu après 3 passes de réglage (65 %→32 %→20 %→15 % d'absorption) |
+| — | « la meilleure combinaison de talents n'est pas la même sur tous les boss » échoue | test pré-existant (`Combo()`) qui ne fait varier que les paliers 1–3 sur 12 (son masque à 3 bits ne couvre pas les nouveaux paliers 4–12) — les paliers 10/12, désormais fixes et significatifs dans ce test, l'ont fait basculer ; pas un déséquilibre de contenu en soi, plutôt une limite de couverture du test à étendre |
+
+Cause de fond de B : un talent « toujours actif » (regen de mana, % de sort) est lissé et fiable sur toute la
+durée d'un combat, alors qu'un talent qui débloque un sort d'urgence est par nature **ponctuel et situationnel**
+— la mesure retenue (PV minimum moyen) favorise structurellement le premier type. J'ai réduit l'écart de moitié
+à deux tiers (ex. palier 12 : écart moyen 0,151→sous 0,05, résolu ; palier 11 : 0,124→0,055 avant de repasser
+sous la barre lors d'une régression annulée) sans le faire disparaître complètement sur 10/11 sans soit rendre
+l'option classique inutile (piège), soit reproduire la dominance inverse.
+
+**Je ne tranche pas seul (D-016/D-017)** : à l'utilisateur de choisir parmi
+1. accepter cette tension résiduelle sur le palier capstone (10/11) et geler l'équilibrage ici pour cette
+   première passe — elle est nettement réduite par rapport au point de départ (bug de famine de mana corrigé,
+   dominance totale résolue sur 4 paliers sur 6 nouveaux, tier 12 propre) ;
+2. me laisser continuer à affiner les valeurs (plusieurs heures de plus, rendement décroissant observé) ;
+3. accepter que les paliers capstone (unlock-sort vs bonus permanent) sont une **catégorie de choix différente**
+   des autres paliers et documenter une tolérance plus large spécifiquement pour eux dans `docs/EQUILIBRAGE.md`
+   §8, plutôt que de viser les mêmes bornes que les paliers 1–9 ;
+4. étendre `Combo()` (`UpgradeBalanceTests.cs`) pour échantillonner les 12 paliers plutôt que les 3 premiers
+   (limite de couverture pré-existante, révélée mais pas causée par E02) ;
+5. pour la tension boss2/boss3/protection (point A), reprendre une des 3 options déjà proposées en D-082.
+
+### Tests
+
+- `UpgradeTests.cs` (`UpgradeCatalogTests`, `LoadoutApplierTests`, `WorkshopTests`, `LoadoutPersistenceTests`) :
+  réécrits pour le nouveau schéma (voie/palier/capstone), 72+ tests verts.
+- `UpgradeBalanceTests.cs` : nouvelle batterie dédiée aux talents (déjà existante avant E02, adaptée aux 12
+  paliers) — 133/142 mesures vertes, 9 expliquées ci-dessus.
+- `ReferenceHealerBot` : nouveaux seuils de déclenchement pour Renaissance/Miracle, testés par simulation
+  directe (comptage d'usages sur 50 seeds par boss) avant d'être injectés dans la batterie complète.
+- Aucun golden de combat de base changé (les capstones ne font partie d'aucun golden : ils exigent un talent,
+  absent des scénarios golden qui utilisent `loadout = null`).
+
+### Reste à faire avant de considérer E02 « Terminé »
+
+Statuts mis à jour à **En cours** (pas Terminé) sur T01/T02/T04/T05/T09 : `npm run check` n'est pas vert tant
+que les 3 points B ne sont pas tranchés avec l'utilisateur. Pas de ligne `docs/REVUES.md` pour l'instant (aucun
+ticket n'est complet au sens de la définition de « terminé »).

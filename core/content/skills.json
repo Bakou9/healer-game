@@ -35,5 +35,39 @@
     "cooldownMs": 5000,
     "target": "single",
     "cleanse": true
+  },
+  {
+    "id": "miracle",
+    "name": "Miracle",
+    "description": "Soigne toute l'équipe de {heal} PV. Capstone de la voie Lumière (E02-T05).",
+    "manaCost": 45,
+    "cooldownMs": 13000,
+    "castMs": 1200,
+    "target": "all",
+    "healAmount": 260,
+    "capstone": true
+  },
+  {
+    "id": "dome",
+    "name": "Dôme",
+    "description": "Pose un bouclier sur toute l'équipe, absorbant {shield} points de dégâts chacun. Capstone de la voie Égide (E02-T05).",
+    "manaCost": 75,
+    "cooldownMs": 18000,
+    "castMs": 800,
+    "target": "all",
+    "shieldAmount": 200,
+    "capstone": true
+  },
+  {
+    "id": "renaissance",
+    "name": "Renaissance",
+    "description": "Soigne un allié de {heal} PV et retire ses effets négatifs. Capstone de la voie Purification (E02-T05).",
+    "manaCost": 20,
+    "cooldownMs": 11000,
+    "castMs": 600,
+    "target": "single",
+    "healAmount": 420,
+    "cleanse": true,
+    "capstone": true
   }
 ]

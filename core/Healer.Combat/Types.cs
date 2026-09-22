@@ -51,6 +51,9 @@ namespace Healer.Combat
         public double? HealAmount { get; set; }
         public double? ShieldAmount { get; set; }
         public bool? Cleanse { get; set; }
+        /// <summary>Sort de capstone (E02-T05) : absent de la barre de base, ajouté seulement si le talent qui le
+        /// débloque (TalentOptionDef.UnlocksSkill) est choisi. Jamais vrai pour heal_single/heal_aoe/shield/purge.</summary>
+        public bool Capstone { get; set; }
     }
 
     /// <summary>Effet sur la durée appliqué à une unité (piloté par les données).</summary>

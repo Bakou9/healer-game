@@ -11,7 +11,7 @@ namespace Healer.Combat.Tests
     public class UpgradeCatalogTests
     {
         private static readonly string[] Stats = { "maxHp", "atk", "def", "maxMana", "manaRegen" };
-        private static readonly string[] Fields = { "healAmount", "shieldAmount", "manaCost", "cooldownMs" };
+        private static readonly string[] Fields = { "healAmount", "shieldAmount", "manaCost", "cooldownMs", "castMs" };
         private static GameContent C => Fixtures.FullContent();
         private static UpgradeCatalog Cat => C.Upgrades;
 
@@ -134,6 +134,70 @@ namespace Healer.Combat.Tests
             foreach (var t in Cat.Equipment)
                 foreach (var e in t.PerLevel) Assert.That(Math.Abs(e.Pct) * t.MaxLevel, Is.LessThanOrEqualTo(60), t.Id + " : un équipement au maximum ne dépasse pas +60 %");
         }
+
+        // ---- E02-T01/T02/T09 : voies de spécialisation, schéma et budget de puissance ------------------------------
+
+        [Test]
+        public void Chaque_palier_de_talent_appartient_a_une_voie_connue_avec_un_rang_de_un_a_quatre()
+        {
+            var voiesConnues = new[] { "lumiere", "egide", "purification" };
+            foreach (var t in Cat.TalentTiers)
+            {
+                Assert.That(voiesConnues, Does.Contain(t.Voie), "palier " + t.Tier);
+                Assert.That(t.PalierDansVoie, Is.InRange(1, 4), "palier " + t.Tier);
+            }
+        }
+
+        [Test]
+        public void Trois_voies_de_quatre_paliers_chacune_sans_trou()
+        {
+            foreach (var voie in new[] { "lumiere", "egide", "purification" })
+            {
+                var paliers = Cat.Voie(voie);
+                Assert.That(paliers.Select(t => t.PalierDansVoie), Is.EqualTo(new[] { 1, 2, 3, 4 }), voie);
+            }
+        }
+
+        [Test]
+        public void Chaque_option_de_talent_declare_un_budget_de_puissance_positif()
+        {
+            // E02-T09 : le budget sert à COMPARER les talents, pas à changer le jeu ; c'est l'équilibrage mesuré
+            // (UpgradeBalanceTests) qui valide réellement, mais un budget absent ou nul serait un oubli de contenu.
+            foreach (var o in Cat.TalentTiers.SelectMany(t => t.Options)) Assert.That(o.Power, Is.GreaterThan(0), o.Id);
+        }
+
+        [Test]
+        public void Les_deux_options_d_un_meme_palier_ont_un_budget_de_puissance_proche()
+        {
+            // Règle de calcul (E02-T09) : les deux choix d'un palier doivent être des alternatives, pas un piège ;
+            // on tolère un écart de puissance déclarée de 20 % au plus entre les deux options d'un même palier.
+            foreach (var t in Cat.TalentTiers)
+            {
+                var (a, b) = (t.Options[0].Power, t.Options[1].Power);
+                Assert.That(Math.Abs(a - b), Is.LessThanOrEqualTo(Math.Max(a, b) * 0.2), "palier " + t.Tier);
+            }
+        }
+
+        [Test]
+        public void Un_talent_qui_debloque_un_sort_vise_un_capstone_existant_et_reserve()
+        {
+            var skillIds = C.Skills.Select(s => s.Id).ToHashSet();
+            foreach (var o in Cat.TalentTiers.SelectMany(t => t.Options).Where(o => o.UnlocksSkill != null))
+            {
+                Assert.That(skillIds, Does.Contain(o.UnlocksSkill), o.Id);
+                var skill = C.Skills.Single(s => s.Id == o.UnlocksSkill);
+                Assert.That(skill.Capstone, Is.True, o.Id + " : " + skill.Id + " doit être marqué capstone");
+            }
+        }
+
+        [Test]
+        public void Aucun_sort_capstone_n_est_dans_la_barre_de_base_du_soigneur()
+        {
+            // Sans talent choisi, la barre du soigneur reste les 4 sorts historiques : un capstone est un bonus, jamais le point de départ.
+            var (_, skills) = LoadoutApplier.Apply(Cat, null, C.Characters, C.Skills);
+            Assert.That(skills.Any(s => s.Capstone), Is.False);
+            Assert.That(skills.Select(s => s.Id), Is.EquivalentTo(new[] { "heal_single", "heal_aoe", "shield", "purge" }));
+        }
     }
 
     /// <summary>Application des effets aux personnages et aux sorts d'un combat.</summary>
@@ -249,49 +313,53 @@ namespace Healer.Combat.Tests
         }
 
         [Test]
-        public void Un_talent_de_soin_augmente_le_soin_et_baisse_son_cout()
+        public void Un_talent_de_soin_augmente_le_soin_et_accelere_son_incantation()
         {
-            var l = new Loadout(); l.Talents[1] = "quick_heal";
+            // E02-T02 : palier 1 de la voie Lumière (tier global 1).
+            var l = new Loadout(); l.Talents[1] = "lum_mains_vives";
             var (_, sk) = Apply(l);
-            Assert.That(Sk(sk, "heal_single").HealAmount, Is.EqualTo(Math.Floor(170 * 1.30 + 0.5)));
-            Assert.That(Sk(sk, "heal_single").ManaCost, Is.EqualTo(Math.Floor(18 * 0.85 + 0.5)));
-            Assert.That(Sk(sk, "heal_aoe").ManaCost, Is.EqualTo(60), "les autres sorts ne changent pas");
+            Assert.That(Sk(sk, "heal_single").HealAmount, Is.EqualTo(Math.Floor(170 * 1.12 + 0.5)));
+            Assert.That(Sk(sk, "heal_single").CastMs, Is.EqualTo(Math.Floor(1000 * 0.92 + 0.5)));
+            Assert.That(Sk(sk, "heal_aoe").HealAmount, Is.EqualTo(140), "les autres sorts ne changent pas");
         }
 
         [Test]
         public void Un_talent_generique_touche_tous_les_sorts()
         {
-            var l = new Loadout(); l.Talents[1] = "thrifty";
+            // E02-T02 : capstone de la voie Purification (tier global 12), le seul talent à porter sur "*".
+            var l = new Loadout(); l.Talents[12] = "pur_maitrise_du_flux";
             var (_, sk) = Apply(l);
-            Assert.That(Sk(sk, "heal_single").ManaCost, Is.EqualTo(Math.Floor(18 * 0.91 + 0.5)));
-            Assert.That(Sk(sk, "heal_aoe").ManaCost, Is.EqualTo(Math.Floor(60 * 0.91 + 0.5)));
-            Assert.That(Sk(sk, "shield").ManaCost, Is.EqualTo(Math.Floor(28 * 0.91 + 0.5)));
-            Assert.That(Sk(sk, "purge").ManaCost, Is.EqualTo(Math.Floor(12 * 0.91 + 0.5)));
+            Assert.That(Sk(sk, "heal_single").ManaCost, Is.EqualTo(Math.Floor(18 * 0.98 + 0.5)));
+            Assert.That(Sk(sk, "heal_aoe").ManaCost, Is.EqualTo(Math.Floor(60 * 0.98 + 0.5)));
+            Assert.That(Sk(sk, "shield").ManaCost, Is.EqualTo(Math.Floor(28 * 0.98 + 0.5)));
+            Assert.That(Sk(sk, "purge").ManaCost, Is.EqualTo(Math.Floor(12 * 0.98 + 0.5)));
         }
 
         [Test]
         public void La_regeneration_de_mana_garde_ses_decimales()
         {
-            var l = new Loadout(); l.Talents[3] = "mana_flow";
+            // E02-T02 : palier 3 de la voie Lumière (tier global 7).
+            var l = new Loadout(); l.Talents[7] = "lum_ferveur";
             var (ch, _) = Apply(l);
-            Assert.That(Ch(ch, "healer").ManaRegenPerSec, Is.EqualTo(6 * 1.05).Within(1e-9));
+            Assert.That(Ch(ch, "healer").ManaRegenPerSec, Is.EqualTo(6 * 1.07).Within(1e-9));
         }
 
         [Test]
         public void La_recharge_d_un_sort_baisse_avec_un_talent()
         {
-            var l = new Loadout(); l.Talents[2] = "swift_purge";
+            // E02-T02 : palier 1 de la voie Purification (tier global 3).
+            var l = new Loadout(); l.Talents[3] = "pur_purge_efficace";
             var (_, sk) = Apply(l);
             Assert.That(Sk(sk, "purge").CooldownMs, Is.EqualTo(Math.Floor(5000 * 0.90 + 0.5)));
-            Assert.That(Sk(sk, "purge").ManaCost, Is.EqualTo(Math.Floor(12 * 0.70 + 0.5)));
+            Assert.That(Sk(sk, "purge").ManaCost, Is.EqualTo(Math.Floor(12 * 0.75 + 0.5)));
         }
 
         [Test]
         public void Les_pourcentages_de_plusieurs_sources_s_additionnent_au_lieu_de_se_multiplier()
         {
-            var l = new Loadout(); l.Equipment["healer_weapon"] = 5; l.Talents[1] = "quick_heal";
+            var l = new Loadout(); l.Equipment["healer_weapon"] = 5; l.Talents[1] = "lum_mains_vives";
             var (_, sk) = Apply(l);
-            Assert.That(Sk(sk, "heal_single").HealAmount, Is.EqualTo(Math.Floor(170 * 1.50 + 0.5)), "+20 % +30 % = +50 %, pas 1,2 × 1,3");
+            Assert.That(Sk(sk, "heal_single").HealAmount, Is.EqualTo(Math.Floor(170 * 1.32 + 0.5)), "+20 % (arme) +12 % (talent) = +32 %, pas 1,2 × 1,12");
         }
 
         [Test]
@@ -313,10 +381,15 @@ namespace Healer.Combat.Tests
         [Test]
         public void Le_cout_en_mana_ne_devient_jamais_negatif_ni_la_recharge_nulle()
         {
+            // On pousse à -100 % le premier effet manaCost et le premier effet cooldownMs trouvés dans le catalogue
+            // (peu importe lesquels : c'est le clamp qu'on teste, pas un talent précis).
             var c = C;
-            c.Upgrades.TalentTiers[0].Options[1].Effects[0].Pct = -100;
-            c.Upgrades.TalentTiers[1].Options[1].Effects[0].Pct = -100;
-            var l = new Loadout(); l.Talents[1] = "thrifty"; l.Talents[2] = "swift_purge";
+            var allEffects = c.Upgrades.TalentTiers.SelectMany(t => t.Options.Select(o => (tier: t.Tier, opt: o.Id, effects: o.Effects))).ToList();
+            var (manaTier, manaOpt, _) = allEffects.First(x => x.effects.Any(e => e.Field == "manaCost"));
+            var (cdTier, cdOpt, _) = allEffects.First(x => x.effects.Any(e => e.Field == "cooldownMs"));
+            allEffects.Single(x => x.tier == manaTier && x.opt == manaOpt).effects.First(e => e.Field == "manaCost").Pct = -100;
+            allEffects.Single(x => x.tier == cdTier && x.opt == cdOpt).effects.First(e => e.Field == "cooldownMs").Pct = -100;
+            var l = new Loadout(); l.Talents[manaTier] = manaOpt; l.Talents[cdTier] = cdOpt;
             var (_, sk) = Apply(l, c);
             Assert.That(sk.All(s => s.ManaCost >= 0), Is.True);
             var baseSkills = c.Skills.ToDictionary(s => s.Id);
@@ -469,8 +542,8 @@ namespace Healer.Combat.Tests
         public void Le_premier_choix_d_un_palier_est_payant()
         {
             var p = Rich(500);
-            Assert.That(Workshop.PickTalent(p, C, 1, "thrifty"), Is.EqualTo(PurchaseResult.Ok));
-            Assert.That(p.Loadout.Talents[1], Is.EqualTo("thrifty"));
+            Assert.That(Workshop.PickTalent(p, C, 1, "lum_mains_vives"), Is.EqualTo(PurchaseResult.Ok));
+            Assert.That(p.Loadout.Talents[1], Is.EqualTo("lum_mains_vives"));
             Assert.That(p.Wallet.Balance(Wallet.Gold), Is.EqualTo(500 - C.Upgrades.Tier(1)!.Cost));
         }
 
@@ -478,10 +551,10 @@ namespace Healer.Combat.Tests
         public void Changer_d_option_dans_un_palier_achete_est_gratuit()
         {
             var p = Rich(500);
-            Workshop.PickTalent(p, C, 1, "thrifty");
+            Workshop.PickTalent(p, C, 1, "lum_mains_vives");
             int gold = p.Wallet.Balance(Wallet.Gold);
-            Assert.That(Workshop.PickTalent(p, C, 1, "quick_heal"), Is.EqualTo(PurchaseResult.Ok));
-            Assert.That(p.Loadout.Talents[1], Is.EqualTo("quick_heal"));
+            Assert.That(Workshop.PickTalent(p, C, 1, "lum_grand_soin"), Is.EqualTo(PurchaseResult.Ok));
+            Assert.That(p.Loadout.Talents[1], Is.EqualTo("lum_grand_soin"));
             Assert.That(p.Wallet.Balance(Wallet.Gold), Is.EqualTo(gold), "on peut se raviser sans payer");
         }
 
@@ -489,26 +562,36 @@ namespace Healer.Combat.Tests
         public void Rechoisir_l_option_deja_active_ne_coute_rien()
         {
             var p = Rich(500);
-            Workshop.PickTalent(p, C, 1, "thrifty");
+            Workshop.PickTalent(p, C, 1, "lum_mains_vives");
             int gold = p.Wallet.Balance(Wallet.Gold);
-            Workshop.PickTalent(p, C, 1, "thrifty");
+            Workshop.PickTalent(p, C, 1, "lum_mains_vives");
             Assert.That(p.Wallet.Balance(Wallet.Gold), Is.EqualTo(gold));
         }
 
         [Test]
-        public void Un_palier_exige_le_precedent()
+        public void Un_palier_exige_le_precedent_DE_SA_VOIE()
         {
+            // E02-T02 : tier global 4 = palier 2 de la voie Lumière, qui exige le palier 1 de la voie Lumière (tier 1),
+            // PAS le tier global précédent (3, qui est le palier 1 d'une AUTRE voie, Purification).
             var p = Rich();
-            Assert.That(Workshop.PickTalent(p, C, 2, "strong_shield"), Is.EqualTo(PurchaseResult.NeedPreviousTier));
+            Assert.That(Workshop.PickTalent(p, C, 4, "lum_chaine_de_vie"), Is.EqualTo(PurchaseResult.NeedPreviousTier));
             Assert.That(p.Loadout.Talents, Is.Empty);
             Assert.That(p.Wallet.Balance(Wallet.Gold), Is.EqualTo(100000));
+        }
+
+        [Test]
+        public void Un_palier_ouvert_de_sa_voie_n_exige_pas_les_autres_voies()
+        {
+            // E02-T02 : le tier global 2 (Égide, palier 1) ne dépend PAS du tier 1 (Lumière, palier 1) : trois voies parallèles.
+            var p = Rich();
+            Assert.That(Workshop.PickTalent(p, C, 2, "egi_bouclier_leger"), Is.EqualTo(PurchaseResult.Ok));
         }
 
         [Test]
         public void Un_palier_exige_assez_d_etoiles()
         {
             var p = Rich(100000, stars: 0);
-            Assert.That(Workshop.PickTalent(p, C, 1, "thrifty"), Is.EqualTo(PurchaseResult.Locked));
+            Assert.That(Workshop.PickTalent(p, C, 1, "lum_mains_vives"), Is.EqualTo(PurchaseResult.Locked));
             Assert.That(Workshop.TierAvailability(p, C, 1), Is.EqualTo(PurchaseResult.Locked));
         }
 
@@ -524,7 +607,7 @@ namespace Healer.Combat.Tests
         public void Sans_assez_d_or_le_talent_n_est_pas_achete()
         {
             var p = Rich(10);
-            Assert.That(Workshop.PickTalent(p, C, 1, "thrifty"), Is.EqualTo(PurchaseResult.NotEnoughGold));
+            Assert.That(Workshop.PickTalent(p, C, 1, "lum_mains_vives"), Is.EqualTo(PurchaseResult.NotEnoughGold));
             Assert.That(p.Loadout.Talents, Is.Empty);
         }
 
@@ -532,13 +615,13 @@ namespace Healer.Combat.Tests
         public void Palier_ou_option_inconnus_sont_refuses()
         {
             var p = Rich();
-            Assert.That(Workshop.PickTalent(p, C, 99, "thrifty"), Is.EqualTo(PurchaseResult.UnknownItem));
+            Assert.That(Workshop.PickTalent(p, C, 99, "lum_mains_vives"), Is.EqualTo(PurchaseResult.UnknownItem));
             Assert.That(Workshop.PickTalent(p, C, 1, "fantome"), Is.EqualTo(PurchaseResult.UnknownItem));
-            Assert.That(Workshop.PickTalent(p, C, 1, "strong_shield"), Is.EqualTo(PurchaseResult.UnknownItem), "une option d'un autre palier");
+            Assert.That(Workshop.PickTalent(p, C, 1, "egi_bouclier_leger"), Is.EqualTo(PurchaseResult.UnknownItem), "une option d'un autre palier");
         }
 
         [Test]
-        public void Les_trois_paliers_s_achetent_dans_l_ordre()
+        public void Les_paliers_s_achetent_dans_l_ordre_global()
         {
             var p = Rich(100000);
             foreach (var tier in C.Upgrades.TalentTiers)
@@ -551,7 +634,7 @@ namespace Healer.Combat.Tests
         {
             var p = Rich(2000);
             Workshop.BuyEquipment(p, C, "healer_armor");
-            Workshop.PickTalent(p, C, 1, "quick_heal");
+            Workshop.PickTalent(p, C, 1, "lum_grand_soin");
             var atelier = p.Wallet.Ledger.Where(e => e.Reason.StartsWith("atelier:")).ToList();
             Assert.That(atelier, Has.Count.EqualTo(2));
             Assert.That(atelier.All(e => e.Amount < 0), Is.True);
@@ -607,8 +690,8 @@ namespace Healer.Combat.Tests
             p.Wallet.Grant(Wallet.Gold, 5000, "test");
             for (int i = 0; i < 3; i++) Workshop.BuyEquipment(p, C, "tank_armor");
             Workshop.BuyEquipment(p, C, "healer_weapon");
-            Workshop.PickTalent(p, C, 1, "quick_heal");
-            Workshop.PickTalent(p, C, 2, "swift_purge");
+            Workshop.PickTalent(p, C, 1, "lum_grand_soin");
+            Workshop.PickTalent(p, C, 2, "egi_bouclier_leger");
             return p;
         }
 
@@ -652,14 +735,15 @@ namespace Healer.Combat.Tests
         public void Un_talent_sans_le_palier_precedent_est_retire()
         {
             var stars = "\"levels\": {\"l1\": {\"completed\": true, \"bestStars\": 3}, \"l2\": {\"completed\": true, \"bestStars\": 3}, \"l3\": {\"completed\": true, \"bestStars\": 3}}";
-            ProfileStore.TryLoad("{\"version\": 1, " + stars + ", \"talents\": {\"2\": \"strong_shield\"}}", C, out var p, out _);
+            // E02-T02 : tier global 4 (palier 2 de la voie Lumiere) exige le tier 1 (palier 1, meme voie), absent ici.
+            ProfileStore.TryLoad("{\"version\": 1, " + stars + ", \"talents\": {\"4\": \"lum_chaine_de_vie\"}}", C, out var p, out _);
             Assert.That(p.Loadout.Talents, Is.Empty);
         }
 
         [Test]
         public void Un_talent_dont_les_etoiles_manquent_est_retire()
         {
-            ProfileStore.TryLoad("{\"version\": 1, \"talents\": {\"1\": \"thrifty\"}}", C, out var p, out _);
+            ProfileStore.TryLoad("{\"version\": 1, \"talents\": {\"1\": \"lum_mains_vives\"}}", C, out var p, out _);
             Assert.That(p.Loadout.Talents, Is.Empty, "aucune étoile : le palier 1 n'a pas pu être acheté");
         }
 
@@ -667,14 +751,14 @@ namespace Healer.Combat.Tests
         public void Une_option_inconnue_ou_d_un_autre_palier_est_retiree()
         {
             var stars = "\"levels\": {\"l1\": {\"completed\": true, \"bestStars\": 3}, \"l2\": {\"completed\": true, \"bestStars\": 3}, \"l3\": {\"completed\": true, \"bestStars\": 3}}";
-            ProfileStore.TryLoad("{\"version\": 1, " + stars + ", \"talents\": {\"1\": \"strong_shield\", \"2\": \"n_importe_quoi\"}}", C, out var p, out _);
+            ProfileStore.TryLoad("{\"version\": 1, " + stars + ", \"talents\": {\"1\": \"egi_bouclier_leger\", \"2\": \"n_importe_quoi\"}}", C, out var p, out _);
             Assert.That(p.Loadout.Talents, Is.Empty);
         }
 
         [Test]
         public void Un_niveau_de_talent_illisible_ne_plante_pas_le_chargement()
         {
-            Assert.That(ProfileStore.TryLoad("{\"version\": 1, \"talents\": {\"abc\": \"thrifty\", \"1\": 42}}", C, out var p, out _), Is.True);
+            Assert.That(ProfileStore.TryLoad("{\"version\": 1, \"talents\": {\"abc\": \"lum_mains_vives\", \"1\": 42}}", C, out var p, out _), Is.True);
             Assert.That(p.Loadout.Talents, Is.Empty);
         }
 
@@ -685,7 +769,7 @@ namespace Healer.Combat.Tests
             ProfileStore.TryLoad(ProfileStore.ToJson(p), C, out var loaded, out _);
             var enc = C.CreateEncounter("boss1", 1, loaded.OwnedCharacters, loaded.Loadout);
             Assert.That(enc.Allies.Single(a => a.Id == "tank").MaxHp, Is.GreaterThan(900));
-            Assert.That(enc.Skills.Single(s => s.Id == "heal_single").ManaCost, Is.LessThan(18));
+            Assert.That(enc.Skills.Single(s => s.Id == "heal_single").HealAmount, Is.GreaterThan(170), "lum_grand_soin augmente le Soin");
         }
     }
 }

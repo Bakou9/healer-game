@@ -36,12 +36,24 @@ namespace Healer.Combat.Progress
         public string Name { get; set; } = "";
         public string Description { get; set; } = "";
         public List<UpgradeEffect> Effects { get; set; } = new List<UpgradeEffect>();
+        /// <summary>Budget de puissance déclaré (E02-T09) : sert à COMPARER des talents entre eux, pas à changer le jeu.
+        /// Les deux options d'un même palier doivent avoir un budget proche (voir CreditPolicy-like : TalentPolicy).</summary>
+        public int Power { get; set; }
+        /// <summary>Capstone (E02-T05) : id d'un sort du catalogue (skills.json, marqué "capstone": true) ajouté à la
+        /// barre du soigneur SEULEMENT si cette option est choisie. Absent = ce talent ne débloque aucun sort.</summary>
+        public string? UnlocksSkill { get; set; }
     }
 
-    /// <summary>Palier de talent du soigneur : on choisit UNE option parmi deux (le choix peut être changé gratuitement).</summary>
+    /// <summary>Palier de talent du soigneur : on choisit UNE option parmi deux (le choix peut être changé gratuitement).
+    /// Appartient à une voie de spécialisation (E02-T02) : Tier est un numéro GLOBAL unique au catalogue (pas remis à
+    /// zéro par voie), pour que Loadout.Talents (palier -> choix) n'ait pas besoin de connaître la voie.</summary>
     public class TalentTierDef
     {
         public int Tier { get; set; }
+        /// <summary>Voie de spécialisation : "lumiere", "egide" ou "purification" (E02-T02). Un palier appartient à une seule voie.</summary>
+        public string Voie { get; set; } = "";
+        /// <summary>Palier dans SA voie (1 à 4), pour l'affichage et pour repérer le capstone (PalierDansVoie == 4).</summary>
+        public int PalierDansVoie { get; set; }
         /// <summary>Total d'étoiles requis pour ouvrir ce palier.</summary>
         public int RequiresStars { get; set; }
         public int Cost { get; set; }
@@ -57,6 +69,10 @@ namespace Healer.Combat.Progress
 
         public EquipmentTrackDef? Track(string id) => Equipment.Find(t => t.Id == id);
         public TalentTierDef? Tier(int tier) => TalentTiers.Find(t => t.Tier == tier);
+        /// <summary>Les 4 paliers d'une voie, dans l'ordre (E02-T02).</summary>
+        public List<TalentTierDef> Voie(string voie) => TalentTiers.Where(t => t.Voie == voie).OrderBy(t => t.PalierDansVoie).ToList();
+        /// <summary>Les voies présentes dans le catalogue, dans leur ordre d'apparition (E02-T02).</summary>
+        public List<string> Voies => TalentTiers.Select(t => t.Voie).Distinct().ToList();
     }
 
     /// <summary>Ce que le joueur a acheté : niveaux d'équipement et options de talent choisies. Sérialisé avec le profil.</summary>
@@ -101,7 +117,9 @@ namespace Healer.Combat.Progress
             UpgradeCatalog catalog, Loadout? loadout, IEnumerable<CharacterDef> team, IEnumerable<SkillDef> skills)
         {
             var characters = team.Select(Clone).ToList();
-            var skillList = skills.Select(Clone).ToList();
+            var allSkills = skills.ToList();
+            // Un capstone (E02-T05) n'est dans la barre du soigneur QUE si le talent qui le débloque est choisi.
+            var skillList = allSkills.Where(s => !s.Capstone).Select(Clone).ToList();
             if (loadout == null) return (characters, skillList);
 
             var statPct = new Dictionary<(string character, string stat), int>();
@@ -136,6 +154,13 @@ namespace Healer.Combat.Progress
                 var option = catalog.Tier(kv.Key)?.Options.Find(o => o.Id == kv.Value);
                 if (option == null) continue;
                 foreach (var e in option.Effects) Add(healer, e, 1);
+                // Capstone (E02-T05) : le sort qu'il débloque rejoint la barre, cherché dans TOUT le catalogue de
+                // sorts (y compris les capstones qu'on a exclus plus haut), jamais codé en dur ici.
+                if (option.UnlocksSkill != null && !skillList.Any(s => s.Id == option.UnlocksSkill))
+                {
+                    var unlocked = allSkills.FirstOrDefault(s => s.Id == option.UnlocksSkill);
+                    if (unlocked != null) skillList.Add(Clone(unlocked));
+                }
             }
 
             foreach (var c in characters)
@@ -152,6 +177,7 @@ namespace Healer.Combat.Progress
                 if (s.ShieldAmount != null && skillPct.TryGetValue((s.Id, "shieldAmount"), out var shield)) s.ShieldAmount = Scale(s.ShieldAmount.Value, shield);
                 if (skillPct.TryGetValue((s.Id, "manaCost"), out var cost)) s.ManaCost = Math.Max(0, Scale(s.ManaCost, cost));
                 if (skillPct.TryGetValue((s.Id, "cooldownMs"), out var cd)) s.CooldownMs = Math.Max(1, Scale(s.CooldownMs, cd));
+                if (s.CastMs > 0 && skillPct.TryGetValue((s.Id, "castMs"), out var cast)) s.CastMs = Math.Max(1, Scale(s.CastMs, cast));
             }
             return (characters, skillList);
         }
@@ -167,7 +193,7 @@ namespace Healer.Combat.Progress
         private static SkillDef Clone(SkillDef s) => new SkillDef
         {
             Id = s.Id, Name = s.Name, Description = s.Description, ManaCost = s.ManaCost, CooldownMs = s.CooldownMs, CastMs = s.CastMs, Target = s.Target,
-            HealAmount = s.HealAmount, ShieldAmount = s.ShieldAmount, Cleanse = s.Cleanse,
+            HealAmount = s.HealAmount, ShieldAmount = s.ShieldAmount, Cleanse = s.Cleanse, Capstone = s.Capstone,
         };
     }
 
@@ -230,12 +256,17 @@ namespace Healer.Combat.Progress
             else if (balance > amount) profile.Wallet.TrySpend(Wallet.Gold, balance - amount, "mode développeur");
         }
 
-        /// <summary>Un palier est ouvert s'il y a assez d'étoiles ET si le palier précédent est acheté.</summary>
+        /// <summary>Un palier est ouvert s'il y a assez d'étoiles ET si le palier précédent DE SA VOIE est acheté
+        /// (E02-T02 : trois voies parallèles, chacune a son propre fil — le tier GLOBAL n'indique pas d'ordre entre voies).</summary>
         public static PurchaseResult TierAvailability(PlayerProfile profile, GameContent content, int tier)
         {
             var def = content.Upgrades.Tier(tier);
             if (def == null) return PurchaseResult.UnknownItem;
-            if (tier > 1 && !profile.Loadout.Talents.ContainsKey(tier - 1)) return PurchaseResult.NeedPreviousTier;
+            if (def.PalierDansVoie > 1)
+            {
+                var precedent = content.Upgrades.Voie(def.Voie).FirstOrDefault(t => t.PalierDansVoie == def.PalierDansVoie - 1);
+                if (precedent == null || !profile.Loadout.Talents.ContainsKey(precedent.Tier)) return PurchaseResult.NeedPreviousTier;
+            }
             if (profile.TotalStars < def.RequiresStars) return PurchaseResult.Locked;
             return PurchaseResult.Ok;
         }

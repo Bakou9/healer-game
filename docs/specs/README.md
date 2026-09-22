@@ -110,15 +110,15 @@ Total : 142 tickets, 11/142 terminés.
 | [E01-T11](epics/E01-combat-core/E01-T11-coups-critiques-et-variance-maitrisee.md) | Coups critiques et variance maîtrisée | P2 | 2 | À faire |
 | [E01-T12](epics/E01-combat-core/E01-T12-serialisation-et-replay-d-un-combat-seed-command.md) | Sérialisation et replay d'un combat (seed + commandes) | P1 | 2 | À faire |
 | [E01-T13](epics/E01-combat-core/E01-T13-statistiques-de-combat-soins-effectifs-surplus-d.md) | Statistiques de combat (soins effectifs, surplus, dégâts évités) | P1 | 2 | En cours |
-| [E02-T01](epics/E02-healer-specialisation/E02-T01-modele-de-donnees-des-specialisations-et-talents.md) | Modèle de données des spécialisations et talents (schéma) | P0 | 2 | À faire |
-| [E02-T02](epics/E02-healer-specialisation/E02-T02-trois-voies-de-specialisation-lumiere-egide-puri.md) | Trois voies de spécialisation : Lumière, Égide, Purification | P0 | 2 | À faire |
+| [E02-T01](epics/E02-healer-specialisation/E02-T01-modele-de-donnees-des-specialisations-et-talents.md) | Modèle de données des spécialisations et talents (schéma) | P0 | 2 | En cours |
+| [E02-T02](epics/E02-healer-specialisation/E02-T02-trois-voies-de-specialisation-lumiere-egide-puri.md) | Trois voies de spécialisation : Lumière, Égide, Purification | P0 | 2 | En cours |
 | [E02-T03](epics/E02-healer-specialisation/E02-T03-points-de-talent-paliers-prerequis-et-reinitiali.md) | Points de talent, paliers, prérequis et réinitialisation (respec) | P1 | 2 | À faire |
-| [E02-T04](epics/E02-healer-specialisation/E02-T04-application-des-talents-dans-la-simulation.md) | Application des talents dans la simulation | P0 | 2 | À faire |
-| [E02-T05](epics/E02-healer-specialisation/E02-T05-competences-actives-debloquees-par-les-talents.md) | Compétences actives débloquées par les talents | P1 | 2 | À faire |
+| [E02-T04](epics/E02-healer-specialisation/E02-T04-application-des-talents-dans-la-simulation.md) | Application des talents dans la simulation | P0 | 2 | En cours |
+| [E02-T05](epics/E02-healer-specialisation/E02-T05-competences-actives-debloquees-par-les-talents.md) | Compétences actives débloquées par les talents | P1 | 2 | En cours |
 | [E02-T06](epics/E02-healer-specialisation/E02-T06-niveaux-et-courbe-d-experience-du-soigneur.md) | Niveaux et courbe d'expérience du soigneur | P1 | 3 | À faire |
 | [E02-T07](epics/E02-healer-specialisation/E02-T07-equipement-et-reliques-du-soigneur.md) | Équipement et reliques du soigneur | P3 | 4 | À faire |
 | [E02-T08](epics/E02-healer-specialisation/E02-T08-presets-de-builds-et-partage-par-code.md) | Presets de builds et partage par code | P3 | 4 | À faire |
-| [E02-T09](epics/E02-healer-specialisation/E02-T09-budget-de-puissance-des-talents-declare-dans-les.md) | Budget de puissance des talents déclaré dans les données | P0 | 2 | À faire |
+| [E02-T09](epics/E02-healer-specialisation/E02-T09-budget-de-puissance-des-talents-declare-dans-les.md) | Budget de puissance des talents déclaré dans les données | P0 | 2 | En cours |
 | [E02-T10](epics/E02-healer-specialisation/E02-T10-interface-de-l-arbre-de-talents.md) | Interface de l'arbre de talents | P1 | 2 | À faire |
 | [E03-T01](epics/E03-bosses-encounters/E03-T01-archetypes-de-boss-definition-et-donnees.md) | Archétypes de boss : définition et données | P0 | 2 | À faire |
 | [E03-T02](epics/E03-bosses-encounters/E03-T02-boss-1-golem-ancestral.md) | Boss 1 « Golem Ancestral » | P0 | 1 | À faire |

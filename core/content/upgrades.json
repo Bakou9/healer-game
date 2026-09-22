@@ -178,13 +178,33 @@
   "talentTiers": [
     {
       "tier": 1,
+      "voie": "lumiere",
+      "palierDansVoie": 1,
       "requiresStars": 2,
       "cost": 150,
       "options": [
         {
-          "id": "quick_heal",
-          "name": "Soins vifs",
-          "description": "Le Soin rend 30 % de PV en plus et coûte 15 % de mana en moins.",
+          "id": "lum_mains_vives",
+          "name": "Mains vives",
+          "description": "Le Soin rend 12 % de PV en plus et son incantation est 8 % plus rapide.",
+          "effects": [
+            {
+              "skill": "heal_single",
+              "field": "healAmount",
+              "pct": 12
+            },
+            {
+              "skill": "heal_single",
+              "field": "castMs",
+              "pct": -8
+            }
+          ],
+          "power": 9
+        },
+        {
+          "id": "lum_grand_soin",
+          "name": "Grand Soin",
+          "description": "Le Soin rend 30 % de PV en plus, mais coûte 4 % de mana en plus.",
           "effects": [
             {
               "skill": "heal_single",
@@ -194,80 +214,108 @@
             {
               "skill": "heal_single",
               "field": "manaCost",
-              "pct": -15
+              "pct": 4
             }
-          ]
-        },
-        {
-          "id": "thrifty",
-          "name": "Économe",
-          "description": "Tous les sorts coûtent 9 % de mana en moins.",
-          "effects": [
-            {
-              "skill": "*",
-              "field": "manaCost",
-              "pct": -9
-            }
-          ]
+          ],
+          "power": 9
         }
       ]
     },
     {
       "tier": 2,
-      "requiresStars": 5,
-      "cost": 300,
+      "voie": "egide",
+      "palierDansVoie": 1,
+      "requiresStars": 2,
+      "cost": 150,
       "options": [
         {
-          "id": "strong_shield",
-          "name": "Rempart",
-          "description": "Le Bouclier absorbe 55 % de dégâts en plus.",
+          "id": "egi_bouclier_leger",
+          "name": "Bouclier Léger",
+          "description": "Le Bouclier absorbe 20 % de dégâts en plus et coûte 15 % de mana en moins.",
           "effects": [
             {
               "skill": "shield",
               "field": "shieldAmount",
-              "pct": 55
-            }
-          ]
-        },
-        {
-          "id": "swift_purge",
-          "name": "Purge vive",
-          "description": "La Purge coûte 30 % de mana en moins et se recharge 10 % plus vite.",
-          "effects": [
-            {
-              "skill": "purge",
-              "field": "cooldownMs",
-              "pct": -10
+              "pct": 20
             },
             {
-              "skill": "purge",
+              "skill": "shield",
               "field": "manaCost",
-              "pct": -30
+              "pct": -15
             }
-          ]
+          ],
+          "power": 9
+        },
+        {
+          "id": "egi_grand_bouclier",
+          "name": "Grand Bouclier",
+          "description": "Le Bouclier absorbe 45 % de dégâts en plus, mais coûte 10 % de mana en plus.",
+          "effects": [
+            {
+              "skill": "shield",
+              "field": "shieldAmount",
+              "pct": 45
+            },
+            {
+              "skill": "shield",
+              "field": "manaCost",
+              "pct": 10
+            }
+          ],
+          "power": 9
         }
       ]
     },
     {
       "tier": 3,
-      "requiresStars": 8,
-      "cost": 500,
+      "voie": "purification",
+      "palierDansVoie": 1,
+      "requiresStars": 2,
+      "cost": 150,
       "options": [
         {
-          "id": "mana_flow",
-          "name": "Flux de mana",
-          "description": "Le mana se régénère 5 % plus vite.",
+          "id": "pur_purge_efficace",
+          "name": "Purge Efficace",
+          "description": "La Purge coûte 25 % de mana en moins et se recharge 10 % plus vite.",
+          "effects": [
+            {
+              "skill": "purge",
+              "field": "manaCost",
+              "pct": -25
+            },
+            {
+              "skill": "purge",
+              "field": "cooldownMs",
+              "pct": -10
+            }
+          ],
+          "power": 9
+        },
+        {
+          "id": "pur_essence_stable",
+          "name": "Essence Stable",
+          "description": "Le mana se régénère 10 % plus vite.",
           "effects": [
             {
               "stat": "manaRegen",
-              "pct": 5
+              "pct": 10
             }
-          ]
-        },
+          ],
+          "power": 9
+        }
+      ]
+    },
+    {
+      "tier": 4,
+      "voie": "lumiere",
+      "palierDansVoie": 2,
+      "requiresStars": 4,
+      "cost": 280,
+      "options": [
         {
-          "id": "wide_heal",
-          "name": "Onde de vie",
-          "description": "Le Soin de zone rend 60 % de PV en plus et coûte 45 % de mana en moins.",
+          "id": "lum_chaine_de_vie",
+          "name": "Chaîne de Vie",
+          "description": "Le Soin de zone rend 60 % de PV en plus et coûte 30 % de mana en moins.",
           "effects": [
             {
               "skill": "heal_aoe",
@@ -277,9 +325,332 @@
             {
               "skill": "heal_aoe",
               "field": "manaCost",
-              "pct": -45
+              "pct": -30
             }
-          ]
+          ],
+          "power": 11
+        },
+        {
+          "id": "lum_prompte_guerison",
+          "name": "Prompte Guérison",
+          "description": "Le Soin coûte 8 % de mana en moins et son incantation est 4 % plus rapide.",
+          "effects": [
+            {
+              "skill": "heal_single",
+              "field": "manaCost",
+              "pct": -8
+            },
+            {
+              "skill": "heal_single",
+              "field": "castMs",
+              "pct": -4
+            }
+          ],
+          "power": 11
+        }
+      ]
+    },
+    {
+      "tier": 5,
+      "voie": "egide",
+      "palierDansVoie": 2,
+      "requiresStars": 4,
+      "cost": 280,
+      "options": [
+        {
+          "id": "egi_veille_constante",
+          "name": "Veille Constante",
+          "description": "Le Bouclier se recharge 15 % plus vite et coûte 10 % de mana en moins.",
+          "effects": [
+            {
+              "skill": "shield",
+              "field": "cooldownMs",
+              "pct": -15
+            },
+            {
+              "skill": "shield",
+              "field": "manaCost",
+              "pct": -10
+            }
+          ],
+          "power": 11
+        },
+        {
+          "id": "egi_reserve_de_calme",
+          "name": "Réserve de Calme",
+          "description": "La réserve de mana augmente de 15 %.",
+          "effects": [
+            {
+              "stat": "maxMana",
+              "pct": 15
+            }
+          ],
+          "power": 11
+        }
+      ]
+    },
+    {
+      "tier": 6,
+      "voie": "purification",
+      "palierDansVoie": 2,
+      "requiresStars": 4,
+      "cost": 280,
+      "options": [
+        {
+          "id": "pur_purge_etendue",
+          "name": "Purge Étendue",
+          "description": "La Purge se recharge 25 % plus vite.",
+          "effects": [
+            {
+              "skill": "purge",
+              "field": "cooldownMs",
+              "pct": -25
+            }
+          ],
+          "power": 11
+        },
+        {
+          "id": "pur_reserve_profonde",
+          "name": "Réserve Profonde",
+          "description": "La réserve de mana augmente de 18 %.",
+          "effects": [
+            {
+              "stat": "maxMana",
+              "pct": 18
+            }
+          ],
+          "power": 11
+        }
+      ]
+    },
+    {
+      "tier": 7,
+      "voie": "lumiere",
+      "palierDansVoie": 3,
+      "requiresStars": 6,
+      "cost": 450,
+      "options": [
+        {
+          "id": "lum_ferveur",
+          "name": "Ferveur",
+          "description": "Le mana se régénère 7 % plus vite.",
+          "effects": [
+            {
+              "stat": "manaRegen",
+              "pct": 7
+            }
+          ],
+          "power": 13
+        },
+        {
+          "id": "lum_regard_bienveillant",
+          "name": "Regard Bienveillant",
+          "description": "Le Soin rend 22 % de PV en plus, tout comme le Soin de zone (22 %).",
+          "effects": [
+            {
+              "skill": "heal_single",
+              "field": "healAmount",
+              "pct": 22
+            },
+            {
+              "skill": "heal_aoe",
+              "field": "healAmount",
+              "pct": 22
+            }
+          ],
+          "power": 13
+        }
+      ]
+    },
+    {
+      "tier": 8,
+      "voie": "egide",
+      "palierDansVoie": 3,
+      "requiresStars": 6,
+      "cost": 450,
+      "options": [
+        {
+          "id": "egi_rempart_absolu",
+          "name": "Rempart Absolu",
+          "description": "Le Bouclier absorbe 35 % de dégâts en plus.",
+          "effects": [
+            {
+              "skill": "shield",
+              "field": "shieldAmount",
+              "pct": 35
+            }
+          ],
+          "power": 13
+        },
+        {
+          "id": "egi_sang_froid",
+          "name": "Sang-Froid",
+          "description": "Le mana se régénère 10 % plus vite et le Bouclier coûte 15 % de mana en moins.",
+          "effects": [
+            {
+              "stat": "manaRegen",
+              "pct": 10
+            },
+            {
+              "skill": "shield",
+              "field": "manaCost",
+              "pct": -15
+            }
+          ],
+          "power": 13
+        }
+      ]
+    },
+    {
+      "tier": 9,
+      "voie": "purification",
+      "palierDansVoie": 3,
+      "requiresStars": 6,
+      "cost": 450,
+      "options": [
+        {
+          "id": "pur_discipline",
+          "name": "Discipline",
+          "description": "Le mana se régénère 10 % plus vite et le Soin coûte 10 % de mana en moins.",
+          "effects": [
+            {
+              "stat": "manaRegen",
+              "pct": 10
+            },
+            {
+              "skill": "heal_single",
+              "field": "manaCost",
+              "pct": -10
+            }
+          ],
+          "power": 13
+        },
+        {
+          "id": "pur_purge_totale",
+          "name": "Purge Totale",
+          "description": "La Purge coûte 35 % de mana en moins et se recharge 15 % plus vite.",
+          "effects": [
+            {
+              "skill": "purge",
+              "field": "manaCost",
+              "pct": -35
+            },
+            {
+              "skill": "purge",
+              "field": "cooldownMs",
+              "pct": -15
+            }
+          ],
+          "power": 13
+        }
+      ]
+    },
+    {
+      "tier": 10,
+      "voie": "lumiere",
+      "palierDansVoie": 4,
+      "requiresStars": 8,
+      "cost": 700,
+      "options": [
+        {
+          "id": "lum_eclat",
+          "name": "Éclat de Lumière",
+          "description": "Le Soin rend 7 % de PV en plus, coûte 3 % de mana en moins et son incantation est 3 % plus rapide.",
+          "effects": [
+            {
+              "skill": "heal_single",
+              "field": "healAmount",
+              "pct": 7
+            },
+            {
+              "skill": "heal_single",
+              "field": "manaCost",
+              "pct": -3
+            },
+            {
+              "skill": "heal_single",
+              "field": "castMs",
+              "pct": -3
+            }
+          ],
+          "power": 17
+        },
+        {
+          "id": "lum_miracle",
+          "name": "Miracle",
+          "description": "Débloque Miracle : un soin puissant sur toute l'équipe.",
+          "effects": [],
+          "power": 17,
+          "unlocksSkill": "miracle"
+        }
+      ]
+    },
+    {
+      "tier": 11,
+      "voie": "egide",
+      "palierDansVoie": 4,
+      "requiresStars": 8,
+      "cost": 700,
+      "options": [
+        {
+          "id": "egi_bastion",
+          "name": "Bastion",
+          "description": "Le Bouclier absorbe 15 % de dégâts en plus et se recharge 6 % plus vite.",
+          "effects": [
+            {
+              "skill": "shield",
+              "field": "shieldAmount",
+              "pct": 15
+            },
+            {
+              "skill": "shield",
+              "field": "cooldownMs",
+              "pct": -6
+            }
+          ],
+          "power": 17
+        },
+        {
+          "id": "egi_dome",
+          "name": "Dôme",
+          "description": "Débloque Dôme : un bouclier posé sur toute l'équipe.",
+          "effects": [],
+          "power": 17,
+          "unlocksSkill": "dome"
+        }
+      ]
+    },
+    {
+      "tier": 12,
+      "voie": "purification",
+      "palierDansVoie": 4,
+      "requiresStars": 8,
+      "cost": 700,
+      "options": [
+        {
+          "id": "pur_maitrise_du_flux",
+          "name": "Maîtrise du Flux",
+          "description": "Le mana se régénère 5 % plus vite et tous les sorts coûtent 2 % de mana en moins.",
+          "effects": [
+            {
+              "stat": "manaRegen",
+              "pct": 5
+            },
+            {
+              "skill": "*",
+              "field": "manaCost",
+              "pct": -2
+            }
+          ],
+          "power": 17
+        },
+        {
+          "id": "pur_renaissance",
+          "name": "Renaissance",
+          "description": "Débloque Renaissance : un soin d'urgence puissant sur l'allié le plus faible, avec une purge.",
+          "effects": [],
+          "power": 17,
+          "unlocksSkill": "renaissance"
         }
       ]
     }
