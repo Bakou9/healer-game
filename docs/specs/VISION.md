@@ -66,23 +66,36 @@ hauteur humaine (voir `docs/EQUILIBRAGE.md` §3).
 
 ## 6. Le soigneur et sa spécialisation
 
-Le joueur fait progresser **un** soigneur. À chaque palier de niveau, il fait
-des **choix de spécialisation** (talents) parmi trois voies. *Proposition :*
+Le joueur fait progresser **un** soigneur. En montant de **niveau** (XP gagnée
+en combat), il gagne des **points de talent** à dépenser dans des **choix de
+spécialisation** parmi quatre voies (D-084, décision ferme de l'utilisateur —
+remplace la proposition initiale à 3 voies). Chaque voie a **12 paliers**
+(48 au total), un **choix entre 2 talents** par palier, coûtant chacun 1 point
+(24 points obtenus en tout : de quoi vider complètement 2 voies sur 4, ou
+répartir plus finement — un vrai choix de spécialisation, pas un « tout
+débloquer »). Le dernier palier de chaque voie est un **capstone** qui débloque
+un sort exclusif plutôt que de modifier un sort existant.
 
-| Voie | Fantasme | Force | Sorts/Talents typiques (exemples à valider) |
+| Voie | Fantasme | Force | Capstone |
 |---|---|---|---|
-| **Lumière** | soigneur direct et réactif | soigne vite ce qui vient d'être touché | Soin rapide ou puissant ; bonus sous 35 % PV ; soin qui ricoche ; capstone « Miracle » |
-| **Égide** | protecteur qui prévient | absorbe les grosses attaques annoncées | Bouclier lourd ou rapide ; bouclier offert pendant un télégraphe ; bouclier de zone ; capstone « Dôme » |
-| **Purification** | gestionnaire de statuts et de mana | annule le poison et les effets, tient sur la durée | Purge économe ou de zone ; soin sur la durée ; régénération de mana ; capstone « Renaissance » |
+| **Lumière** | soigneur direct et réactif | soigne vite ce qui vient d'être touché | « Miracle » (grand soin de zone) |
+| **Égide** | protecteur qui prévient | absorbe les grosses attaques annoncées | « Dôme » (bouclier de zone) |
+| **Purification** | gestionnaire de statuts et de mana | annule le poison et les effets, tient sur la durée | « Renaissance » (soin d'urgence + purge) |
+| **Vitalité** | soutien robuste et généraliste | rend le Soigneur et l'équipe plus difficiles à tuer dans la durée | « Sève Vitale » (soin + bouclier de zone) |
 
-Chaque voie comporte des **paliers** (ex. 4) avec un **choix entre 2 talents**
-par palier. Les talents modifient des sorts existants ou en débloquent. Une
-**réinitialisation** (respec) permet d'essayer un autre build.
+Les talents modifient des sorts existants ou en débloquent (skill/stat visés,
+jamais codés en dur — voir E02-T01/T04). Une **réinitialisation** (respec) est
+**gratuite** : elle vide tous les paliers achetés et rend tous les points
+(essayer un autre build ne doit pas être puni). L'équipement (existant, une
+piste par personnage) et les **reliques** (nouveau, D-084 : effets passifs
+achetés à l'or, au plus 2 équipées en même temps sur davantage possédées — un
+choix, pas un empilement) restent séparés des talents.
 
 **Exigence d'équilibre (non négociable)** : aucun build n'est inutile, aucun
 n'est écrasant ; chaque voie a un **terrain de prédilection** (un type de boss
 où elle brille) tout en restant viable partout. Toute la validation est
-automatisée (epic E08).
+automatisée (epic E08 ; voir aussi D-084 pour l'état de cette validation sur
+les 4 voies × 12 paliers — encore partielle, à valider avec l'utilisateur).
 
 ## 7. Boss et archétypes
 

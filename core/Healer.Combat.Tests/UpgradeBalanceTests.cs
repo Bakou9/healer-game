@@ -119,27 +119,45 @@ namespace Healer.Combat.Tests
             Assert.That(diffs.All(d => d < -0.02), Is.False, $"« {b.Id} » est meilleure partout : le choix n'existe pas");
         }
 
-        // ---- Les huit combinaisons de talents ----
+        // ---- Les combinaisons de talents (D-084 : 4 voies × 12 paliers, 24 points -> au plus 2 voies pleines) ----
+        // Un "combo" représente un build RÉALISTE (atteignable avec le budget de points, E02-T06) : deux voies
+        // parmi quatre investies à fond (12 points chacune = 24 au total), avec la MÊME logique d'archétype
+        // (option 0 "sûre" ou option 1 "risquée") sur tous les paliers de ces deux voies. 6 paires de voies × 2
+        // archétypes = 12 combos (remplace le masque à 8 bits de D-083, qui ne couvrait que les 3 premiers
+        // paliers sur 12 désormais — limite de couverture révélée par le passage à 4 voies × 12 paliers, D-084).
+
+        private static readonly string[] VoieNames = { "lumiere", "egide", "purification", "vitalite" };
 
         public static IEnumerable<TestCaseData> AllCombos()
         {
-            for (int mask = 0; mask < 8; mask++)
-                yield return new TestCaseData(mask).SetName($"combinaison {(mask & 1) + 1}-{((mask >> 1) & 1) + 1}-{((mask >> 2) & 1) + 1}");
+            for (int i = 0; i < VoieNames.Length; i++)
+                for (int j = i + 1; j < VoieNames.Length; j++)
+                    for (int arch = 0; arch < 2; arch++)
+                        yield return new TestCaseData(i, j, arch).SetName($"combinaison {VoieNames[i]}+{VoieNames[j]} [{(arch == 0 ? "sûr" : "risqué")}]");
         }
 
-        private static Loadout Combo(int mask)
+        private static Loadout Combo(int voieA, int voieB, int arch)
         {
             var l = new Loadout();
-            for (int i = 0; i < Cat.TalentTiers.Count; i++) l.Talents[i + 1] = Cat.TalentTiers[i].Options[(mask >> i) & 1].Id;
+            foreach (var t in Cat.Voie(VoieNames[voieA])) l.Talents[t.Tier] = t.Options[arch].Id;
+            foreach (var t in Cat.Voie(VoieNames[voieB])) l.Talents[t.Tier] = t.Options[arch].Id;
             return l;
         }
 
+        private static IEnumerable<Loadout> AllComboLoadouts()
+        {
+            for (int i = 0; i < VoieNames.Length; i++)
+                for (int j = i + 1; j < VoieNames.Length; j++)
+                    for (int arch = 0; arch < 2; arch++)
+                        yield return Combo(i, j, arch);
+        }
+
         [TestCaseSource(nameof(AllCombos))]
-        public void Chaque_combinaison_de_talents_est_viable_sur_chaque_boss(int mask)
+        public void Chaque_combinaison_de_talents_est_viable_sur_chaque_boss(int voieA, int voieB, int arch)
         {
             foreach (var boss in Bosses)
             {
-                var m = Measure(boss, Combo(mask));
+                var m = Measure(boss, Combo(voieA, voieB, arch));
                 Assert.That(m.Win, Is.GreaterThanOrEqualTo(0.95), boss);
                 Assert.That(m.Death, Is.LessThanOrEqualTo(0.10), boss);
             }
@@ -148,9 +166,10 @@ namespace Healer.Combat.Tests
         [Test]
         public void Aucune_combinaison_n_est_un_piege_ni_un_choix_evident_ecart_de_PV_limite_par_boss()
         {
+            var combos = AllComboLoadouts().ToList();
             foreach (var boss in Bosses)
             {
-                var pvs = Enumerable.Range(0, 8).Select(m => Measure(boss, Combo(m)).Pv).ToList();
+                var pvs = combos.Select(l => Measure(boss, l).Pv).ToList();
                 Assert.That(pvs.Max() - pvs.Min(), Is.LessThanOrEqualTo(0.20), boss + " : la meilleure et la pire combinaison sont trop éloignées");
             }
         }
@@ -158,7 +177,8 @@ namespace Healer.Combat.Tests
         [Test]
         public void La_meilleure_combinaison_n_est_pas_la_meme_sur_tous_les_boss()
         {
-            var bestPerBoss = Bosses.Select(boss => Enumerable.Range(0, 8).OrderByDescending(m => Measure(boss, Combo(m)).Pv).First()).ToList();
+            var combos = AllComboLoadouts().ToList();
+            var bestPerBoss = Bosses.Select(boss => combos.Select((l, i) => (i, pv: Measure(boss, l).Pv)).OrderByDescending(x => x.pv).First().i).ToList();
             Assert.That(bestPerBoss.Distinct().Count(), Is.GreaterThan(1), "une seule combinaison gagne partout : les talents ne sont pas de vrais choix");
         }
 

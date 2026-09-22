@@ -72,6 +72,21 @@ namespace Healer.Client
             }
         }
 
+        /// <summary>Fiches de personnages (D-084) : les mêmes statistiques que le menu de pause, hors combat.</summary>
+        public void OpenRoster()
+        {
+            if (Nav.OpenRoster())
+            {
+                Debug.Log("[Healer] écran : personnages");
+                Sound(Healer.Combat.Presentation.SoundCue.Click);
+            }
+        }
+
+        /// <summary>Voie affichée dans l'atelier (D-084) : état d'écran transitoire, jamais sauvegardé.</summary>
+        public string WorkshopVoie { get; private set; } = "lumiere";
+
+        public void SelectWorkshopVoie(string voie) => WorkshopVoie = voie;
+
         private void SetNotice(string text, bool error)
         {
             Notice = text;
@@ -145,6 +160,59 @@ namespace Healer.Client
             }
         }
 
+        /// <summary>Réinitialisation des talents (E02-T03, D-084) : gratuite, rend tous les points dépensés.</summary>
+        public void RespecTalents()
+        {
+            Workshop.RespecTalents(Profile);
+            Debug.Log("[Healer] atelier : talents réinitialisés");
+            SetNotice("Talents réinitialisés : tous les points sont rendus", false);
+            Sound(Healer.Combat.Presentation.SoundCue.Click);
+            _storage.Save(Profile);
+        }
+
+        public void BuyRelic(string relicId)
+        {
+            var relic = Content.Upgrades.Relic(relicId);
+            var result = Workshop.BuyRelic(Profile, Content, relicId);
+            if (result == PurchaseResult.Ok)
+            {
+                Debug.Log($"[Healer] atelier : relique {relicId}");
+                SetNotice("Relique acquise : " + relic?.Name, false);
+                Sound(Healer.Combat.Presentation.SoundCue.Buy, 0.7);
+                _storage.Save(Profile);
+            }
+            else
+            {
+                Debug.Log($"[Healer] atelier : refus relique {relicId} ({result})");
+                SetNotice(Explain(result), true);
+                Sound(Healer.Combat.Presentation.SoundCue.Refuse, 0.6);
+            }
+        }
+
+        /// <summary>Équipe ou déséquipe une relique possédée (bascule) : au plus UpgradeCatalog.MaxEquippedRelics à la fois.</summary>
+        public void ToggleRelic(string relicId)
+        {
+            if (Profile.Loadout.EquippedRelics.Contains(relicId))
+            {
+                Workshop.UnequipRelic(Profile, relicId);
+                Debug.Log($"[Healer] atelier : relique {relicId} déséquipée");
+                _storage.Save(Profile);
+                return;
+            }
+            var result = Workshop.EquipRelic(Profile, Content, relicId);
+            if (result == PurchaseResult.Ok)
+            {
+                Debug.Log($"[Healer] atelier : relique {relicId} équipée");
+                Sound(Healer.Combat.Presentation.SoundCue.Buy, 0.5);
+                _storage.Save(Profile);
+            }
+            else
+            {
+                SetNotice(Explain(result), true);
+                Sound(Healer.Combat.Presentation.SoundCue.Refuse, 0.6);
+            }
+        }
+
         private static string Explain(PurchaseResult r)
         {
             switch (r)
@@ -153,6 +221,9 @@ namespace Healer.Client
                 case PurchaseResult.MaxLevel: return "Niveau maximum atteint";
                 case PurchaseResult.NeedPreviousTier: return "Choisissez d'abord le palier précédent";
                 case PurchaseResult.Locked: return "Pas encore disponible";
+                case PurchaseResult.NotEnoughTalentPoints: return "Points de talent insuffisants";
+                case PurchaseResult.RelicSlotsFull: return "Emplacements de reliques pleins";
+                case PurchaseResult.RelicNotOwned: return "Relique non possédée";
                 default: return "Achat impossible";
             }
         }

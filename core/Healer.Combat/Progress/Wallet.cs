@@ -22,6 +22,10 @@ namespace Healer.Combat.Progress
         public const int MaxBalance = 999_999_999;
         public const int MaxLedgerEntries = 200;
         public const string Gold = "gold";
+        /// <summary>XP du Soigneur (E02-T06, D-084) : détermine son niveau via <see cref="HealerLeveling"/>.</summary>
+        public const string Xp = "xp";
+        /// <summary>Points de talent (E02-T03, D-084) : gagnés en montant de niveau, dépensés au palier de talent.</summary>
+        public const string TalentPoints = "talentPoints";
 
         private readonly Dictionary<string, int> _balances = new Dictionary<string, int>();
         private readonly List<LedgerEntry> _ledger = new List<LedgerEntry>();

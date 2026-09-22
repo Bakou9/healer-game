@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Healer.Combat.Progress;
 
 namespace Healer.Combat.Tests
 {
@@ -41,7 +42,10 @@ namespace Healer.Combat.Tests
         {
             var bosses = new System.Collections.Generic.List<string>();
             for (int i = 1; File.Exists(Path.Combine(ContentDir, $"boss{i}.json")); i++) bosses.Add(Read($"boss{i}.json"));
-            return GameContent.FromJson(CharactersJson, SkillsJson, EffectsJson, bosses, Read("levels.json"), Read("upgrades.json"));
+            var content = GameContent.FromJson(CharactersJson, SkillsJson, EffectsJson, bosses, Read("levels.json"), Read("upgrades.json"));
+            content.Leveling = Newtonsoft.Json.JsonConvert.DeserializeObject<System.Collections.Generic.List<LevelUpDef>>(Read("leveling.json"))
+                ?? new System.Collections.Generic.List<LevelUpDef>();
+            return content;
         }
     }
 }

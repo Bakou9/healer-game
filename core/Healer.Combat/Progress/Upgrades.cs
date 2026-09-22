@@ -44,43 +44,64 @@ namespace Healer.Combat.Progress
         public string? UnlocksSkill { get; set; }
     }
 
-    /// <summary>Palier de talent du soigneur : on choisit UNE option parmi deux (le choix peut être changé gratuitement).
-    /// Appartient à une voie de spécialisation (E02-T02) : Tier est un numéro GLOBAL unique au catalogue (pas remis à
-    /// zéro par voie), pour que Loadout.Talents (palier -> choix) n'ait pas besoin de connaître la voie.</summary>
+    /// <summary>Palier de talent du soigneur : on choisit UNE option parmi deux (le choix peut être changé gratuitement
+    /// une fois le palier acheté). Appartient à une voie de spécialisation (E02-T02) : Tier est un numéro GLOBAL unique
+    /// au catalogue (pas remis à zéro par voie), pour que Loadout.Talents (palier -> choix) n'ait pas besoin de
+    /// connaître la voie.</summary>
     public class TalentTierDef
     {
         public int Tier { get; set; }
-        /// <summary>Voie de spécialisation : "lumiere", "egide" ou "purification" (E02-T02). Un palier appartient à une seule voie.</summary>
+        /// <summary>Voie de spécialisation : "lumiere", "egide", "purification" ou "vitalite" (E02-T02, D-084). Un palier appartient à une seule voie.</summary>
         public string Voie { get; set; } = "";
-        /// <summary>Palier dans SA voie (1 à 4), pour l'affichage et pour repérer le capstone (PalierDansVoie == 4).</summary>
+        /// <summary>Palier dans SA voie (1 à 12, D-084), pour l'affichage et pour repérer le capstone (PalierDansVoie == 12).</summary>
         public int PalierDansVoie { get; set; }
-        /// <summary>Total d'étoiles requis pour ouvrir ce palier.</summary>
-        public int RequiresStars { get; set; }
+        /// <summary>Coût en POINTS DE TALENT (E02-T03, D-084) : plus plus profond dans la voie, plus cher. Remplace
+        /// l'ancien coût en étoiles/or (D-083) — à cette échelle (48 paliers), l'or et les étoiles de campagne
+        /// (au plus 9 sur 3 niveaux) ne peuvent pas servir de jauge.</summary>
         public int Cost { get; set; }
         public List<TalentOptionDef> Options { get; set; } = new List<TalentOptionDef>();
     }
 
+    /// <summary>Relique du Soigneur (E02-T07, D-084) : effet passif acheté avec de l'or, équipable dans un nombre
+    /// limité d'emplacements (RelicCatalog.MaxEquipped) — contrairement à l'équipement (une piste par personnage,
+    /// toutes actives), les reliques forcent un choix : en avoir plus n'aide pas si on ne peut pas toutes les porter.</summary>
+    public class RelicDef
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Description { get; set; } = "";
+        public int Cost { get; set; }
+        public List<UpgradeEffect> Effects { get; set; } = new List<UpgradeEffect>();
+    }
+
     public sealed class UpgradeCatalog
     {
+        /// <summary>Nombre maximum de reliques équipées en même temps (E02-T07, D-084) : force un choix entre les reliques possédées.</summary>
+        public const int MaxEquippedRelics = 2;
+
         public List<EquipmentTrackDef> Equipment { get; set; } = new List<EquipmentTrackDef>();
         public List<TalentTierDef> TalentTiers { get; set; } = new List<TalentTierDef>();
+        public List<RelicDef> Relics { get; set; } = new List<RelicDef>();
 
         public static readonly UpgradeCatalog Empty = new UpgradeCatalog();
 
         public EquipmentTrackDef? Track(string id) => Equipment.Find(t => t.Id == id);
         public TalentTierDef? Tier(int tier) => TalentTiers.Find(t => t.Tier == tier);
-        /// <summary>Les 4 paliers d'une voie, dans l'ordre (E02-T02).</summary>
+        public RelicDef? Relic(string id) => Relics.Find(r => r.Id == id);
+        /// <summary>Les paliers d'une voie, dans l'ordre (E02-T02).</summary>
         public List<TalentTierDef> Voie(string voie) => TalentTiers.Where(t => t.Voie == voie).OrderBy(t => t.PalierDansVoie).ToList();
         /// <summary>Les voies présentes dans le catalogue, dans leur ordre d'apparition (E02-T02).</summary>
         public List<string> Voies => TalentTiers.Select(t => t.Voie).Distinct().ToList();
     }
 
-    /// <summary>Ce que le joueur a acheté : niveaux d'équipement et options de talent choisies. Sérialisé avec le profil.</summary>
+    /// <summary>Ce que le joueur a acheté : niveaux d'équipement, options de talent choisies et reliques équipées. Sérialisé avec le profil.</summary>
     public sealed class Loadout
     {
         public Dictionary<string, int> Equipment { get; } = new Dictionary<string, int>();
         /// <summary>Palier → identifiant de l'option choisie (un palier absent n'est pas acheté).</summary>
         public Dictionary<int, string> Talents { get; } = new Dictionary<int, string>();
+        /// <summary>Reliques ÉQUIPÉES (parmi celles possédées), au plus UpgradeCatalog.MaxEquippedRelics (E02-T07, D-084).</summary>
+        public List<string> EquippedRelics { get; } = new List<string>();
 
         public int LevelOf(string trackId) => Equipment.TryGetValue(trackId, out var l) ? l : 0;
 
@@ -89,6 +110,7 @@ namespace Healer.Combat.Progress
             var c = new Loadout();
             foreach (var kv in Equipment) c.Equipment[kv.Key] = kv.Value;
             foreach (var kv in Talents) c.Talents[kv.Key] = kv.Value;
+            c.EquippedRelics.AddRange(EquippedRelics);
             return c;
         }
 
@@ -99,6 +121,7 @@ namespace Healer.Combat.Progress
             foreach (var t in catalog.Equipment) l.Equipment[t.Id] = t.MaxLevel;
             for (int i = 0; i < catalog.TalentTiers.Count; i++)
                 l.Talents[catalog.TalentTiers[i].Tier] = catalog.TalentTiers[i].Options[optionIndexes == null ? 0 : optionIndexes[i]].Id;
+            l.EquippedRelics.AddRange(catalog.Relics.Take(UpgradeCatalog.MaxEquippedRelics).Select(r => r.Id));
             return l;
         }
     }
@@ -162,6 +185,13 @@ namespace Healer.Combat.Progress
                     if (unlocked != null) skillList.Add(Clone(unlocked));
                 }
             }
+            // Reliques équipées (E02-T07, D-084) : même modèle d'effet générique que l'équipement et les talents.
+            foreach (var relicId in loadout.EquippedRelics.Distinct().Take(UpgradeCatalog.MaxEquippedRelics))
+            {
+                var relic = catalog.Relic(relicId);
+                if (relic == null) continue;
+                foreach (var e in relic.Effects) Add(healer, e, 1);
+            }
 
             foreach (var c in characters)
             {
@@ -203,10 +233,16 @@ namespace Healer.Combat.Progress
         UnknownItem,
         MaxLevel,
         NotEnoughGold,
-        /// <summary>Palier de talent pas encore ouvert (étoiles) ou personnage non possédé.</summary>
+        /// <summary>Personnage non possédé (équipement).</summary>
         Locked,
-        /// <summary>Il faut d'abord acheter le palier précédent.</summary>
+        /// <summary>Il faut d'abord acheter le palier précédent (E02-T03).</summary>
         NeedPreviousTier,
+        /// <summary>Pas assez de points de talent (E02-T03, D-084).</summary>
+        NotEnoughTalentPoints,
+        /// <summary>Relique déjà équipée, ou pas assez d'emplacements libres (E02-T07, D-084).</summary>
+        RelicSlotsFull,
+        /// <summary>Relique non possédée (E02-T07, D-084).</summary>
+        RelicNotOwned,
     }
 
     /// <summary>L'atelier : achats d'équipement et choix de talents. Toute dépense passe par le portefeuille, avec sa raison.</summary>
@@ -256,8 +292,10 @@ namespace Healer.Combat.Progress
             else if (balance > amount) profile.Wallet.TrySpend(Wallet.Gold, balance - amount, "mode développeur");
         }
 
-        /// <summary>Un palier est ouvert s'il y a assez d'étoiles ET si le palier précédent DE SA VOIE est acheté
-        /// (E02-T02 : trois voies parallèles, chacune a son propre fil — le tier GLOBAL n'indique pas d'ordre entre voies).</summary>
+        /// <summary>Un palier est ouvert si le palier précédent DE SA VOIE est acheté (E02-T02 : voies parallèles,
+        /// chacune a son propre fil — le tier GLOBAL n'indique pas d'ordre entre voies). Le coût en points de
+        /// talent est vérifié séparément par PickTalent (NotEnoughTalentPoints), pas ici (D-084 : remplace les
+        /// étoiles de campagne, épuisées bien avant la profondeur d'une voie).</summary>
         public static PurchaseResult TierAvailability(PlayerProfile profile, GameContent content, int tier)
         {
             var def = content.Upgrades.Tier(tier);
@@ -267,13 +305,13 @@ namespace Healer.Combat.Progress
                 var precedent = content.Upgrades.Voie(def.Voie).FirstOrDefault(t => t.PalierDansVoie == def.PalierDansVoie - 1);
                 if (precedent == null || !profile.Loadout.Talents.ContainsKey(precedent.Tier)) return PurchaseResult.NeedPreviousTier;
             }
-            if (profile.TotalStars < def.RequiresStars) return PurchaseResult.Locked;
             return PurchaseResult.Ok;
         }
 
         /// <summary>
-        /// Choisit une option de talent. Premier choix d'un palier : payant. Changer d'option dans un palier déjà
-        /// acheté : gratuit (on n'a pas peur de se tromper). Choisir l'option déjà active ne fait rien.
+        /// Choisit une option de talent. Premier choix d'un palier : coûte des points de talent (E02-T03, D-084).
+        /// Changer d'option dans un palier déjà acheté : gratuit (on n'a pas peur de se tromper). Choisir l'option
+        /// déjà active ne fait rien.
         /// </summary>
         public static PurchaseResult PickTalent(PlayerProfile profile, GameContent content, int tier, string optionId)
         {
@@ -286,9 +324,40 @@ namespace Healer.Combat.Progress
             }
             var availability = TierAvailability(profile, content, tier);
             if (availability != PurchaseResult.Ok) return availability;
-            if (!profile.Wallet.TrySpend(Wallet.Gold, def.Cost, $"atelier:talent:{tier}:{optionId}")) return PurchaseResult.NotEnoughGold;
+            if (HealerLeveling.TalentPointsAvailable(profile, content) < def.Cost) return PurchaseResult.NotEnoughTalentPoints;
             profile.Loadout.Talents[tier] = optionId;
             return PurchaseResult.Ok;
         }
+
+        /// <summary>Réinitialisation (E02-T03, D-084) : vide tous les paliers achetés, rend tous les points de
+        /// talent dépensés (rien à créditer explicitement : les points disponibles se recalculent depuis le niveau
+        /// moins les dépenses, donc vider Loadout.Talents SUFFIT). Gratuite : « essayer un autre build » (VISION.md §6)
+        /// ne doit pas être puni.</summary>
+        public static void RespecTalents(PlayerProfile profile) => profile.Loadout.Talents.Clear();
+
+        // ---- Reliques (E02-T07, D-084) ----
+
+        public static PurchaseResult BuyRelic(PlayerProfile profile, GameContent content, string relicId)
+        {
+            var relic = content.Upgrades.Relic(relicId);
+            if (relic == null) return PurchaseResult.UnknownItem;
+            if (profile.OwnedRelics.Contains(relicId)) return PurchaseResult.Ok; // déjà possédée : rien à faire
+            if (!profile.Wallet.TrySpend(Wallet.Gold, relic.Cost, $"atelier:relique:{relicId}")) return PurchaseResult.NotEnoughGold;
+            profile.OwnedRelics.Add(relicId);
+            return PurchaseResult.Ok;
+        }
+
+        /// <summary>Équipe une relique possédée (au plus UpgradeCatalog.MaxEquippedRelics à la fois).</summary>
+        public static PurchaseResult EquipRelic(PlayerProfile profile, GameContent content, string relicId)
+        {
+            if (content.Upgrades.Relic(relicId) == null) return PurchaseResult.UnknownItem;
+            if (!profile.OwnedRelics.Contains(relicId)) return PurchaseResult.RelicNotOwned;
+            if (profile.Loadout.EquippedRelics.Contains(relicId)) return PurchaseResult.Ok;
+            if (profile.Loadout.EquippedRelics.Count >= UpgradeCatalog.MaxEquippedRelics) return PurchaseResult.RelicSlotsFull;
+            profile.Loadout.EquippedRelics.Add(relicId);
+            return PurchaseResult.Ok;
+        }
+
+        public static void UnequipRelic(PlayerProfile profile, string relicId) => profile.Loadout.EquippedRelics.Remove(relicId);
     }
 }

@@ -24,6 +24,8 @@ namespace Healer.Ui
         Credits,
         /// <summary>Galerie de modèles (mode développeur).</summary>
         Gallery,
+        /// <summary>Fiches de personnages (D-084) : les mêmes statistiques que le menu de pause, hors combat.</summary>
+        Roster,
         Battle,
     }
 
@@ -46,6 +48,7 @@ namespace Healer.Ui
         MenuQuit,
         MenuCredits,
         MenuGallery,
+        MenuRoster,
         /// <summary>Tous les boutons de la galerie de modèles (sélection, paliers, poses, rotation, zoom).</summary>
         GalleryControl,
         // Choix du niveau
@@ -54,6 +57,10 @@ namespace Healer.Ui
         // Atelier
         BuyEquipment,
         PickTalent,
+        RespecTalents,
+        BuyRelic,
+        PickRelic,
+        SelectVoie,
         // Réglages
         AdjustSetting,
     }
@@ -91,15 +98,17 @@ namespace Healer.Ui
             switch (screen)
             {
                 case AppScreen.MainMenu:
-                    return action == UiAction.MenuPlay || action == UiAction.MenuWorkshop || action == UiAction.MenuSettings || action == UiAction.MenuToggleSound || action == UiAction.MenuQuit || action == UiAction.MenuCredits || action == UiAction.MenuGallery;
+                    return action == UiAction.MenuPlay || action == UiAction.MenuWorkshop || action == UiAction.MenuSettings || action == UiAction.MenuToggleSound || action == UiAction.MenuQuit || action == UiAction.MenuCredits || action == UiAction.MenuGallery || action == UiAction.MenuRoster;
                 case AppScreen.Settings:
                     return action == UiAction.AdjustSetting || action == UiAction.BackToMenu;
                 case AppScreen.Credits:
                     return action == UiAction.BackToMenu;
                 case AppScreen.Gallery:
                     return action == UiAction.GalleryControl || action == UiAction.BackToMenu;
+                case AppScreen.Roster:
+                    return action == UiAction.BackToMenu;
                 case AppScreen.Workshop:
-                    return action == UiAction.BuyEquipment || action == UiAction.PickTalent || action == UiAction.BackToMenu;
+                    return action == UiAction.BuyEquipment || action == UiAction.PickTalent || action == UiAction.RespecTalents || action == UiAction.BuyRelic || action == UiAction.PickRelic || action == UiAction.SelectVoie || action == UiAction.BackToMenu;
                 case AppScreen.LevelSelect:
                     return action == UiAction.PickLevel || action == UiAction.BackToMenu;
                 default:

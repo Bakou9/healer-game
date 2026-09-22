@@ -42,6 +42,8 @@ namespace Healer.Combat.Progress
                 },
                 ["equipment"] = new JObject(p.Loadout.Equipment.OrderBy(k => k.Key, StringComparer.Ordinal).Select(k => new JProperty(k.Key, k.Value))),
                 ["talents"] = new JObject(p.Loadout.Talents.OrderBy(k => k.Key).Select(k => new JProperty(k.Key.ToString(), k.Value))),
+                ["ownedRelics"] = new JArray(p.OwnedRelics.OrderBy(id => id, StringComparer.Ordinal)),
+                ["equippedRelics"] = new JArray(p.Loadout.EquippedRelics),
             };
             return root.ToString(Formatting.Indented);
         }
@@ -84,6 +86,8 @@ namespace Healer.Combat.Progress
                 if (root["talents"] is JObject talents)
                     foreach (var kv in talents)
                         if (int.TryParse(kv.Key, out int tier) && kv.Value?.Value<string>() is string option) loaded.Loadout.Talents[tier] = option;
+                if (root["ownedRelics"] is JArray ownedRelics) loaded.OwnedRelics.AddRange(ownedRelics.Values<string>().Where(s => !string.IsNullOrEmpty(s))!);
+                if (root["equippedRelics"] is JArray equippedRelics) loaded.Loadout.EquippedRelics.AddRange(equippedRelics.Values<string>().Where(s => !string.IsNullOrEmpty(s))!);
 
                 loaded.Repair(content);
                 profile = loaded;

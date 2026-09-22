@@ -105,12 +105,14 @@ namespace Healer.Ui
         public static readonly Rect RestartButton = new Rect(GameW / 2 - 120, 450, 240, 56);
         // ---- Autres écrans (menu principal, choix du niveau, fin de combat, pause) ----
 
-        /// <summary>Boutons du menu principal, empilés au centre : Jouer, Son, Quitter.</summary>
-        public static readonly Rect MenuPlay = new Rect(GameW / 2 - 160, 270, 320, 64);
-        public static readonly Rect MenuWorkshop = new Rect(GameW / 2 - 160, 346, 320, 56);
-        public static readonly Rect MenuSettings = new Rect(GameW / 2 - 160, 414, 320, 56);
-        public static readonly Rect MenuSound = new Rect(GameW / 2 - 160, 482, 320, 56);
-        public static readonly Rect MenuQuit = new Rect(GameW / 2 - 160, 550, 320, 56);
+        /// <summary>Boutons du menu principal, empilés au centre : Jouer, Personnages, Atelier, Réglages, Son, Quitter
+        /// (D-084 : « Personnages » ajouté pour consulter les statistiques de chaque personnage hors combat).</summary>
+        public static readonly Rect MenuPlay = new Rect(GameW / 2 - 160, 254, 320, 64);
+        public static readonly Rect MenuRoster = new Rect(GameW / 2 - 160, 330, 320, 52);
+        public static readonly Rect MenuWorkshop = new Rect(GameW / 2 - 160, 394, 320, 52);
+        public static readonly Rect MenuSettings = new Rect(GameW / 2 - 160, 458, 320, 52);
+        public static readonly Rect MenuSound = new Rect(GameW / 2 - 160, 522, 320, 52);
+        public static readonly Rect MenuQuit = new Rect(GameW / 2 - 160, 586, 320, 52);
 
         /// <summary>Petit bouton « Crédits » en bas à gauche du menu principal (D-060).</summary>
         public static readonly Rect MenuCredits = new Rect(SafeSide, GameH - SafeBottom - MinTouch, 170, MinTouch);
@@ -141,8 +143,10 @@ namespace Healer.Ui
         /// <summary>Panneau d'équipement (deux colonnes de cartes).</summary>
         public static readonly Rect WorkshopEquipment = new Rect(SafeSide, 84, 760, 588);
 
-        /// <summary>Panneau de talents (un palier par ligne, deux options côte à côte).</summary>
-        public static readonly Rect WorkshopTalents = new Rect(SafeSide + 760 + SafeSide, 84, GameW - 2 * SafeSide - 760 - SafeSide, 588);
+        /// <summary>Panneau de talents (un palier par ligne, deux options côte à côte). Commence 40 px plus bas que
+        /// l'équipement (D-084) : la place au-dessus sert au titre de la section ET au bouton « Réinitialiser »
+        /// (voir WorkshopVoieTabs/WorkshopRespecButton), avant les onglets de voie tout en haut du panneau.</summary>
+        public static readonly Rect WorkshopTalents = new Rect(SafeSide + 760 + SafeSide, 124, GameW - 2 * SafeSide - 760 - SafeSide, 548);
 
         /// <summary>Cartes de pistes d'équipement : deux colonnes, remplies ligne par ligne.</summary>
         public static Rect[] WorkshopEquipmentCards(int count)
@@ -175,6 +179,40 @@ namespace Healer.Ui
             double w = (tier.W - Gap) / 2;
             return new Rect(tier.X + option * (w + Gap), tier.Y + TalentHeaderH, w, tier.H - TalentHeaderH);
         }
+
+        // ---- Atelier, D-084 : une voie (12 paliers) à la fois, avec des onglets et un défilement -----------------
+
+        /// <summary>Onglets des 4 voies, sur la largeur du panneau de talents, juste sous son titre.</summary>
+        public static Rect[] WorkshopVoieTabs(int count)
+        {
+            double w = (WorkshopTalents.W - Gap * (count - 1)) / count;
+            var result = new Rect[count];
+            for (int i = 0; i < count; i++) result[i] = new Rect(WorkshopTalents.X + i * (w + Gap), WorkshopTalents.Y, w, 36);
+            return result;
+        }
+
+        /// <summary>Bouton « Réinitialiser » les talents, au-dessus des onglets de voie (même bande que le titre de section).</summary>
+        public static readonly Rect WorkshopRespecButton = new Rect(WorkshopTalents.Right - 170, WorkshopTalents.Y - 36, 170, 32);
+
+        /// <summary>Zone défilable sous les onglets : le contenu (12 paliers) peut dépasser sa hauteur, il défile.</summary>
+        public static readonly Rect WorkshopVoieScroll = new Rect(WorkshopTalents.X, WorkshopTalents.Y + 36 + Gap, WorkshopTalents.W, WorkshopTalents.H - 36 - Gap);
+
+        private const double TalentRowH = 108;
+
+        /// <summary>Zone d'un palier À L'INTÉRIEUR du contenu défilable (coordonnées LOCALES : (0,0) = haut du contenu,
+        /// pas de l'écran) : hauteur FIXE, indépendante du nombre de paliers de la voie (12, contrairement à
+        /// WorkshopTalentTier qui divise une hauteur fixe par le nombre de paliers).</summary>
+        public static Rect WorkshopVoieTalentRow(int index) => new Rect(0, index * (TalentRowH + Gap), WorkshopVoieScroll.W, TalentRowH);
+
+        public static Rect WorkshopVoieTalentOption(int index, int option)
+        {
+            var row = WorkshopVoieTalentRow(index);
+            double w = (row.W - Gap) / 2;
+            return new Rect(row.X + option * (w + Gap), row.Y + TalentHeaderH, w, row.H - TalentHeaderH);
+        }
+
+        /// <summary>Hauteur totale du contenu défilable pour `count` paliers (12 normalement).</summary>
+        public static double WorkshopVoieContentHeight(int count) => count * TalentRowH + Math.Max(0, count - 1) * Gap;
 
         /// <summary>Bilan de combat : statistiques à gauche, dégâts infligés par membre à droite.</summary>
         public static readonly Rect EndStatsPanel = new Rect(100, 170, 500, 236);

@@ -55,6 +55,7 @@ namespace Healer.Client
                 case AppScreen.Settings: BuildSettings(); break;
                 case AppScreen.Credits: BuildCredits(); break;
                 case AppScreen.Gallery: BuildGallery(); break;
+                case AppScreen.Roster: BuildRoster(); break;
                 default: BuildLevels(); BuildFooter(); break;
             }
         }
@@ -64,8 +65,11 @@ namespace Healer.Client
             var p = _flow.Profile;
             var sb = new StringBuilder();
             sb.Append(_flow.Screen).Append('|').Append(p.Wallet.Balance(Wallet.Gold)).Append('|').Append(p.TotalStars);
+            sb.Append('|').Append(p.Wallet.Balance(Wallet.Xp)).Append('|').Append(p.Wallet.Balance(Wallet.TalentPoints)).Append('|').Append(_flow.WorkshopVoie);
             foreach (var kv in p.Loadout.Equipment.OrderBy(k => k.Key)) sb.Append('|').Append(kv.Key).Append(kv.Value);
             foreach (var kv in p.Loadout.Talents.OrderBy(k => k.Key)) sb.Append('|').Append(kv.Key).Append(kv.Value);
+            foreach (var id in p.OwnedRelics.OrderBy(x => x, StringComparer.Ordinal)) sb.Append('|').Append(id);
+            foreach (var id in p.Loadout.EquippedRelics) sb.Append('|').Append('*').Append(id);
             foreach (var kv in p.Levels.OrderBy(k => k.Key)) sb.Append('|').Append(kv.Key).Append(kv.Value.BestStars).Append(kv.Value.Clears).Append(kv.Value.BestTimeMs);
             var s = p.Settings;
             sb.Append('|').Append(s.Muted).Append(s.MusicVolume).Append(s.SfxVolume).Append(s.ScreenShake);
@@ -95,6 +99,7 @@ namespace Healer.Client
             Txt(new Rect(0, 100, w, 90), "Healer Game", 72, Color.white, TextAnchor.MiddleCenter, true);
             Txt(new Rect(0, 192, w, 32), "Gardez votre équipe en vie.", Layout.Font.Title, Ui.Muted, TextAnchor.MiddleCenter);
             Btn(Ui.R(Layout.MenuPlay), "Jouer", 30, Ui.PrimaryFill, Ui.PrimaryStroke, UiAction.MenuPlay, _flow.OpenLevels);
+            Btn(Ui.R(Layout.MenuRoster), "Personnages", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuRoster, _flow.OpenRoster);
             Btn(Ui.R(Layout.MenuWorkshop), "Atelier", Layout.Font.Title, Ui.ButtonFill, Ui.Gold, UiAction.MenuWorkshop, _flow.OpenWorkshop);
             Btn(Ui.R(Layout.MenuSettings), "Réglages", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuSettings, _flow.OpenSettings);
             Btn(Ui.R(Layout.MenuSound), _flow.Profile.Settings.Muted ? "Son : coupé" : "Son : activé", Layout.Font.Title, Ui.ButtonFill, Ui.ButtonStroke, UiAction.MenuToggleSound, _flow.ToggleMute);
@@ -164,6 +169,45 @@ namespace Healer.Client
             Btn(new Rect(x, y + 92, 260, 38), g.SlowMo ? "Ralenti ✓" : "Ralenti", Layout.Font.Small, g.SlowMo ? Ui.PrimaryFill : Ui.ButtonFill, g.SlowMo ? Ui.PrimaryStroke : Ui.ButtonStroke, UiAction.GalleryControl, g.ToggleSlowMo);
 
             Txt(new Rect(270, 672, w - 540, 30), g.Info, Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, false);
+        }
+
+        // ---- Fiches de personnages (D-084) ---------------------------------------------------------
+
+        /// <summary>Statistiques de chaque personnage possédé, hors combat : les mêmes fiches que le menu de pause
+        /// (CharacterDescriber, D-059), avec l'équipement et les talents du profil déjà appliqués. Pas de PV/bouclier
+        /// « du moment » (UnitState) puisqu'il n'y a pas de combat en cours.</summary>
+        private void BuildRoster()
+        {
+            float w = (float)Layout.GameW;
+            Txt(new Rect(0, 14, w, 44), "Personnages", 38, Color.white, TextAnchor.MiddleCenter, true);
+            BackButton();
+
+            var content = _flow.Content;
+            var profile = _flow.Profile;
+            var owned = content.Characters.Where(c => profile.Owns(c.Id)).ToList();
+            if (owned.Count == 0) return;
+            var (current, _) = LoadoutApplier.Apply(content.Upgrades, profile.Loadout, owned, content.Skills);
+
+            const float top = 78f, height = 560f, gap = 16f;
+            float cardW = (w - 24f - gap * (owned.Count - 1)) / owned.Count;
+            for (int i = 0; i < owned.Count; i++)
+            {
+                var baseDef = owned[i];
+                var cur = current.FirstOrDefault(c => c.Id == baseDef.Id) ?? baseDef;
+                var sheet = CharacterDescriber.Sheet(baseDef, cur);
+                float x = 12f + i * (cardW + gap);
+                Add(new Rect(x, top, cardW, height), new Color(Ui.Panel.r, Ui.Panel.g, Ui.Panel.b, 0.96f), 12, RoleAccent(baseDef.Id), 2);
+                Txt(new Rect(x + 14, top + 10, cardW - 28, 30), sheet.Name, Layout.Font.Strong, Color.white, TextAnchor.MiddleLeft, true);
+                Txt(new Rect(x + 14, top + 40, cardW - 28, 22), sheet.Role, Layout.Font.Small, Ui.Muted, TextAnchor.MiddleLeft);
+                float y = top + 72f;
+                foreach (var line in sheet.Lines)
+                {
+                    Txt(new Rect(x + 14, y, cardW - 28, 20), line.Label, Layout.Font.Small, Ui.Muted, TextAnchor.MiddleLeft);
+                    Txt(new Rect(x + 14, y + 20, cardW - 28, 22), Ui.Rich(line.Value), Layout.Font.Body, Color.white, TextAnchor.MiddleLeft);
+                    y += 46f;
+                }
+            }
+            Txt(new Rect(0, 648, w, 24), Ui.Rich(new[] { new SkillSpan("Les valeurs "), new SkillSpan("en vert", true), new SkillSpan(" viennent de votre équipement et de vos talents (Atelier).") }), Layout.Font.Small, Ui.Muted, TextAnchor.MiddleCenter);
         }
 
         // ---- Générique ---------------------------------------------------------------------------
@@ -277,6 +321,15 @@ namespace Healer.Client
         private static Color RoleAccent(string characterId) =>
             characterId == "tank" ? Palette.Tank : characterId == "healer" ? Palette.Healer : characterId == "dps2" ? Palette.Mage : Palette.Archer;
 
+        private static string VoieName(string voie) => voie switch
+        {
+            "lumiere" => "Lumière",
+            "egide" => "Égide",
+            "purification" => "Purification",
+            "vitalite" => "Vitalité",
+            _ => voie,
+        };
+
         private void BuildWorkshop()
         {
             float w = (float)Layout.GameW;
@@ -294,7 +347,12 @@ namespace Healer.Client
                 Btn(new Rect(w - 470, 10, 160, 44), "Or → " + Format.Number(Workshop.DevGold), Layout.Font.Small, Palette.Hex("4A3A12"), Palette.Hex("FFB347"), UiAction.BuyEquipment, _flow.DevSetGold);
             }
             Txt(new Rect((float)Layout.WorkshopEquipment.X, 58, 300, 24), "Équipement", Layout.Font.Body, Ui.Muted, TextAnchor.MiddleLeft, true);
-            Txt(new Rect((float)Layout.WorkshopTalents.X, 58, 400, 24), "Talents du soigneur (un choix par palier)", Layout.Font.Body, Ui.Muted, TextAnchor.MiddleLeft, true);
+            int healerLevel = HealerLeveling.LevelOf(profile, content);
+            int points = HealerLeveling.TalentPointsAvailable(profile, content);
+            Txt(new Rect((float)Layout.WorkshopTalents.X, 58, 300, 24), $"Talents du soigneur · Niveau {healerLevel} · {points} point(s)", Layout.Font.Body, Ui.Muted, TextAnchor.MiddleLeft, true);
+            bool hasAnyTalent = profile.Loadout.Talents.Count > 0;
+            Btn(Ui.R(Layout.WorkshopRespecButton), "Réinitialiser", Layout.Font.Small, hasAnyTalent ? Ui.ButtonFill : Palette.Hex("1B1E2C"), hasAnyTalent ? Ui.ButtonStroke : Ui.PanelStroke,
+                UiAction.RespecTalents, _flow.RespecTalents, hasAnyTalent);
 
             var cards = Layout.WorkshopEquipmentCards(catalog.Equipment.Count);
             for (int i = 0; i < catalog.Equipment.Count; i++)
@@ -335,31 +393,55 @@ namespace Healer.Client
                     UiAction.BuyEquipment, () => { if (!maxed) _flow.BuyEquipment(trackId); }, canBuy || maxed);
             }
 
-            for (int i = 0; i < catalog.TalentTiers.Count; i++)
+            // D-084 : une voie (12 paliers) à la fois, choisie par onglets ; le contenu défile (12 paliers ne
+            // tiennent pas tous à l'écran en même temps, contrairement aux 4 paliers d'une seule voie en D-083).
+            var voies = catalog.Voies;
+            string selectedVoie = voies.Contains(_flow.WorkshopVoie) ? _flow.WorkshopVoie : voies.FirstOrDefault() ?? "";
+            var tabs = Layout.WorkshopVoieTabs(voies.Count);
+            for (int i = 0; i < voies.Count; i++)
             {
-                var tier = catalog.TalentTiers[i];
-                var tr = Ui.R(Layout.WorkshopTalentTier(i, catalog.TalentTiers.Count));
+                bool sel = voies[i] == selectedVoie;
+                var tabRect = Ui.R(tabs[i]);
+                var tabBox = Add(tabRect, sel ? Ui.PrimaryFill : Ui.ButtonFill, 8, sel ? Ui.PrimaryStroke : Ui.ButtonStroke, 1.5f);
+                Txt(tabRect, VoieName(voies[i]), Layout.Font.Small, Color.white, TextAnchor.MiddleCenter, true);
+                string voieId = voies[i];
+                Ui.OnClick(tabBox, () => Act(UiAction.SelectVoie, () => _flow.SelectWorkshopVoie(voieId)));
+            }
+
+            var voieTiers = catalog.Voie(selectedVoie);
+            var scroll = new ScrollView(ScrollViewMode.Vertical);
+            Ui.Place(scroll, Ui.R(Layout.WorkshopVoieScroll));
+            scroll.contentContainer.style.position = Position.Relative;
+            float contentHeight = (float)Layout.WorkshopVoieContentHeight(voieTiers.Count);
+            scroll.contentContainer.style.height = contentHeight;
+            scroll.contentContainer.style.minHeight = contentHeight;
+            _container.Add(scroll);
+            var scrollContent = scroll.contentContainer;
+
+            for (int i = 0; i < voieTiers.Count; i++)
+            {
+                var tier = voieTiers[i];
+                var tr = Ui.R(Layout.WorkshopVoieTalentRow(i));
                 bool bought = profile.Loadout.Talents.TryGetValue(tier.Tier, out var chosen);
                 var availability = Workshop.TierAvailability(profile, content, tier.Tier);
                 bool open = bought || availability == PurchaseResult.Ok;
                 string status = bought ? "Acquis"
-                    : availability == PurchaseResult.Locked ? $"Il faut {tier.RequiresStars} étoiles (vous : {profile.TotalStars})"
-                    : availability == PurchaseResult.NeedPreviousTier ? "Choisissez d'abord le palier " + (tier.Tier - 1)
-                    : Format.Number(tier.Cost) + " or";
-                Txt(new Rect(tr.x, tr.y, tr.width, 30), $"Palier {tier.Tier}  ·  {status}", Layout.Font.Body, bought ? Ui.Gold : (open ? Color.white : Ui.Muted), TextAnchor.MiddleLeft, true);
+                    : availability == PurchaseResult.NeedPreviousTier ? "Choisissez d'abord le palier précédent"
+                    : $"{tier.Cost} point(s) de talent";
+                Ui.Text(scrollContent, new Rect(tr.x, tr.y, tr.width, 30), $"Palier {tier.PalierDansVoie}  ·  {status}", Layout.Font.Body, bought ? Ui.Gold : (open ? Color.white : Ui.Muted), TextAnchor.MiddleLeft, true);
 
                 for (int o = 0; o < tier.Options.Count; o++)
                 {
                     var option = tier.Options[o];
-                    var r = Ui.R(Layout.WorkshopTalentOption(i, catalog.TalentTiers.Count, o));
+                    var r = Ui.R(Layout.WorkshopVoieTalentOption(i, o));
                     bool active = bought && chosen == option.Id;
-                    bool canPick = open && !active && (bought || gold >= tier.Cost);
-                    var card = Add(r, new Color(Ui.Panel.r, Ui.Panel.g, Ui.Panel.b, open ? 0.94f : 0.6f), 10,
+                    bool canPick = open && !active && (bought || points >= tier.Cost);
+                    var card = Ui.Box(scrollContent, r, new Color(Ui.Panel.r, Ui.Panel.g, Ui.Panel.b, open ? 0.94f : 0.6f), 10,
                         active ? Ui.Gold : (canPick ? Ui.ButtonStroke : Ui.PanelStroke), active ? 3 : 1.5f);
-                    Txt(new Rect(r.x + 12, r.y + 6, r.width - 24, 26), option.Name, Layout.Font.Strong, open ? Color.white : Ui.Muted, TextAnchor.MiddleLeft, true);
-                    Txt(new Rect(r.x + 12, r.y + 34, r.width - 24, r.height - 62), option.Description, Layout.Font.Small, open ? Palette.Hex("C9CDE0") : Ui.Muted, TextAnchor.UpperLeft, false, true);
-                    string tag = active ? "Actif" : !open ? "Verrouillé" : bought ? "Changer (gratuit)" : (gold >= tier.Cost ? "Choisir" : "Or insuffisant");
-                    Txt(new Rect(r.x + 12, r.yMax - 28, r.width - 24, 22), tag, Layout.Font.Small, active ? Ui.Gold : (canPick ? Palette.Heal : Ui.Muted), TextAnchor.MiddleLeft, true);
+                    Ui.Text(scrollContent, new Rect(r.x + 12, r.y + 6, r.width - 24, 26), option.Name, Layout.Font.Strong, open ? Color.white : Ui.Muted, TextAnchor.MiddleLeft, true);
+                    Ui.Text(scrollContent, new Rect(r.x + 12, r.y + 34, r.width - 24, r.height - 62), option.Description, Layout.Font.Small, open ? Palette.Hex("C9CDE0") : Ui.Muted, TextAnchor.UpperLeft, false, true);
+                    string tag = active ? "Actif" : !open ? "Verrouillé" : bought ? "Changer (gratuit)" : (points >= tier.Cost ? "Choisir" : "Points insuffisants");
+                    Ui.Text(scrollContent, new Rect(r.x + 12, r.yMax - 28, r.width - 24, 22), tag, Layout.Font.Small, active ? Ui.Gold : (canPick ? Palette.Heal : Ui.Muted), TextAnchor.MiddleLeft, true);
                     int tierNumber = tier.Tier; string optionId = option.Id;
                     if (open && !active) Ui.OnClick(card, () => Act(UiAction.PickTalent, () => _flow.PickTalent(tierNumber, optionId)));
                 }

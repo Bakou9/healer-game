@@ -24,6 +24,10 @@ namespace Healer.Combat
         /// <summary>Apparence des personnages selon l'équipement (core/content/appearance.json, D-061). Vide par défaut : le client dessine alors la version de base.</summary>
         public AppearanceCatalog Appearance { get; set; } = new AppearanceCatalog();
 
+        /// <summary>Courbe de niveaux du Soigneur (core/content/leveling.json, E02-T06, D-084). Vide par défaut :
+        /// le Soigneur reste niveau 1, sans point de talent (compatibilité des contenus qui n'en ont pas).</summary>
+        public List<LevelUpDef> Leveling { get; set; } = new List<LevelUpDef>();
+
         /// <summary>Premier boss (compatibilité : les combats de référence et les tests historiques).</summary>
         public BossDef Boss => Bosses[0];
 

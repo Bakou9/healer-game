@@ -43,6 +43,8 @@ namespace Healer.Combat.Progress
         public int Version { get; set; } = CurrentVersion;
         public Dictionary<string, LevelRecord> Levels { get; } = new Dictionary<string, LevelRecord>();
         public List<string> OwnedCharacters { get; } = new List<string>();
+        /// <summary>Reliques POSSÉDÉES (E02-T07, D-084) ; celles ÉQUIPÉES sont dans Loadout.EquippedRelics.</summary>
+        public List<string> OwnedRelics { get; } = new List<string>();
         public Wallet Wallet { get; } = new Wallet();
         public Settings Settings { get; } = new Settings();
 
@@ -98,14 +100,39 @@ namespace Healer.Combat.Progress
                 var def = content.Upgrades.Tier(tier);
                 if (def == null || def.Options.All(o => o.Id != Loadout.Talents[tier])) Loadout.Talents.Remove(tier);
             }
-            // Un palier n'existe que si le précédent existe et si les étoiles requises sont là.
-            int expected = 1;
-            foreach (var tier in Loadout.Talents.Keys.OrderBy(k => k).ToList())
+            // Un palier n'existe que si le précédent DE SA VOIE existe (E02-T02/T03, D-084 : voies parallèles,
+            // chacune a son propre fil — pas d'ordre global entre voies, contrairement à l'ancien "expected++").
+            foreach (var voie in content.Upgrades.Voies)
             {
-                var def = content.Upgrades.Tier(tier)!;
-                if (tier != expected || TotalStars < def.RequiresStars) { Loadout.Talents.Remove(tier); continue; }
-                expected++;
+                bool brisee = false;
+                foreach (var t in content.Upgrades.Voie(voie))
+                {
+                    if (brisee) { Loadout.Talents.Remove(t.Tier); continue; }
+                    if (!Loadout.Talents.ContainsKey(t.Tier)) brisee = true;
+                }
             }
+            // Le total dépensé ne peut pas dépasser le solde BRUT de points de talent du portefeuille (E02-T03,
+            // D-084 — pas la courbe XP re-dérivée : le portefeuille est la seule source de vérité, comme l'or).
+            // Au-delà, on retire les paliers les plus profonds d'abord (les moins susceptibles d'être le choix du joueur).
+            int budget = HealerLeveling.WalletTalentPoints(this);
+            int spent = Loadout.Talents.Keys.Sum(t => content.Upgrades.Tier(t)?.Cost ?? 0);
+            foreach (var tier in Loadout.Talents.Keys.OrderByDescending(t => content.Upgrades.Tier(t)?.PalierDansVoie ?? 0).ToList())
+            {
+                if (spent <= budget) break;
+                spent -= content.Upgrades.Tier(tier)?.Cost ?? 0;
+                Loadout.Talents.Remove(tier);
+            }
+
+            // Reliques : on ne garde que celles qui existent encore, équipées seulement si possédées et sans dépasser la limite.
+            var relicIds = content.Upgrades.Relics.Select(r => r.Id).ToHashSet();
+            OwnedRelics.RemoveAll(id => !relicIds.Contains(id));
+            var seenRelics = new HashSet<string>();
+            OwnedRelics.RemoveAll(id => !seenRelics.Add(id));
+            Loadout.EquippedRelics.RemoveAll(id => !OwnedRelics.Contains(id));
+            var seenEquipped = new HashSet<string>();
+            Loadout.EquippedRelics.RemoveAll(id => !seenEquipped.Add(id));
+            while (Loadout.EquippedRelics.Count > UpgradeCatalog.MaxEquippedRelics)
+                Loadout.EquippedRelics.RemoveAt(Loadout.EquippedRelics.Count - 1);
 
             // Un niveau ne peut pas être terminé sans que son prérequis l'ait été.
             foreach (var level in content.Levels)

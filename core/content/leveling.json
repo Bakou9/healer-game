@@ -1,0 +1,122 @@
+[
+  {
+    "level": 2,
+    "xpRequired": 60,
+    "talentPoints": 1
+  },
+  {
+    "level": 3,
+    "xpRequired": 130,
+    "talentPoints": 1
+  },
+  {
+    "level": 4,
+    "xpRequired": 210,
+    "talentPoints": 1
+  },
+  {
+    "level": 5,
+    "xpRequired": 290,
+    "talentPoints": 1
+  },
+  {
+    "level": 6,
+    "xpRequired": 390,
+    "talentPoints": 1
+  },
+  {
+    "level": 7,
+    "xpRequired": 500,
+    "talentPoints": 1
+  },
+  {
+    "level": 8,
+    "xpRequired": 630,
+    "talentPoints": 1
+  },
+  {
+    "level": 9,
+    "xpRequired": 770,
+    "talentPoints": 1
+  },
+  {
+    "level": 10,
+    "xpRequired": 930,
+    "talentPoints": 1
+  },
+  {
+    "level": 11,
+    "xpRequired": 1110,
+    "talentPoints": 1
+  },
+  {
+    "level": 12,
+    "xpRequired": 1310,
+    "talentPoints": 1
+  },
+  {
+    "level": 13,
+    "xpRequired": 1540,
+    "talentPoints": 1
+  },
+  {
+    "level": 14,
+    "xpRequired": 1800,
+    "talentPoints": 1
+  },
+  {
+    "level": 15,
+    "xpRequired": 2090,
+    "talentPoints": 1
+  },
+  {
+    "level": 16,
+    "xpRequired": 2420,
+    "talentPoints": 1
+  },
+  {
+    "level": 17,
+    "xpRequired": 2800,
+    "talentPoints": 1
+  },
+  {
+    "level": 18,
+    "xpRequired": 3220,
+    "talentPoints": 1
+  },
+  {
+    "level": 19,
+    "xpRequired": 3700,
+    "talentPoints": 1
+  },
+  {
+    "level": 20,
+    "xpRequired": 4240,
+    "talentPoints": 1
+  },
+  {
+    "level": 21,
+    "xpRequired": 4850,
+    "talentPoints": 1
+  },
+  {
+    "level": 22,
+    "xpRequired": 5540,
+    "talentPoints": 1
+  },
+  {
+    "level": 23,
+    "xpRequired": 6310,
+    "talentPoints": 1
+  },
+  {
+    "level": 24,
+    "xpRequired": 7190,
+    "talentPoints": 1
+  },
+  {
+    "level": 25,
+    "xpRequired": 8190,
+    "talentPoints": 1
+  }
+]

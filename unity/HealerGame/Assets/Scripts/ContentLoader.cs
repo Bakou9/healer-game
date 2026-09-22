@@ -56,6 +56,7 @@ namespace Healer.Client
             var bosses = GameContent.LevelBossIds(levels).Select(id => Read(id + ".json")).ToList();
             var content = GameContent.FromJson(Read("characters.json"), Read("skills.json"), Read("effects.json"), bosses, levels, Read("upgrades.json"));
             content.Appearance = AppearanceCatalog.FromJson(Read("appearance.json"));
+            content.Leveling = Newtonsoft.Json.JsonConvert.DeserializeObject<System.Collections.Generic.List<LevelUpDef>>(Read("leveling.json")) ?? new System.Collections.Generic.List<LevelUpDef>();
             return content;
         }
     }

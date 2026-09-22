@@ -36,12 +36,20 @@ namespace Healer.Ui
             hp.AddRange(SkillDescriber.Pair(Format.Number(baseDef.MaxHp), Format.Number(current.MaxHp)));
             lines.Add(new CharacterLine("PV", hp));
             if (live != null) lines.Add(new CharacterLine("Bouclier", One(live.Shield > 0 ? Format.Number(live.Shield) + " PV" : "aucun")));
-            if (current.Role != "healer" && (baseDef.Atk > 0 || current.Atk > 0))
+            if (baseDef.Atk > 0 || current.Atk > 0)
             {
+                // D-082 : le Soigneur attaque aussi entre ses incantations, donc sa ligne "Attaque" a du sens
+                // désormais (avant D-082, seuls les alliés en auto-battle avaient une attaque).
                 var atk = SkillDescriber.Pair(Format.Number(baseDef.Atk), Format.Number(current.Atk));
                 atk.Add(new SkillSpan(current.DamageType == "magic" ? " (magique)" : " (physique)"));
                 lines.Add(new CharacterLine("Attaque", atk));
             }
+            // D-084 : vitesse d'attaque (D-082) affichée en attaques par seconde, à hauteur humaine (Format.Decimal,
+            // jamais l'intervalle brut en ms). AllyAttackIntervalMs (1600 ms) est le repli historique de Battle.cs
+            // quand un personnage n'a pas d'intervalle propre dans les données.
+            double baseIntervalMs = baseDef.AttackIntervalMs ?? 1600, currentIntervalMs = current.AttackIntervalMs ?? 1600;
+            if (baseIntervalMs > 0 && currentIntervalMs > 0)
+                lines.Add(new CharacterLine("Vitesse d'attaque", SkillDescriber.Pair(Format.Decimal(1000.0 / baseIntervalMs, 2) + "/s", Format.Decimal(1000.0 / currentIntervalMs, 2) + "/s")));
             lines.Add(new CharacterLine("Défense", SkillDescriber.Pair(Format.Number(baseDef.Def), Format.Number(current.Def))));
             lines.Add(new CharacterLine("Armure", SkillDescriber.Pair(Pct(baseDef.ArmorPct), Pct(current.ArmorPct))));
             lines.Add(new CharacterLine("Esquive", SkillDescriber.Pair(Pct(baseDef.DodgePct), Pct(current.DodgePct))));

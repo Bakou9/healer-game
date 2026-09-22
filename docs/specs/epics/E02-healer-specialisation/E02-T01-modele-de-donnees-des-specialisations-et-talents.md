@@ -27,6 +27,7 @@ Les talents doivent être ajoutés en données, comme le reste du contenu.
 Tests de schéma et d'intégrité — `UpgradeCatalogTests` (core/Healer.Combat.Tests/UpgradeTests.cs), verts.
 
 ## Impact équilibrage
-Oui : le schéma porte le budget de puissance (E02-T09). Voir D-083 pour le verdict — 9 mesures de la batterie
-d'équilibrage restent hors bornes, 6 sont la tension boss2/boss3 déjà connue (D-082), 3 sont une tension propre
-au palier « capstone » (E02-T05) qui reste à trancher avec l'utilisateur avant de clore ce ticket.
+Oui : le schéma porte le budget de puissance (E02-T09). **Mise à jour D-084** : schéma étendu de 3 voies × 4
+paliers à 4 voies × 12 paliers (48 paliers, 96 talents), `RequiresStars` remplacé par un coût en points de
+talent (E02-T03/T06). Voir D-084 pour le verdict à jour — 23 mesures sur 470 restent hors bornes (contre 9/142
+en D-083), causes systémiques déjà corrigées, reste à trancher avec l'utilisateur avant de clore ce ticket.

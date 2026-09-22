@@ -7,7 +7,9 @@
     "rewardGold": 100,
     "repeatGold": 50,
     "starBonusGold": 20,
-    "threeStarMaxDamageTaken": 3100
+    "threeStarMaxDamageTaken": 3100,
+    "rewardXp": 50,
+    "repeatXp": 20
   },
   {
     "id": "l2",
@@ -17,7 +19,9 @@
     "rewardGold": 150,
     "repeatGold": 80,
     "starBonusGold": 30,
-    "threeStarMaxDamageTaken": 1500
+    "threeStarMaxDamageTaken": 1500,
+    "rewardXp": 80,
+    "repeatXp": 35
   },
   {
     "id": "l3",
@@ -27,6 +31,8 @@
     "rewardGold": 220,
     "repeatGold": 120,
     "starBonusGold": 40,
-    "threeStarMaxDamageTaken": 2000
+    "threeStarMaxDamageTaken": 2000,
+    "rewardXp": 120,
+    "repeatXp": 55
   }
 ]

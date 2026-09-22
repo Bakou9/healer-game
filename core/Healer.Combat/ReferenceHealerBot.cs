@@ -70,10 +70,12 @@ namespace Healer.Combat
                 battle.IssueCommand(new Command { TimeMs = t, SkillId = "purge", TargetId = poisoned.Id });
             // Urgence à un seul allié (E02-T05) : passe AVANT le soin de zone, sinon un soin de zone routinier
             // intercepterait toujours la décision dès que 2 alliés souffrent, et Renaissance ne se déclencherait jamais.
-            else if (lowest.Hp / lowest.MaxHp < 0.6 && battle.CanUseSkillNow("healer", "renaissance"))
+            else if (lowest.Hp / lowest.MaxHp < 0.65 && battle.CanUseSkillNow("healer", "renaissance"))
                 battle.IssueCommand(new Command { TimeMs = t, SkillId = "renaissance", TargetId = lowest.Id });
             else if (hurtCountWide >= 2 && battle.CanUseSkillNow("healer", "miracle"))
                 battle.IssueCommand(new Command { TimeMs = t, SkillId = "miracle" }); // plusieurs alliés mal en point : le grand soin de zone
+            else if (hurtCountWide >= 2 && battle.CanUseSkillNow("healer", "seve_vitale"))
+                battle.IssueCommand(new Command { TimeMs = t, SkillId = "seve_vitale" }); // capstone Vitalité (D-084) : soin + bouclier de zone
             else if (hurtCount >= 2 && battle.CanUseSkillNow("healer", "heal_aoe"))
                 battle.IssueCommand(new Command { TimeMs = t, SkillId = "heal_aoe" });
             else if (lowest.Hp / lowest.MaxHp < 0.85 && battle.CanUseSkillNow("healer", "heal_single"))

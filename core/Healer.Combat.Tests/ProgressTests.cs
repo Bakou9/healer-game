@@ -358,8 +358,9 @@ namespace Healer.Combat.Tests
         {
             var p = PlayerProfile.NewGame(C);
             Progression.Complete(p, C, L1, ProgressFixtures.Win());
-            Assert.That(p.Wallet.Ledger, Has.Count.EqualTo(1));
-            Assert.That(p.Wallet.Ledger[0].Reason, Does.Contain("l1"));
+            // D-084 : l'XP du Soigneur (E02-T06) passe aussi par le portefeuille, comme l'or -> 2 écritures.
+            Assert.That(p.Wallet.Ledger, Has.Count.EqualTo(2));
+            Assert.That(p.Wallet.Ledger.All(e => e.Reason.Contains("l1")), Is.True);
         }
 
         [Test]

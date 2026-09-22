@@ -213,6 +213,10 @@ namespace Healer.Combat
         public int StarBonusGold { get; set; }
         /// <summary>3ᵉ étoile : victoire sans allié K.O. ET au plus ce total de dégâts encaissés (boucliers et purges comptent).</summary>
         public double ThreeStarMaxDamageTaken { get; set; }
+        /// <summary>XP du Soigneur gagnée à la première victoire (E02-T06, D-084). Même logique que l'or.</summary>
+        public int RewardXp { get; set; }
+        /// <summary>XP du Soigneur gagnée à chaque victoire suivante (E02-T06, D-084).</summary>
+        public int RepeatXp { get; set; }
     }
 }
 

@@ -17,16 +17,17 @@ Certains talents ajoutent un sort (ex. « Miracle », « Dôme »).
 
 ## Critères d'acceptation
 - [x] Sorts déclarés en données avec conditions de déblocage (`SkillDef.Capstone`, `TalentOptionDef.UnlocksSkill` ;
-      Miracle/Dôme/Renaissance dans `core/content/skills.json`, un talent capstone par voie dans `upgrades.json`)
-- [ ] **Barre de sorts dynamique (contrat avec E04-T06)** : pas fait — E04-T06 n'existe plus tel quel après le
-      pivot PC (voir D-0xx pivot), le contrat est à redéfinir avant de construire l'UI qui affiche ces sorts
+      Miracle/Dôme/Renaissance/Sève Vitale (D-084) dans `core/content/skills.json`, un talent capstone par voie
+      dans `upgrades.json` — 4 voies désormais)
+- [ ] **Barre de sorts dynamique** : toujours pas faite côté présentation en combat (`BattleScreen`/`Ui` restent
+      inchangés — les capstones s'utilisent mais n'ont pas d'icône/emplacement dédié visible)
 - [ ] **Limite d'emplacements actifs définie** : pas encore posée (aujourd'hui, un sort débloqué s'ajoute
       simplement au kit, sans limite ni remplacement d'un autre sort actif) — à trancher avec T10
 
 ## Tests automatiques exigés
-Tests de règles — le bot de référence utilise les 3 capstones quand ils sont débloqués (`UpgradeBalanceTests`).
+Tests de règles — le bot de référence utilise les 4 capstones quand ils sont débloqués (`UpgradeBalanceTests`).
 Pas de test dédié à une « barre dynamique » puisqu'elle n'existe pas encore côté présentation.
 
 ## Impact équilibrage
-Oui. Voir D-083 : bug de famine de mana trouvé et corrigé (les capstones ne se déclenchaient jamais), verdict
-partiel restant à valider.
+Oui. Voir D-083/D-084 : bug de famine de mana trouvé et corrigé (les capstones ne se déclenchaient jamais),
+verdict partiel restant à valider.

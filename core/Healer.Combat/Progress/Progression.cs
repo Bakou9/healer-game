@@ -14,6 +14,10 @@ namespace Healer.Combat.Progress
         public bool NewBestTime { get; set; }
         public int GoldGained { get; set; }
         public List<string> UnlockedLevelIds { get; } = new List<string>();
+        /// <summary>XP du Soigneur gagnée (E02-T06, D-084).</summary>
+        public int XpGained { get; set; }
+        /// <summary>Niveaux du Soigneur nouvellement atteints (vide = aucun), pour fêter la montée de niveau.</summary>
+        public List<int> LevelsGained { get; } = new List<int>();
     }
 
     /// <summary>
@@ -63,6 +67,13 @@ namespace Healer.Combat.Progress
             {
                 profile.Wallet.Grant(Wallet.Gold, gold, $"niveau:{level.Id}:{(result.FirstClear ? "première victoire" : "victoire")}");
                 result.GoldGained = gold;
+            }
+
+            int xp = result.FirstClear ? level.RewardXp : level.RepeatXp;
+            if (xp > 0)
+            {
+                result.XpGained = xp;
+                result.LevelsGained.AddRange(HealerLeveling.GrantXp(profile, content, xp, $"niveau:{level.Id}:{(result.FirstClear ? "première victoire" : "victoire")}"));
             }
 
             foreach (var l in content.Levels)

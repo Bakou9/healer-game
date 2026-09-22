@@ -124,12 +124,35 @@ namespace Healer.Combat.Tests
             Assert.That(n.OpenLevelSelect(), Is.False);
             Assert.That(n.LeaveBattle(), Is.False);
         }
+
+        [Test]
+        public void Le_menu_ouvre_la_fiche_de_personnages_et_le_bouton_retour_revient_au_menu()
+        {
+            // D-084 : entrée du menu principal pour consulter les statistiques de chaque personnage hors combat.
+            var n = new Navigator();
+            Assert.That(n.OpenRoster(), Is.True);
+            Assert.That(n.Screen, Is.EqualTo(AppScreen.Roster));
+            Assert.That(n.BackToMenu(), Is.True);
+            Assert.That(n.Screen, Is.EqualTo(AppScreen.MainMenu));
+        }
+
+        [Test]
+        public void La_fiche_de_personnages_ne_s_ouvre_que_depuis_le_menu_principal()
+        {
+            var n = new Navigator();
+            n.OpenLevelSelect();
+            Assert.That(n.OpenRoster(), Is.False);
+            n.StartLevel("l1", true);
+            Assert.That(n.OpenRoster(), Is.False);
+            Assert.That(n.Screen, Is.EqualTo(AppScreen.Battle));
+        }
     }
 
     public class AppScreenGateTests
     {
-        private static readonly UiAction[] Menu = { UiAction.MenuPlay, UiAction.MenuWorkshop, UiAction.MenuSettings, UiAction.MenuToggleSound, UiAction.MenuQuit, UiAction.MenuCredits, UiAction.MenuGallery };
+        private static readonly UiAction[] Menu = { UiAction.MenuPlay, UiAction.MenuWorkshop, UiAction.MenuSettings, UiAction.MenuToggleSound, UiAction.MenuQuit, UiAction.MenuCredits, UiAction.MenuGallery, UiAction.MenuRoster };
         private static readonly UiAction[] Levels = { UiAction.PickLevel, UiAction.BackToMenu };
+        private static readonly UiAction[] Workshop = { UiAction.BuyEquipment, UiAction.PickTalent, UiAction.RespecTalents, UiAction.BuyRelic, UiAction.PickRelic, UiAction.SelectVoie, UiAction.BackToMenu };
 
         [Test]
         public void Le_menu_principal_ne_laisse_passer_que_ses_boutons()
@@ -148,15 +171,21 @@ namespace Healer.Combat.Tests
         [Test]
         public void L_atelier_ne_laisse_passer_que_ses_boutons()
         {
-            var workshop = new[] { UiAction.BuyEquipment, UiAction.PickTalent, UiAction.BackToMenu };
             foreach (UiAction a in Enum.GetValues(typeof(UiAction)))
-                Assert.That(InputGate.Allows(AppScreen.Workshop, ScreenState.Playing, a), Is.EqualTo(workshop.Contains(a)), a.ToString());
+                Assert.That(InputGate.Allows(AppScreen.Workshop, ScreenState.Playing, a), Is.EqualTo(Workshop.Contains(a)), a.ToString());
+        }
+
+        [Test]
+        public void La_fiche_de_personnages_ne_laisse_passer_que_le_retour()
+        {
+            foreach (UiAction a in Enum.GetValues(typeof(UiAction)))
+                Assert.That(InputGate.Allows(AppScreen.Roster, ScreenState.Playing, a), Is.EqualTo(a == UiAction.BackToMenu), a.ToString());
         }
 
         [Test]
         public void Les_achats_de_l_atelier_ne_sont_permis_nulle_part_ailleurs()
         {
-            foreach (var a in new[] { UiAction.BuyEquipment, UiAction.PickTalent })
+            foreach (var a in new[] { UiAction.BuyEquipment, UiAction.PickTalent, UiAction.RespecTalents, UiAction.BuyRelic, UiAction.PickRelic, UiAction.SelectVoie })
             {
                 foreach (var screen in new[] { AppScreen.MainMenu, AppScreen.LevelSelect })
                     Assert.That(InputGate.Allows(screen, ScreenState.Playing, a), Is.False, screen + " / " + a);
@@ -241,14 +270,16 @@ namespace Healer.Combat.Tests
         [Test]
         public void Les_boutons_du_menu_sont_valides_centres_et_ne_se_chevauchent_pas()
         {
-            var buttons = new[] { Layout.MenuPlay, Layout.MenuSound, Layout.MenuQuit };
+            // D-084 : « Personnages » ajouté à la pile de boutons.
+            var buttons = new[] { Layout.MenuPlay, Layout.MenuRoster, Layout.MenuWorkshop, Layout.MenuSettings, Layout.MenuSound, Layout.MenuQuit };
             foreach (var b in buttons)
             {
                 AssertValid(b, "bouton du menu");
                 Assert.That(b.X + b.W / 2, Is.EqualTo(Layout.GameW / 2).Within(0.001));
             }
             for (int i = 0; i < buttons.Length; i++)
-                for (int j = i + 1; j < buttons.Length; j++) Assert.That(buttons[i].Overlaps(buttons[j]), Is.False);
+                for (int j = i + 1; j < buttons.Length; j++) Assert.That(buttons[i].Overlaps(buttons[j]), Is.False, $"{i}/{j}");
+            Assert.That(Layout.MenuQuit.Bottom, Is.LessThanOrEqualTo(Layout.MenuCredits.Y), "la pile ne mange pas la rangée du bas");
         }
 
         [Test]

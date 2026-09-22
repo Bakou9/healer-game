@@ -11,7 +11,7 @@ namespace Healer.Combat.Tests
         private static string Line(CharacterSheet s, string label) => SkillSheet.Plain(s.Lines.First(l => l.Label == label).Value);
 
         private static CharacterDef Tank(double hp = 900, double armor = 25) =>
-            new CharacterDef { Id = "tank", Name = "Garde", Role = "tank", MaxHp = hp, Atk = 35, Def = 12, ArmorPct = armor, ThreatMod = 500, CritPct = 0, CritMultPct = 150, Resist = new System.Collections.Generic.Dictionary<string, int> { ["fire"] = 15 } };
+            new CharacterDef { Id = "tank", Name = "Garde", Role = "tank", MaxHp = hp, Atk = 35, Def = 12, ArmorPct = armor, ThreatMod = 500, CritPct = 0, CritMultPct = 150, AttackIntervalMs = 1400, Resist = new System.Collections.Generic.Dictionary<string, int> { ["fire"] = 15 } };
 
         [Test]
         public void Sans_bonus_rien_n_est_entre_parentheses_et_les_valeurs_du_moment_apparaissent()
@@ -39,17 +39,46 @@ namespace Healer.Combat.Tests
         [Test]
         public void La_critique_montre_la_chance_et_les_degats_et_le_soigneur_a_du_mana()
         {
-            var dps = new CharacterDef { Id = "dps2", Name = "Mage", Role = "dps", MaxHp = 360, Atk = 78, Def = 8, CritPct = 12, CritMultPct = 200, DamageType = "magic", ThreatMod = 100 };
+            var dps = new CharacterDef { Id = "dps2", Name = "Mage", Role = "dps", MaxHp = 360, Atk = 78, Def = 8, CritPct = 12, CritMultPct = 200, DamageType = "magic", ThreatMod = 100, AttackIntervalMs = 1900 };
             var sheet = CharacterDescriber.Sheet(dps, dps);
             Assert.That(Line(sheet, "Critique"), Is.EqualTo("12 % · dégâts 200 %"));
             Assert.That(Line(sheet, "Attaque"), Is.EqualTo("78 (magique)"));
             Assert.That(sheet.Lines.Any(l => l.Label == "Mana"), Is.False);
-            var healer = new CharacterDef { Id = "healer", Name = "Vous", Role = "healer", MaxHp = 480, Atk = 0, Def = 10, MaxMana = 100, ManaRegenPerSec = 6.39, CritPct = 10, CritMultPct = 150 };
+            var healer = new CharacterDef { Id = "healer", Name = "Vous", Role = "healer", MaxHp = 480, Atk = 12, Def = 10, MaxMana = 100, ManaRegenPerSec = 6.39, CritPct = 10, CritMultPct = 150, AttackIntervalMs = 2600 };
             var hs = CharacterDescriber.Sheet(healer, healer);
             Assert.That(Line(hs, "Mana"), Is.EqualTo("100"));
             Assert.That(Line(hs, "Régén. mana"), Is.EqualTo("6,3/s"), "tronqué, jamais arrondi");
-            Assert.That(hs.Lines.Any(l => l.Label == "Attaque"), Is.False, "le soigneur n'attaque pas");
+            // D-082 : le Soigneur attaque aussi entre ses incantations -> sa fiche montre "Attaque" comme les autres.
+            Assert.That(Line(hs, "Attaque"), Is.EqualTo("12 (physique)"));
             Assert.That(hs.Lines.Any(l => l.Label == "Critique (soins)"), Is.True);
+        }
+
+        [Test]
+        public void La_vitesse_d_attaque_s_affiche_en_attaques_par_seconde_a_hauteur_humaine()
+        {
+            // D-084 : demandé pour le panneau de stats du menu pause. 2 décimales (pas 1) pour distinguer des
+            // personnages proches (900-2600 ms d'intervalle, D-082) : 1400 ms -> 1000/1400 = 0,7142../s -> "0,71".
+            var sheet = CharacterDescriber.Sheet(Tank(), Tank(), null);
+            Assert.That(Line(sheet, "Vitesse d'attaque"), Is.EqualTo("0,71/s"));
+        }
+
+        [Test]
+        public void Un_intervalle_d_attaque_plus_court_est_visible_comme_un_bonus()
+        {
+            var baseDef = Tank(); // AttackIntervalMs = 1400 -> 0,71/s
+            var buffed = Tank(); buffed.AttackIntervalMs = 1000; // -> 1/s
+            var sheet = CharacterDescriber.Sheet(baseDef, buffed, null);
+            Assert.That(Line(sheet, "Vitesse d'attaque"), Is.EqualTo("0,71/s(1/s)"));
+            Assert.That(sheet.Lines.First(l => l.Label == "Vitesse d'attaque").Value.Count(s => s.Changed), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Sans_intervalle_propre_la_vitesse_par_defaut_de_battle_s_affiche()
+        {
+            // Repli historique de Battle.cs (AllyAttackIntervalMs = 1600 ms) quand AttackIntervalMs est absent des données.
+            var sansIntervalle = new CharacterDef { Id = "x", Name = "X", Role = "dps", MaxHp = 100, Atk = 10, Def = 1 };
+            var sheet = CharacterDescriber.Sheet(sansIntervalle, sansIntervalle);
+            Assert.That(Line(sheet, "Vitesse d'attaque"), Is.EqualTo("0,62/s"));
         }
 
         [Test]

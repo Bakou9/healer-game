@@ -17,8 +17,8 @@ Chaque talent déclare une valeur de puissance ; l'équilibrage compare des budg
 
 ## Critères d'acceptation
 - [x] Champ obligatoire dans le schéma (`TalentOptionDef.Power`, int)
-- [x] Règle de calcul documentée : puissance par rang de palier (9/11/13/17 pour les paliers 1/2/3/4 de
-      chaque voie), croissante avec le coût et les étoiles requises — voir `core/content/upgrades.json`
+- [x] Règle de calcul documentée : puissance croissante par rang de palier (`6 + rang × 1,7`, arrondi ; rang 1
+      ≈ 8 à rang 12 ≈ 26 — D-084, remplace l'ancienne échelle à 4 rangs 9/11/13/17) — voir `core/content/upgrades.json`
 - [ ] **Exposé pour les tests de parité (E08-T09)** : E08 n'est pas encore commencé, rien à brancher dessus
       pour l'instant (pas anticipé, conformément à CLAUDE.md)
 

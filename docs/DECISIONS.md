@@ -872,9 +872,149 @@ ticket n'est complet au sens de la définition de « terminé »).
   est de toute façon entièrement remplacé par le passage à 4 voies × 12 paliers ci-dessous — retoucher les 24
   talents actuels aurait été du travail jeté.
 
-### 4 voies × 12 paliers : chantier en cours
+### 4 voies × 12 paliers, T03/T06/T07 (cœur), T10 (partiel) : ce qui a été fait
 
-Remplace entièrement le contenu de D-083 (3 voies × 4 paliers, 24 talents). Détail de la conception, du contenu
-et des mesures : voir la suite de ce journal (prochaine entrée) une fois le chantier terminé — un travail de
-cette taille (96 talents, système de points T03, niveaux T06, équipement/reliques T07, interface d'arbre T10)
-ne tient pas dans une seule entrée sans risquer d'être invérifiable ; il est documenté au fur et à mesure.
+Remplace entièrement le contenu de D-083 (3 voies × 4 paliers, 24 talents). **Statut : En cours** (pas Terminé) —
+`npm run check` : specs vertes, cœur C# 1183/1207 tests verts (23 mesures d'équilibrage expliquées ci-dessous
+dans `UpgradeBalanceTests`, et 1 test déjà en tension avant ce chantier, voir plus haut) ; build Unity headless
+vert (0 erreur). Rien n'a été testé visuellement (pas d'accès à l'Éditeur Unity ni à un aperçu dans cette
+session) : voir la section « Non vérifié » plus bas.
+
+#### T01/T02 — Schéma et contenu (fait)
+
+- `TalentTierDef` : `RequiresStars` **supprimé** (les étoiles de campagne, au plus 9 sur 3 niveaux, ne peuvent
+  pas gager 48 paliers) ; `Cost` devient un coût en **points de talent** (1/palier, uniforme — choix délibéré de
+  simplicité plutôt qu'un troisième axe de réglage).
+- 4 voies, 12 paliers chacune, 96 talents (`core/content/upgrades.json`), générés par script
+  (`build_talents_v2.mjs`, scratch, pas commité) avec des formules de magnitude par rang, puis ajustées à la
+  main pour l'équilibrage (voir plus bas).
+- **4ᵉ voie « Vitalité »** (Proposition à valider) : comble un vrai trou — VISION.md §7 liste 5 archétypes de
+  boss mais seulement 3 voies avantagées, « Punisseur » et « Compte à rebours » n'avaient aucun terrain de
+  prédilection. Vitalité (robustesse du Soigneur + soutien généraliste) reste dans le système d'effets
+  EXISTANT (aucune nouvelle mécanique) : j'ai élargi `Les_talents_ne_touchent_que_le_soigneur_et_ses_sorts`
+  pour autoriser `maxHp`/`def` (jusqu'ici réservé à `manaRegen`/`maxMana`) — une voie de robustesse sans ça
+  n'a pas de sens. Son capstone, **Sève Vitale**, réutilise les champs existants de `SkillDef` (soin + bouclier
+  combinés), sans étendre le moteur.
+- **Reliques (T07)** : `RelicDef` (effet générique, coût en or), `UpgradeCatalog.Relics`, au plus
+  `MaxEquippedRelics = 2` équipées à la fois parmi celles possédées — 6 reliques dans le contenu de départ.
+
+#### T03 — Points de talent, prérequis, réinitialisation (fait, cœur)
+
+- Prérequis : palier N exige le palier N-1 de LA MÊME voie (existait déjà en D-083, étendu à 12 paliers).
+- **Bug pré-existant corrigé au passage** : `PlayerProfile.Repair()` validait l'ordre des paliers achetés avec
+  un compteur `expected++` GLOBAL (numérotation 1..N toutes voies confondues) — un vestige d'avant D-083 (voies
+  parallèles). Concrètement, acheter SEULEMENT le palier 1 d'Égide (tier global 2) sans avoir le palier 1 de
+  Lumière (tier global 1) aurait été effacé au rechargement alors que c'est un achat valide. Corrigé pour
+  valider CHAQUE voie séparément. Pas de test ne le couvrait explicitement avant (la suite F de
+  `tools/unity-e2e.ps1`, aujourd'hui périmée — voir plus bas — ne testait qu'un seul palier).
+- Points de talent = solde du portefeuille (`Wallet.TalentPoints`, gagné en montant de niveau) moins la somme
+  des coûts des paliers achetés (`HealerLeveling.TalentPointsAvailable`) — jamais re-dérivé de la courbe XP
+  dans `Repair()` (un bug similaire a été trouvé et corrigé EN COURS DE ROUTE : `Repair()` recalculait le
+  budget depuis la courbe plutôt que de lire le portefeuille, effaçant les talents d'un profil de test qui
+  avait reçu des points sans XP correspondante — corrigé pour lire directement le portefeuille, seule source
+  de vérité, comme pour l'or).
+- `Workshop.RespecTalents` : vide `Loadout.Talents`, gratuit. Comme les points disponibles se recalculent
+  depuis ce dictionnaire, vider suffit à « rendre » tous les points — pas de registre de remboursement séparé.
+
+#### T06 — Niveaux et XP du Soigneur (fait, cœur)
+
+- `HealerLeveling` (nouveau, `core/Healer.Combat/Progress/HealerLeveling.cs`) : courbe de niveaux
+  (`core/content/leveling.json`, généré) allant du niveau 2 au niveau 25, 1 point de talent par niveau (24 au
+  total). **Proposition à valider** : la courbe (XP cumulée 60 au niveau 2 jusqu'à 8190 au niveau 25, facteur
+  géométrique ~1.13) est un premier jet raisonné, PAS mesurée par playtest réel (aucun testeur humain
+  disponible dans cette session) — à ajuster une fois joué.
+  `RewardXp`/`RepeatXp` ajoutés à `LevelDef` (`core/content/levels.json`), même logique que l'or
+  (première victoire vs répétition).
+- `Progression.Complete` accorde l'XP via `HealerLeveling.GrantXp`, qui accorde aussi les points de talent des
+  niveaux franchis — même modèle que l'or (portefeuille, raison journalisée).
+
+#### T07 — Équipement et reliques (fait, cœur ; **UI non faite**, voir plus bas)
+
+- Reliques achetées à l'or (`Workshop.BuyRelic`), équipées/déséquipées (`EquipRelic`/`UnequipRelic`), appliquées
+  par `LoadoutApplier` exactement comme talents et équipement (même modèle générique `UpgradeEffect`).
+- **Pas d'écran pour acheter/équiper une relique** : le système est fonctionnel et testé côté simulation, mais
+  un joueur ne peut aujourd'hui atteindre AUCUNE relique en jeu (aucun bouton nulle part). Je ne l'ai pas
+  ajouté par manque de temps dans cette session (l'atelier était déjà plein : équipement + 4 onglets de
+  voie + 12 paliers défilables ont pris toute la place disponible sur 720 px de haut). **À faire.**
+
+#### T10 — Interface de l'arbre de talents (fait partiellement)
+
+- L'Atelier (`AppScreens.BuildWorkshop`) affiche maintenant une voie à la fois (onglets), dans une zone
+  DÉFILABLE (`UnityEngine.UIElements.ScrollView` — 12 paliers ne tiennent plus dans un panneau fixe comme les
+  4 de D-083), avec le niveau et les points disponibles du Soigneur, et un bouton « Réinitialiser ».
+  `Layout.cs` : nouvelles fonctions `WorkshopVoieTabs`/`WorkshopVoieScroll`/`WorkshopVoieTalentRow`/
+  `WorkshopVoieTalentOption` (paliers à hauteur FIXE, indépendante du nombre de paliers, contrairement aux
+  anciennes `WorkshopTalentTier`/`WorkshopTalentOption` gardées intactes — plus utilisées par l'Atelier mais
+  toujours couvertes par leurs tests).
+- **Compromis UX connu** : le bouton « Réinitialiser » fait 32 px de haut, sous la cible tactile minimale de
+  48 px que `docs/UX.md` exige — la bande disponible au-dessus des onglets (40 px) ne permettait pas les deux
+  à la fois sans repousser encore le panneau. Accepté comme compromis mineur (action rare, pas un geste de
+  jeu) plutôt que continuer à retoucher la mise en page ; à corriger si l'utilisateur le remarque en jouant.
+- **Pas une vraie « arbre »** : chaque voie s'affiche comme une LISTE verticale (paliers strictement linéaires,
+  comme avant), pas un graphe avec embranchements. C'est cohérent avec le modèle de prérequis actuel (« palier
+  N exige N-1 de la même voie », pas de DAG), donc pas une régression, mais si une vraie ramification est
+  voulue plus tard, la mise en page ET le modèle de prérequis devront être repensés ensemble.
+- La position de défilement revient en haut à chaque changement (achat de talent, changement de voie) : la
+  reconstruction de l'écran repart de zéro à chaque changement de « signature » (mécanisme déjà existant,
+  D-05x) et ne mémorise pas le défilement. Mineur, pas corrigé faute de temps.
+
+#### Demandes UI ponctuelles (faites)
+
+- **Vitesse d'attaque dans le panneau de stats du menu pause** : `CharacterDescriber` (core, testé) affiche
+  désormais « Vitesse d'attaque » en attaques par seconde (2 décimales — pas 1, pour distinguer les
+  personnages proches entre 900 et 2600 ms d'intervalle, D-082), tronquée (jamais arrondie), verte quand
+  l'équipement/les talents la changent. **Remise en cause au passage** : la ligne « Attaque » était
+  explicitement CACHÉE pour le Soigneur (`Role != "healer"`) — un reliquat d'avant D-082, où le Soigneur
+  n'attaquait pas du tout. Corrigé : le Soigneur affiche son attaque comme les autres, cohérent avec le fait
+  qu'il frappe désormais entre ses incantations.
+- **Entrée de menu « Personnages »** : nouvel écran (`AppScreen.Roster`, testé côté navigation/InputGate) qui
+  réutilise les mêmes fiches (`CharacterDescriber`) hors combat, pour chaque personnage possédé, avec
+  l'équipement et les talents du profil déjà appliqués. Bouton ajouté à la pile du menu principal
+  (`Layout.MenuRoster`) ; la pile a été resserrée (52 px au lieu de 56 par bouton) pour garder de la marge
+  avec la rangée du bas (Crédits/Galerie).
+
+#### Verdict d'équilibrage et mesures (préambule B)
+
+Mesuré avec `UpgradeBalanceTests` (100 seeds × 3 boss, 6 passes de correction, 470 mesures au total — plus
+nombreuses qu'en D-083 car 4 voies × 12 paliers plutôt que 3 × 4). Progression au fil des passes (échecs) :
+**128 → 42 → 33 → 31 → 29 → 23**. Causes de fond trouvées et corrigées
+(pas seulement des ajustements de chiffres) :
+1. Plusieurs options SANS AUCUNE contrepartie (`egi_r*_rempart`, `vit_r*_carapace`, `lum_r*_marree`)
+   utilisaient par erreur la magnitude prévue pour les options AVEC contrepartie — dominance quasi garantie.
+   Corrigé : ces options utilisent la magnitude « sûre », pas « risquée ».
+2. `manaRegen` reste un levier disproportionné (déjà repéré en D-083 sur `lum_ferveur`/`pur_maitrise_du_flux`/
+   `egi_sang_froid`) : sa magnitude a été réduite encore (jusqu'à 2 %→~4,5 % sur 12 rangs, contre 5 %→11,5 %
+   dans mon premier jet).
+3. Les capstones (Miracle/Dôme/Renaissance/Sève Vitale) ont, comme en D-083, besoin d'un coût en mana très bas
+   pour être réellement utilisés par le bot de référence — Renaissance et Miracle ont dû être encore allégés
+   après le retour de boss2/boss3 à un rythme plus calme (D-084 ci-dessus), qui réduit mécaniquement la marge
+   de progrès mesurable de TOUT talent (le combat de base est déjà plus « sous contrôle »).
+4. La voie Lumière (heal_single/heal_aoe) et le palier Purge de Purification sont structurellement désavantagés
+   sur le critère « aide nettement » (`Un_talent_vaut_son_prix`) car ces sorts sont DÉJÀ largement utilisés par
+   le bot même sans talent — leur marge de progrès mesurable est plus étroite. Compensé par un multiplicateur
+   de magnitude dédié (+70 % Lumière, +60 % Purge) plutôt que de relâcher le seuil de 0,02.
+
+**23 échecs restants** (contre 5 dominances + 2 propres au boss2/boss3 en D-083 sur un système 4× plus petit) :
+16 « aucune option ne domine » et 8 « se valent sur la campagne » persistants (surtout `egi_r*_sangfroid` vs
+`reserve`, `pur_r*_discipline`/`totale` vs leurs alternatives), 2 « ne rend pas le jeu trivial » (dont
+`egi_r12_dome`, qui rend boss3 un peu trop facile pris seul), et 2 sur le plafond de puissance
+(`Tout_au_maximum` : avec les 4 voies + reliques, `Loadout.Maxed()` — un scénario THÉORIQUE, 48 points
+dépensés alors que 24 sont vraiment gagnables — dépasse de peu (0,86 au lieu de 0,85) la borne « l'équipe doit
+pouvoir souffrir »). **Je ne tranche pas seul (D-016/D-017)** : options pour la suite —
+1. accepter cet état (447/470 mesures vertes, causes systémiques déjà corrigées, le reste est du réglage fin
+   de plus en plus marginal — rendement décroissant observé sur les 2 dernières passes) ;
+2. me laisser continuer (plusieurs heures de plus, sans garantie de zéro échec vu le motif observé) ;
+3. reconsidérer `Loadout.Maxed()` : le faire correspondre au budget RÉEL (24 points, pas 48) pour le plafond de
+   puissance — plus honnête vis-à-vis de ce qu'un joueur peut réellement atteindre, réglerait probablement les
+   2 échecs de `Tout_au_maximum` sans toucher un seul chiffre de contenu.
+
+#### Non vérifié (à faire savoir clairement)
+
+- **Rien n'a été vu à l'écran.** Le build Unity headless (`npm run build:unity`) confirme que tout COMPILE
+  (0 erreur), mais aucun aperçu visuel, aucune capture, aucun clic réel n'a validé la mise en page (onglets de
+  voie, défilement, fiches de personnages). `tools/unity-e2e.ps1` scénario F (atelier) est **périmé** : il
+  référence d'anciens ids de talent (`thrifty`, `quick_heal`), l'ancien coût en or, d'anciennes coordonnées de
+  clic — il faudrait le réécrire pour le nouveau schéma avant de le relancer, ce que je n'ai pas fait (risque
+  de chasser des coordonnées à l'aveugle sans image de référence). **Recommandé avant de considérer ce travail
+  fiable : ouvrir le jeu (`lancer-le-jeu.bat` ou l'Éditeur) et regarder l'Atelier et l'écran Personnages.**
+- Reliques : aucune UI (voir T07 ci-dessus).
