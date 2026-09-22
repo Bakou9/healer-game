@@ -832,3 +832,49 @@ l'option classique inutile (piège), soit reproduire la dominance inverse.
 Statuts mis à jour à **En cours** (pas Terminé) sur T01/T02/T04/T05/T09 : `npm run check` n'est pas vert tant
 que les 3 points B ne sont pas tranchés avec l'utilisateur. Pas de ligne `docs/REVUES.md` pour l'instant (aucun
 ticket n'est complet au sens de la définition de « terminé »).
+
+## D-084 — Retour utilisateur sur D-082/D-083 : 4 voies × 12 paliers, boss2/boss3 retouchés, T03/T06/T07/T10
+
+- **Date** : 2026-09-22 — **Statut** : Ferme (décisions explicites de l'utilisateur en réponse à D-082/D-083).
+- **Décisions** :
+  1. **Voies/paliers** : 4 voies × **12 paliers chacune** (48 paliers, 96 talents), confirmé par question directe
+     (l'alternative — 12 paliers au total — a été explicitement écartée). Remplace la Proposition de D-083
+     (3 voies × 4 paliers) et la Proposition de `VISION.md` §6 (« ex. 4 » paliers, 3 voies).
+  2. **Tension boss2/boss3 (D-082, option 2 retenue)** : retoucher `atk`/`def`/`resist` de boss2 et boss3 pour
+     refermer l'écart, plutôt qu'accepter la dérive ou revenir sur les intervalles d'attaque. Raison donnée :
+     « ce sont les premiers boss, il faudra en créer d'autres plus durs plus tard » — la marge de difficulté
+     doit rester du côté des boss à venir, pas de ces deux-là.
+  3. **T03, T06, T07, T10** : à implémenter maintenant (n'étaient que différés dans D-083, pas abandonnés).
+  4. **T08** (presets de build) : reste différé, l'utilisateur redemandera « bien plus tard ».
+- **Tickets** : E02-T01 à T10 (sauf T08), D-082, D-083.
+
+### Boss2/boss3 : retouché (D-082, option 2)
+
+- Boss2 (Reine des Marais) `atk` 24→**25** (+4 %) : rapprochait `PV minimum moyen` (46,8 %) sous la borne de 45 %.
+- Boss3 (Seigneur de Cendre) `atk` 19→**18** (−5 %) : ramenait le taux de mort du joueur attentif (13 %) sous 10 %.
+- **Mesuré (`BossRosterBalanceTests`, 100 seeds)** : les 2 bornes en écart en D-082/D-083 sont maintenant dans le
+  corridor. `Juste_un_joueur_attentif_perd_rarement_un_allie` et `Tendu_mais_pas_au_bord_du_gouffre...` passent
+  sur les 3 boss.
+- **Effet de bord partiellement corrigé** : `Ne_pas_proteger_la_victime_annoncee...("boss3")`, qui échouait déjà
+  AVANT tout travail E02 (13 % de morts en protégeant contre 6 % en ignorant — l'inverse de l'attendu), passe
+  maintenant à **4 % contre 4 %** : l'inversion a disparu, mais l'écart attendu (≥ 1 point en faveur de la
+  protection) ne se manifeste plus non plus, les deux taux de mort étant devenus trop bas pour que ce levier —
+  déjà qualifié de « faible » à sa création (D-056) — reste mesurable sur 100 graines. Pas poursuivi plus loin :
+  chercher un réglage plus fin ferait à nouveau remonter le taux de mort global, au risque de rouvrir la borne
+  des 10 %. **Proposition** : soit accepter ce test comme mesurant un levier désormais trop marginal pour ce
+  duo boss/talents de base (l'assouplir légèrement, ex. seuil 0,5 point au lieu de 1, ou le documenter comme
+  fragile), soit le reprendre une fois les nouveaux talents/paliers (voir ci-dessous) en place, qui changeront
+  la donne (boucliers plus variés, capstones, etc.).
+- **Or régénérés** : `boss2-bot-seed7.txt` et `boss3-bot-seed7.txt` (seuls golden touchés par ce changement
+  d'`atk` — les autres golden utilisent des scénarios sans bot ou d'autres graines/boss).
+- **La batterie de talents (`UpgradeBalanceTests`) se redécale** avec ce changement (ex. tiers déjà propres en
+  D-083 redeviennent en tension, et vice-versa) : **non retouchée à ce stade**, puisque le contenu des talents
+  est de toute façon entièrement remplacé par le passage à 4 voies × 12 paliers ci-dessous — retoucher les 24
+  talents actuels aurait été du travail jeté.
+
+### 4 voies × 12 paliers : chantier en cours
+
+Remplace entièrement le contenu de D-083 (3 voies × 4 paliers, 24 talents). Détail de la conception, du contenu
+et des mesures : voir la suite de ce journal (prochaine entrée) une fois le chantier terminé — un travail de
+cette taille (96 talents, système de points T03, niveaux T06, équipement/reliques T07, interface d'arbre T10)
+ne tient pas dans une seule entrée sans risquer d'être invérifiable ; il est documenté au fur et à mesure.

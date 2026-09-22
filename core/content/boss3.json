@@ -2,7 +2,7 @@
   "id": "boss3",
   "name": "Seigneur de Cendre",
   "maxHp": 9020,
-  "atk": 19,
+  "atk": 18,
   "def": 20,
   "tickMs": 1900,
   "pattern": [

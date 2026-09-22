@@ -6,7 +6,7 @@
 1800ms bossDamaged par dps1 22
 1900ms bossDamaged par dps2 88 [magic]
 1900ms bossAction focusAttack
-1900ms unitDamaged dps1 0 (absorbé 123) [fire]
+1900ms unitDamaged dps1 0 (absorbé 116) [fire]
 2600ms bossDamaged par healer 1
 2700ms bossDamaged par dps1 22
 2800ms bossDamaged par tank 11
@@ -21,16 +21,16 @@
 5600ms bossDamaged par tank 11
 5700ms bossDamaged par dps2 88 [magic]
 5700ms bossAction bigAttack zone
-5700ms unitDamaged tank 11 (absorbé 0) [fire]
-5700ms unitDamaged dps1 0 (absorbé 36) [fire]
-5700ms unitDamaged dps2 38 (absorbé 0) [fire]
-5700ms unitDamaged healer 32 (absorbé 0) [fire]
+5700ms unitDamaged tank 9 (absorbé 0) [fire]
+5700ms unitDamaged dps1 0 (absorbé 33) [fire]
+5700ms unitDamaged dps2 35 (absorbé 0) [fire]
+5700ms unitDamaged healer 29 (absorbé 0) [fire]
 6300ms bossDamaged par dps1 65 CRIT
 7000ms bossDamaged par tank 11
 7200ms bossDamaged par dps1 65 CRIT
 7600ms bossDamaged par dps2 88 [magic]
 7600ms bossAction attack
-7600ms unitDamaged dps1 0 (absorbé 9) [fire]
+7600ms unitDamaged dps1 0 (absorbé 8) [fire]
 7800ms bossDamaged par healer 1 CRIT
 8000ms focusMarked healer
 8000ms skillUsed healer shield -> [healer]
@@ -40,7 +40,7 @@
 9000ms bossDamaged par dps1 22
 9500ms bossDamaged par dps2 88 [magic]
 9500ms bossAction focusAttack
-9500ms unitDamaged healer 0 (absorbé 119) [fire]
+9500ms unitDamaged healer 0 (absorbé 112) [fire]
 9800ms bossDamaged par tank 11
 9900ms bossDamaged par dps1 22
 10400ms bossDamaged par healer 1
@@ -48,23 +48,23 @@
 11200ms bossDamaged par tank 11
 11400ms bossDamaged par dps2 88 [magic]
 11400ms bossAction attack
-11400ms unitDamaged dps1 0 (absorbé 23) CRIT [fire]
+11400ms unitDamaged dps1 0 (absorbé 22) CRIT [fire]
 11700ms bossDamaged par dps1 65 CRIT
 12600ms bossDamaged par tank 11
 12600ms bossDamaged par dps1 22
 13000ms bossDamaged par healer 1
 13300ms bossDamaged par dps2 88 [magic]
 13300ms bossAction bigAttack zone
-13300ms unitDamaged tank 11 (absorbé 0) [fire]
-13300ms unitDamaged dps1 0 (absorbé 36) [fire]
-13300ms unitDamaged dps2 38 (absorbé 0) [fire]
-13300ms unitDamaged healer 0 (absorbé 32) [fire]
+13300ms unitDamaged tank 9 (absorbé 0) [fire]
+13300ms unitDamaged dps1 0 (absorbé 33) [fire]
+13300ms unitDamaged dps2 35 (absorbé 0) [fire]
+13300ms unitDamaged healer 0 (absorbé 29) [fire]
 13500ms bossDamaged par dps1 65 CRIT
 13500ms castStarted healer heal_single 1000ms
 14000ms bossDamaged par tank 11
 14400ms bossDamaged par dps1 65 CRIT
 14500ms skillUsed healer heal_single -> [dps2]
-14500ms healed dps2 76
+14500ms healed dps2 70
 15200ms bossDamaged par dps2 88 [magic]
 15200ms bossAction attack
 15200ms unitDamaged tank 1 (absorbé 0) [fire]
@@ -77,14 +77,14 @@
 17100ms bossDamaged par dps1 22
 17100ms bossDamaged par dps2 88 [magic]
 17100ms bossAction focusAttack
-17100ms unitDamaged healer 10 (absorbé 109) [fire]
+17100ms unitDamaged healer 0 (absorbé 112) [fire]
 18000ms bossDamaged par dps1 65 CRIT
 18200ms bossDamaged par tank 11
 18200ms bossDamaged par healer 1
 18900ms bossDamaged par dps1 22
 19000ms bossDamaged par dps2 88 [magic]
 19000ms bossAction attack
-19000ms unitDamaged dps2 11 (absorbé 0) [fire]
+19000ms unitDamaged dps2 10 (absorbé 0) [fire]
 19600ms bossDamaged par tank 11
 19800ms bossDamaged par dps1 22
 20000ms skillUsed healer shield -> [healer]
@@ -93,17 +93,17 @@
 20800ms bossDamaged par healer 1
 20900ms bossDamaged par dps2 88 [magic]
 20900ms bossAction bigAttack zone
-20900ms unitDamaged tank 11 (absorbé 0) [fire]
+20900ms unitDamaged tank 9 (absorbé 0) [fire]
 20900ms unitDodged dps1
-20900ms unitDamaged dps2 38 (absorbé 0) [fire]
-20900ms unitDamaged healer 0 (absorbé 32) [fire]
+20900ms unitDamaged dps2 35 (absorbé 0) [fire]
+20900ms unitDamaged healer 0 (absorbé 29) [fire]
 21000ms bossDamaged par tank 11
 21600ms bossDamaged par dps1 22
 22400ms bossDamaged par tank 11
 22500ms bossDamaged par dps1 22
 22800ms bossDamaged par dps2 88 [magic]
 22800ms bossAction attack
-22800ms unitDamaged dps1 0 (absorbé 9) [fire]
+22800ms unitDamaged dps1 0 (absorbé 8) [fire]
 23200ms focusMarked dps2
 23400ms bossDamaged par dps1 22
 23400ms bossDamaged par healer 1
@@ -111,7 +111,7 @@
 24300ms bossDamaged par dps1 22
 24700ms bossDamaged par dps2 88 [magic]
 24700ms bossAction focusAttack
-24700ms unitDamaged dps2 225 (absorbé 0) CRIT [fire]
+24700ms unitDamaged dps2 213 (absorbé 0) CRIT [fire]
 25000ms castStarted healer heal_single 1000ms
 25200ms bossDamaged par tank 11
 25200ms bossDamaged par dps1 65 CRIT
@@ -123,9 +123,9 @@
 26600ms bossDamaged par tank 11
 26600ms bossDamaged par dps2 196 CRIT [magic]
 26600ms bossAction attack
-26600ms unitDamaged dps2 11 (absorbé 0) [fire]
+26600ms unitDamaged dps2 10 (absorbé 0) [fire]
 27000ms skillUsed healer heal_single -> [dps2]
-27000ms healed dps2 115
+27000ms healed dps2 98
 27000ms bossDamaged par dps1 22
 27500ms skillUsed healer shield -> [healer]
 27500ms shielded healer 260
@@ -133,10 +133,10 @@
 28000ms bossDamaged par tank 11
 28500ms bossDamaged par dps2 88 [magic]
 28500ms bossAction bigAttack zone
-28500ms unitDamaged tank 11 (absorbé 0) [fire]
-28500ms unitDamaged dps1 12 (absorbé 24) [fire]
-28500ms unitDamaged dps2 38 (absorbé 0) [fire]
-28500ms unitDamaged healer 0 (absorbé 32) [fire]
+28500ms unitDamaged tank 9 (absorbé 0) [fire]
+28500ms unitDamaged dps1 0 (absorbé 33) [fire]
+28500ms unitDamaged dps2 35 (absorbé 0) [fire]
+28500ms unitDamaged healer 0 (absorbé 29) [fire]
 28600ms bossDamaged par healer 1
 28800ms bossDamaged par dps1 22
 29400ms bossDamaged par tank 11
@@ -158,7 +158,7 @@
 33600ms bossDamaged par tank 11
 33800ms bossDamaged par healer 1
 34100ms bossAction focusAttack
-34100ms unitDamaged healer 0 (absorbé 119) [fire]
+34100ms unitDamaged healer 0 (absorbé 112) [fire]
 34200ms bossDamaged par dps1 22
 34200ms bossDamaged par dps2 88 [magic]
 35000ms bossDamaged par tank 11
@@ -175,9 +175,9 @@
 37000ms skillUsed healer shield -> [dps2]
 37000ms shielded dps2 260
 37700ms bossAction bigAttack zone
-37700ms unitDamaged tank 11 (absorbé 0) [fire]
+37700ms unitDamaged tank 9 (absorbé 0) [fire]
 37700ms unitDodged dps1
-37700ms unitDamaged dps2 0 (absorbé 38) [fire]
+37700ms unitDamaged dps2 0 (absorbé 35) [fire]
 37700ms unitDodged healer
 37800ms bossDamaged par tank 11
 37800ms bossDamaged par dps1 65 CRIT
@@ -193,7 +193,7 @@
 40500ms bossDamaged par dps1 22
 40600ms bossDamaged par tank 11
 41300ms bossAction focusAttack
-41300ms unitDamaged healer 0 (absorbé 119) [fire]
+41300ms unitDamaged healer 0 (absorbé 112) [fire]
 41400ms bossDamaged par dps1 22
 41600ms bossDamaged par healer 1
 41800ms bossDamaged par dps2 88 [magic]
@@ -212,16 +212,16 @@
 44200ms bossDamaged par healer 1
 44800ms bossDamaged par tank 11
 44900ms bossAction bigAttack zone
-44900ms unitDamaged tank 11 (absorbé 0) [fire]
-44900ms unitDamaged dps1 36 (absorbé 0) [fire]
-44900ms unitDamaged dps2 0 (absorbé 38) [fire]
-44900ms unitDamaged healer 0 (absorbé 32) [fire]
+44900ms unitDamaged tank 9 (absorbé 0) [fire]
+44900ms unitDamaged dps1 26 (absorbé 7) [fire]
+44900ms unitDamaged dps2 0 (absorbé 35) [fire]
+44900ms unitDamaged healer 0 (absorbé 29) [fire]
 45000ms bossDamaged par dps1 22
 45600ms bossDamaged par dps2 88 [magic]
 45900ms bossDamaged par dps1 22
 46200ms bossDamaged par tank 11
 46700ms bossAction attack
-46700ms unitDamaged dps2 0 (absorbé 11) [fire]
+46700ms unitDamaged dps2 0 (absorbé 10) [fire]
 46800ms bossDamaged par dps1 22
 46800ms bossDamaged par healer 1
 47000ms focusMarked dps2
@@ -229,7 +229,7 @@
 47600ms bossDamaged par tank 11
 47700ms bossDamaged par dps1 22
 48500ms bossAction focusAttack
-48500ms unitDamaged dps2 0 (absorbé 125) [fire]
+48500ms unitDamaged dps2 0 (absorbé 118) [fire]
 48600ms bossDamaged par dps1 22
 49000ms bossDamaged par tank 11
 49400ms bossDamaged par dps2 88 [magic]
@@ -243,21 +243,21 @@
 50500ms effectEnded dps1 burn cleansed
 51300ms bossDamaged par dps1 22
 51300ms bossDamaged par dps2 88 [magic]
-51500ms skillUsed healer shield -> [dps1]
-51500ms shielded dps1 260
+51500ms skillUsed healer shield -> [dps2]
+51500ms shielded dps2 260
 51800ms bossDamaged par tank 11
 52000ms bossDamaged par healer 1
 52100ms bossAction bigAttack zone
-52100ms unitDamaged tank 11 (absorbé 0) [fire]
-52100ms unitDamaged dps1 0 (absorbé 36) [fire]
-52100ms unitDamaged dps2 0 (absorbé 38) [fire]
-52100ms unitDamaged healer 0 (absorbé 32) [fire]
+52100ms unitDamaged tank 9 (absorbé 0) [fire]
+52100ms unitDamaged dps1 33 (absorbé 0) [fire]
+52100ms unitDamaged dps2 0 (absorbé 35) [fire]
+52100ms unitDamaged healer 0 (absorbé 29) [fire]
 52200ms bossDamaged par dps1 22
 53100ms bossDamaged par dps1 65 CRIT
 53200ms bossDamaged par tank 11
 53200ms bossDamaged par dps2 88 [magic]
 53900ms bossAction attack
-53900ms unitDamaged dps2 0 (absorbé 11) [fire]
+53900ms unitDamaged dps2 0 (absorbé 10) [fire]
 54000ms bossDamaged par dps1 22
 54200ms focusMarked dps1
 54600ms bossDamaged par tank 11
@@ -265,10 +265,13 @@
 54900ms bossDamaged par dps1 22
 55100ms bossDamaged par dps2 88 [magic]
 55700ms bossAction focusAttack
-55700ms unitDamaged dps1 0 (absorbé 123) [fire]
+55700ms unitDamaged dps1 116 (absorbé 0) [fire]
 55800ms bossDamaged par dps1 22
 56000ms bossDamaged par tank 11
+56000ms castStarted healer heal_single 1000ms
 56700ms bossDamaged par dps1 22
+57000ms skillUsed healer heal_single -> [dps1]
+57000ms healed dps1 170
 57000ms bossDamaged par dps2 88 [magic]
 57200ms bossDamaged par healer 1
 57400ms bossDamaged par tank 11
@@ -278,22 +281,22 @@
 57500ms effectEnded dps1 burn cleansed
 57600ms bossDamaged par dps1 22
 58500ms bossDamaged par dps1 22
-58500ms skillUsed healer shield -> [dps1]
-58500ms shielded dps1 260
+58500ms skillUsed healer shield -> [dps2]
+58500ms shielded dps2 260
 58800ms bossDamaged par tank 11
 58900ms bossDamaged par dps2 88 [magic]
 59300ms bossAction bigAttack zone
-59300ms unitDamaged tank 11 (absorbé 0) [fire]
-59300ms unitDamaged dps1 0 (absorbé 36) [fire]
-59300ms unitDamaged dps2 0 (absorbé 38) [fire]
-59300ms unitDamaged healer 0 (absorbé 32) [fire]
-59400ms bossDamaged par dps1 65 CRIT
+59300ms unitDamaged tank 9 (absorbé 0) [fire]
+59300ms unitDamaged dps1 33 (absorbé 0) [fire]
+59300ms unitDamaged dps2 0 (absorbé 35) [fire]
+59300ms unitDamaged healer 0 (absorbé 29) [fire]
+59400ms bossDamaged par dps1 22
 59800ms bossDamaged par healer 1
 60200ms bossDamaged par tank 11
 60300ms bossDamaged par dps1 22
 60800ms bossDamaged par dps2 88 [magic]
 61100ms bossAction attack
-61100ms unitDamaged dps1 0 (absorbé 9) [fire]
+61100ms unitDamaged dps2 0 (absorbé 10) [fire]
 61200ms bossDamaged par dps1 65 CRIT
 61400ms focusMarked dps1
 61600ms bossDamaged par tank 11
@@ -301,201 +304,228 @@
 62400ms bossDamaged par healer 1
 62700ms bossDamaged par dps2 88 [magic]
 62900ms bossAction focusAttack
-62900ms unitDamaged dps1 0 (absorbé 123) [fire]
+62900ms unitDamaged dps1 116 (absorbé 0) [fire]
 63000ms bossDamaged par tank 11
 63000ms bossDamaged par dps1 22
+63000ms castStarted healer heal_single 1000ms
 63900ms bossDamaged par dps1 22
+64000ms skillUsed healer heal_single -> [dps1]
+64000ms healed dps1 154
 64400ms bossDamaged par tank 11
 64600ms bossDamaged par dps2 88 [magic]
 64700ms bossAction poison
-64700ms effectApplied dps1 burn
+64700ms effectApplied dps2 burn
 64800ms bossDamaged par dps1 22
 65000ms bossDamaged par healer 1
 65000ms bossEnraged 1 +5%
-65000ms skillUsed healer purge -> [dps1]
-65000ms effectEnded dps1 burn cleansed
-65500ms skillUsed healer shield -> [dps1]
-65500ms shielded dps1 260
+65000ms skillUsed healer purge -> [dps2]
+65000ms effectEnded dps2 burn cleansed
+65500ms skillUsed healer shield -> [dps2]
+65500ms shielded dps2 260
 65700ms bossDamaged par dps1 22
 65800ms bossDamaged par tank 11
 66500ms bossDamaged par dps2 88 [magic]
-66500ms bossPhaseChanged 2 Brasier
-66600ms bossDamaged par dps1 22
-66600ms focusMarked healer
+66500ms bossAction bigAttack zone
+66500ms unitDamaged tank 11 (absorbé 0) [fire]
+66500ms unitDamaged dps1 69 (absorbé 0) CRIT [fire]
+66500ms unitDamaged dps2 0 (absorbé 37) [fire]
+66500ms unitDamaged healer 0 (absorbé 65) CRIT [fire]
+66500ms castStarted healer heal_single 1000ms
+66600ms bossDamaged par dps1 65 CRIT
+66600ms bossPhaseChanged 2 Brasier
+66700ms focusMarked healer
 67200ms bossDamaged par tank 11
-67500ms bossDamaged par dps1 65 CRIT
+67500ms skillUsed healer heal_single -> [dps1]
+67500ms healed dps1 69
+67500ms bossDamaged par dps1 22
 67600ms bossDamaged par healer 1
-68100ms bossAction focusAttack
-68100ms unitDamaged healer 108 (absorbé 122) CRIT [fire]
+68200ms bossAction focusAttack
+68200ms unitDamaged healer 25 (absorbé 93) [fire]
 68400ms bossDamaged par dps1 65 CRIT
 68400ms bossDamaged par dps2 88 [magic]
-68500ms castStarted healer heal_single 1000ms
 68600ms bossDamaged par tank 11
 69300ms bossDamaged par dps1 22
-69500ms skillUsed healer heal_single -> [healer]
-69500ms healed healer 150
-69700ms bossAction poison
-69700ms effectApplied tank burn
+69800ms bossAction poison
+69800ms effectApplied tank burn
 70000ms bossDamaged par tank 11
 70000ms skillUsed healer purge -> [tank]
 70000ms effectEnded tank burn cleansed
-70200ms bossDamaged par dps1 22
+70200ms bossDamaged par dps1 65 CRIT
 70200ms bossDamaged par healer 1
-70300ms bossDamaged par dps2 196 CRIT [magic]
+70300ms bossDamaged par dps2 88 [magic]
 71100ms bossDamaged par dps1 22
-71300ms bossAction bigAttack zone
-71300ms unitDamaged tank 13 (absorbé 0) [fire]
-71300ms unitDodged dps1
-71300ms unitDamaged dps2 0 (absorbé 76) CRIT [fire]
-71300ms unitDamaged healer 34 (absorbé 0) [fire]
 71400ms bossDamaged par tank 11
-72000ms bossDamaged par dps1 22
+71400ms bossAction bigAttack zone
+71400ms unitDamaged tank 11 (absorbé 0) [fire]
+71400ms unitDamaged dps1 69 (absorbé 0) CRIT [fire]
+71400ms unitDamaged dps2 0 (absorbé 37) [fire]
+71400ms unitDamaged healer 31 (absorbé 0) [fire]
+71500ms castStarted healer heal_single 1000ms
+72000ms bossDamaged par dps1 65 CRIT
 72200ms bossDamaged par dps2 88 [magic]
+72500ms skillUsed healer heal_single -> [healer]
+72500ms healed healer 85
+72500ms castStarted healer heal_single 1000ms
 72800ms bossDamaged par tank 11
-72800ms bossDamaged par healer 1
-72900ms bossDamaged par dps1 65 CRIT
-72900ms bossAction poison
-72900ms effectApplied dps1 burn
+72900ms bossDamaged par dps1 22
+73000ms bossAction poison
+73000ms effectApplied dps2 burn
+73500ms skillUsed healer heal_single -> [dps1]
+73500ms healed dps1 69 CRIT
+73500ms bossDamaged par healer 1
 73800ms bossDamaged par dps1 22
-73900ms effectTick dps1 burn 0 (absorbé 36) [fire]
+74000ms effectTick dps2 burn 0 (absorbé 36) [fire]
 74100ms bossDamaged par dps2 88 [magic]
 74200ms bossDamaged par tank 11
-74500ms bossAction attack
-74500ms unitDamaged dps2 0 (absorbé 12) [fire]
-74600ms focusMarked healer
+74600ms bossAction attack
+74600ms unitDamaged tank 1 (absorbé 0) [fire]
 74700ms bossDamaged par dps1 22
-74900ms effectTick dps1 burn 0 (absorbé 36) [fire]
+74700ms focusMarked dps1
+75000ms effectTick dps2 burn 0 (absorbé 36) [fire]
 75000ms bossEnraged 2 +10%
-75000ms skillUsed healer shield -> [healer]
-75000ms shielded healer 260
-75400ms bossDamaged par healer 1 CRIT
-75500ms skillUsed healer purge -> [dps1]
-75500ms effectEnded dps1 burn cleansed
+75000ms skillUsed healer purge -> [dps2]
+75000ms effectEnded dps2 burn cleansed
 75600ms bossDamaged par tank 11
 75600ms bossDamaged par dps1 65 CRIT
-76000ms bossDamaged par dps2 88 [magic]
-76100ms bossAction focusAttack
-76100ms unitDamaged healer 0 (absorbé 132) [fire]
+76000ms bossDamaged par dps2 196 CRIT [magic]
+76100ms bossDamaged par healer 1
+76200ms bossAction focusAttack
+76200ms unitDamaged dps1 129 (absorbé 0) [fire]
 76500ms bossDamaged par dps1 22
+76500ms castStarted healer heal_single 1000ms
 77000ms bossDamaged par tank 11
-77400ms bossDamaged par dps1 22
-77700ms bossAction poison
-77700ms unitDodged dps1
-77900ms bossDamaged par dps2 196 CRIT [magic]
-78000ms bossDamaged par healer 1
+77400ms bossDamaged par dps1 65 CRIT
+77500ms skillUsed healer heal_single -> [dps1]
+77500ms healed dps1 129
+77800ms bossAction poison
+77800ms effectApplied dps1 burn
+77900ms bossDamaged par dps2 88 [magic]
 78300ms bossDamaged par dps1 22
 78400ms bossDamaged par tank 11
+78700ms bossDamaged par healer 1
+78800ms effectTick dps1 burn 36 (absorbé 0) [fire]
 79200ms bossDamaged par dps1 22
-79300ms bossAction bigAttack zone
-79300ms unitDamaged tank 15 (absorbé 0) [fire]
-79300ms unitDodged dps1
-79300ms unitDamaged dps2 0 (absorbé 42) [fire]
-79300ms unitDamaged healer 0 (absorbé 36) [fire]
+79400ms bossAction bigAttack zone
+79400ms unitDamaged tank 12 (absorbé 0) [fire]
+79400ms unitDamaged dps1 73 (absorbé 0) CRIT [fire]
+79400ms unitDamaged dps2 0 (absorbé 75) CRIT [fire]
+79400ms unitDamaged healer 34 (absorbé 0) [fire]
+79500ms castStarted healer heal_single 1000ms
+79800ms effectTick dps1 burn 36 (absorbé 0) [fire]
 79800ms bossDamaged par tank 11
 79800ms bossDamaged par dps2 88 [magic]
+80000ms skillUsed healer purge -> [dps1]
+80000ms effectEnded dps1 burn cleansed
 80100ms bossDamaged par dps1 22
-80600ms bossDamaged par healer 1
-80900ms bossAction poison
-80900ms effectApplied tank burn
+80500ms castFailed healer heal_single mana
 81000ms bossDamaged par dps1 22
-81000ms skillUsed healer purge -> [tank]
-81000ms effectEnded tank burn cleansed
+81000ms bossAction poison
+81000ms effectApplied tank burn
+81000ms castStarted healer heal_single 1000ms
 81200ms bossDamaged par tank 11
 81700ms bossDamaged par dps2 88 [magic]
 81900ms bossDamaged par dps1 65 CRIT
-82500ms bossAction attack
-82500ms unitDamaged tank 1 (absorbé 0) [fire]
+82000ms skillUsed healer heal_single -> [dps1]
+82000ms healed dps1 145
+82000ms effectTick tank burn 31 (absorbé 0) [fire]
+82000ms bossDamaged par healer 1
 82600ms bossDamaged par tank 11
-82600ms focusMarked healer
+82600ms bossAction attack
+82600ms unitDamaged dps2 0 (absorbé 27) CRIT [fire]
+82700ms focusMarked dps2
 82800ms bossDamaged par dps1 22
-83200ms bossDamaged par healer 1
-83600ms bossDamaged par dps2 88 [magic]
-83700ms bossDamaged par dps1 65 CRIT
+83000ms effectTick tank burn 31 (absorbé 0) [fire]
+83600ms bossDamaged par dps2 196 CRIT [magic]
+83700ms bossDamaged par dps1 22
+84000ms effectTick tank burn 31 (absorbé 0) [fire]
 84000ms bossDamaged par tank 11
-84100ms bossAction focusAttack
-84100ms unitDamaged healer 150 (absorbé 92) CRIT [fire]
-84500ms castStarted healer heal_single 1000ms
-84600ms bossDamaged par dps1 22
+84000ms castStarted healer heal_single 1000ms
+84200ms bossAction focusAttack
+84200ms unitDamaged dps2 0 (absorbé 131) [fire]
+84600ms bossDamaged par dps1 65 CRIT
+85000ms skillUsed healer heal_single -> [tank]
+85000ms healed tank 170
+85000ms effectTick tank burn 31 (absorbé 0) [fire]
+85000ms bossDamaged par healer 1
 85000ms bossEnraged 3 +15%
 85400ms bossDamaged par tank 11
-85500ms skillUsed healer heal_single -> [healer]
-85500ms healed healer 170
 85500ms bossDamaged par dps1 22
-85500ms bossDamaged par dps2 196 CRIT [magic]
-85700ms bossAction poison
-85700ms effectApplied dps1 burn
-85800ms bossDamaged par healer 1 CRIT
-86000ms skillUsed healer purge -> [dps1]
-86000ms effectEnded dps1 burn cleansed
+85500ms bossDamaged par dps2 88 [magic]
+85800ms bossAction poison
+85800ms effectApplied dps2 burn
+86000ms effectTick tank burn 31 (absorbé 0) [fire]
+86000ms skillUsed healer purge -> [tank]
+86000ms effectEnded tank burn cleansed
 86400ms bossDamaged par dps1 22
-86500ms skillUsed healer shield -> [tank]
-86500ms shielded tank 260
+86800ms effectTick dps2 burn 0 (absorbé 36) [fire]
 86800ms bossDamaged par tank 11
 87300ms bossDamaged par dps1 22
-87300ms bossAction bigAttack zone
-87300ms unitDamaged tank 0 (absorbé 17) [fire]
-87300ms unitDamaged dps1 0 (absorbé 42) [fire]
-87300ms unitDamaged dps2 0 (absorbé 44) [fire]
-87300ms unitDamaged healer 38 (absorbé 0) [fire]
 87400ms bossDamaged par dps2 88 [magic]
+87400ms bossAction bigAttack zone
+87400ms unitDamaged tank 14 (absorbé 0) [fire]
+87400ms unitDamaged dps1 40 (absorbé 0) [fire]
+87400ms unitDamaged dps2 0 (absorbé 42) [fire]
+87400ms unitDamaged healer 36 (absorbé 0) [fire]
+87600ms bossDamaged par healer 1
+87800ms effectTick dps2 burn 0 (absorbé 36) [fire]
 88200ms bossDamaged par tank 11
 88200ms bossDamaged par dps1 22
-88400ms bossDamaged par healer 1
-88900ms bossAction poison
-88900ms effectApplied dps2 burn
+88800ms effectTick dps2 burn 0 (absorbé 36) [fire]
+89000ms bossAction poison
+89000ms effectApplied dps1 burn
 89100ms bossDamaged par dps1 22
 89300ms bossDamaged par dps2 88 [magic]
 89600ms bossDamaged par tank 11
-89900ms effectTick dps2 burn 0 (absorbé 36) [fire]
+89800ms effectTick dps2 burn 0 (absorbé 36) [fire]
+90000ms effectTick dps1 burn 36 (absorbé 0) [fire]
 90000ms bossDamaged par dps1 22
-90500ms bossAction attack
-90500ms unitDamaged dps1 0 (absorbé 12) [fire]
-90600ms focusMarked dps1
-90900ms effectTick dps2 burn 25 (absorbé 11) [fire]
+90000ms castStarted healer heal_single 1000ms
+90600ms bossAction attack
+90600ms unitDamaged tank 1 (absorbé 0) [fire]
+90700ms focusMarked dps2
+90800ms effectTick dps2 burn 0 (absorbé 36) [fire]
 90900ms bossDamaged par dps1 22
+91000ms skillUsed healer heal_single -> [dps1]
+91000ms healed dps1 76
+91000ms effectTick dps1 burn 36 (absorbé 0) [fire]
 91000ms bossDamaged par tank 11
 91000ms bossDamaged par healer 1
-91000ms skillUsed healer purge -> [dps2]
-91000ms effectEnded dps2 burn cleansed
+91000ms skillUsed healer purge -> [dps1]
+91000ms effectEnded dps1 burn cleansed
 91200ms bossDamaged par dps2 88 [magic]
-91500ms castStarted healer heal_single 1000ms
+91800ms effectTick dps2 burn 0 (absorbé 36) [fire]
+91800ms effectEnded dps2 burn expired
 91800ms bossDamaged par dps1 22
-92100ms bossAction focusAttack
-92100ms unitDamaged dps1 0 (absorbé 143) [fire]
+92200ms bossAction focusAttack
+92200ms unitDamaged dps2 0 (absorbé 137) [fire]
 92400ms bossDamaged par tank 11
-92500ms skillUsed healer heal_single -> [dps2]
-92500ms healed dps2 63
 92700ms bossDamaged par dps1 22
 93100ms bossDamaged par dps2 88 [magic]
-93600ms bossDamaged par dps1 22
+93600ms bossDamaged par dps1 65 CRIT
 93600ms bossDamaged par healer 1
-93700ms bossAction poison
-93700ms effectApplied tank burn
 93800ms bossDamaged par tank 11
+93800ms bossAction poison
+93800ms effectApplied dps2 burn
 94500ms bossDamaged par dps1 22
-94500ms skillUsed healer shield -> [tank]
-94500ms shielded tank 260
-94700ms effectTick tank burn 0 (absorbé 31) [fire]
+94800ms effectTick dps2 burn 0 (absorbé 36) [fire]
 95000ms bossDamaged par dps2 88 [magic]
 95000ms bossEnraged 4 +20%
 95200ms bossDamaged par tank 11
-95300ms bossAction bigAttack zone
-95300ms unitDamaged tank 0 (absorbé 19) [fire]
-95300ms unitDamaged dps1 0 (absorbé 86) CRIT [fire]
-95300ms unitDamaged dps2 47 (absorbé 0) [fire]
-95300ms unitDamaged healer 41 (absorbé 0) [fire]
 95400ms bossDamaged par dps1 22
+95400ms bossAction bigAttack zone
+95400ms unitDamaged tank 16 (absorbé 0) [fire]
+95400ms unitDamaged dps1 81 (absorbé 0) CRIT [fire]
+95400ms unitDamaged dps2 0 (absorbé 44) [fire]
+95400ms unitDamaged healer 38 (absorbé 0) [fire]
 95500ms castStarted healer heal_single 1000ms
-95700ms effectTick tank burn 0 (absorbé 31) [fire]
-96000ms skillUsed healer purge -> [tank]
-96000ms effectEnded tank burn cleansed
+95800ms effectTick dps2 burn 0 (absorbé 36) [fire]
+96000ms skillUsed healer purge -> [dps2]
+96000ms effectEnded dps2 burn cleansed
 96300ms bossDamaged par dps1 22
-96500ms skillUsed healer heal_single -> [healer]
-96500ms healed healer 93
+96500ms skillUsed healer heal_single -> [dps1]
+96500ms healed dps1 117
 96500ms bossDamaged par healer 1
 96600ms bossDamaged par tank 11
-96900ms bossDamaged par dps2 196 CRIT [magic]
-96900ms bossAction poison
-96900ms effectApplied dps2 burn
+96900ms bossDamaged par dps2 88 [magic]
 96900ms battleEnded victory
-FINAL victory t=96900 boss=0 tank:779/422/0 dps1:372/98/0 dps2:313/0/0 healer:480/0/23
+FINAL victory t=96900 boss=0 tank:773/0/0 dps1:420/0/0 dps2:325/122/0 healer:372/0/6

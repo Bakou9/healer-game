@@ -2,7 +2,7 @@
   "id": "boss2",
   "name": "Reine des Marais",
   "maxHp": 8450,
-  "atk": 24,
+  "atk": 25,
   "def": 16,
   "tickMs": 2000,
   "pattern": [
